@@ -196,11 +196,15 @@ fi
 
 # Build and install the packages
 if [ "$1" != "" ]; then
+    echo "======================================================="
+    echo "Building runtime for ${ARCHITECTURE}"
+
     for SOURCE_PACKAGE in "$@"; do
         if valid_package "${SOURCE_PACKAGE}"; then
             process_package $(egrep "^${SOURCE_PACKAGE}" packages.txt)
         fi
     done
+    echo ""
 else
     for SOURCE_PACKAGE in $(cat packages.txt | egrep -v '^#' | awk '{print $1}'); do
         process_package $(egrep "^${SOURCE_PACKAGE}" packages.txt)
