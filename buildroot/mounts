@@ -1,0 +1,4 @@
+# This file lists additional directories to mount within the build root
+#
+# They are listed as full paths, one per line, and mounted in the same
+# location within the build root.

@@ -112,6 +112,13 @@ action_create()
     mkdir "$root/dev"
 }
 
+extra_mounts()
+{
+    if [ -f mounts ]; then
+        egrep '^/' mounts
+    fi
+}
+
 mount_chroot()
 {
     sudo mount -o bind /dev "$root/dev"
@@ -119,6 +126,12 @@ mount_chroot()
     sudo mount -o bind /sys "$root/sys"
     sudo mount -o bind /proc "$root/proc"
     sudo mount -o bind /home "$root/home"
+
+    extra_mounts | while read dir; do
+        echo "Mounting $dir"
+        mkdir -p "$root/$dir"
+        sudo mount -o bind "$dir" "$root/$dir"
+    done
 }
 
 unmount_chroot()
@@ -126,11 +139,16 @@ unmount_chroot()
     if ! sudo -nv 2>/dev/null; then
         echo "Please enter your password to unmount chroot environment"
     fi
+
     sudo umount "$root/dev/pts"
     sudo umount "$root/sys"
     sudo umount "$root/proc"
     sudo umount "$root/home"
     sudo umount "$root/dev"
+
+    extra_mounts | while read dir; do
+        sudo umount "$root/$dir"
+    done
 }
 
 unmount_exit()
