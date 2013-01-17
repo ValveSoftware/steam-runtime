@@ -13,13 +13,13 @@ cd "$(dirname "$0")/buildroot" || exit 2
 
 exit_usage()
 {
-    echo "Usage: $0 [--create|--update|--shell|--clean] [--arch=<arch>]" >&2
+    echo "Usage: $0 [--create|--update|--shell|--unmount|--clean] [--arch=<arch>]" >&2
     exit 1
 }
 
 while [ "$1" ]; do
     case "$1" in
-    --create|--update|--shell|--clean)
+    --create|--update|--shell|--unmount|--clean)
         actions="$actions $1"
         ;;
     --arch=*)
@@ -61,16 +61,18 @@ mkdir -p "$root"
 
 check_create()
 {
-    if [ ! -f "pbuilder/$distribution-$arch-base.tgz" ]; then
-        echo "Missing pbuilder/$distribution-$arch-base.tgz, creating..."
-        sleep 1
-        return 0
-    fi
+    if check_shell; then
+        if [ ! -f "pbuilder/$distribution-$arch-base.tgz" ]; then
+            echo "Missing pbuilder/$distribution-$arch-base.tgz, creating..."
+            sleep 1
+            return 0
+        fi
 
-    if [ ! -d "$root" ]; then
-        echo "Missing $root, creating..."
-        sleep 1
-        return 0
+        if [ ! -d "$root" ]; then
+            echo "Missing $root, creating..."
+            sleep 1
+            return 0
+        fi
     fi
 
     if [ "$actions" ]; then
@@ -201,6 +203,26 @@ action_update()
     trap '' INT TERM
 }
 
+check_unmount()
+{
+    if [ "$actions" ]; then
+        case "$actions" in
+        *--unmount*)
+            return 0;;
+        *)
+            return 1;;
+        esac
+    fi
+
+    # Default not to unmount everything
+    return 1
+}
+
+action_unmount()
+{
+    unmount_chroot
+}
+
 check_shell()
 {
     if [ "$actions" ]; then
@@ -275,6 +297,9 @@ if check_create; then
 fi
 if check_update; then
     action_update
+fi
+if check_unmount; then
+    action_unmount
 fi
 if check_shell; then
     action_shell $*
