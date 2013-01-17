@@ -1,3 +1,4 @@
+build.log
 buildroot/amd64/
 buildroot/i386/
 buildroot/pbuilder/
