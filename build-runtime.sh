@@ -67,15 +67,6 @@ build_package()
     if [ ! -f "${BUILDTAG}" ] || ! cmp "${BUILDTAG}" "${CHECKSUM}" 2>/dev/null; then
         echo "BUILDING: ${PACKAGE} for ${ARCHITECTURE}"
 
-        # Back up old files
-        OLD="${BUILD}/old-versions"
-        mkdir -p "${OLD}"
-        for file in "${BUILD}"/*.*; do
-            if [ -f "${file}" ]; then
-                mv -v "${file}" "${OLD}/"
-            fi
-        done
-
         # Make sure we have build dependencies
         sudo apt-get build-dep -y "${PACKAGE}"
 
@@ -102,6 +93,15 @@ build_package()
 
         # Build the package
         (cd "${PACKAGE_DIR}" && dpkg-buildpackage -b) || exit 30
+
+        # Back up any old binary packages
+        OLD="${BUILD}/old-versions"
+        mkdir -p "${OLD}"
+        for file in "${BUILD}"/*.*; do
+            if [ -f "${file}" ]; then
+                mv -v "${file}" "${OLD}/"
+            fi
+        done
 
         # Move the binary packages into place
         for file in *.changes *.deb *.ddeb *.udeb; do
