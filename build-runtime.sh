@@ -54,7 +54,7 @@ build_package()
     # Calculate the checksum for the source
     CHECKSUM=.checksum
     md5sum "${DSC}" >"${CHECKSUM}"
-    for patch in "${TOP}/packages/patches/${PACKAGE}"/*; do
+    for patch in "${TOP}/patches/${PACKAGE}"/*; do
         if [ -f "${patch}" ]; then
             md5sum "${patch}" >>"${CHECKSUM}"
         fi
@@ -83,7 +83,7 @@ build_package()
         fi
 
         dpkg-source -x "${DSC}" || exit 20
-        for patch in "${TOP}/packages/patches/${PACKAGE}"/*; do
+        for patch in "${TOP}/patches/${PACKAGE}"/*; do
             if [ -f "${patch}" ]; then
                 patchname="$(basename "${patch}")"
                 echo "APPLYING: ${patchname}"
