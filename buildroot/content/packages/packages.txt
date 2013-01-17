@@ -1,0 +1,8 @@
+# This is required to automatically build symbol packages
+pkg-create-dbgsym
+
+# These are useful commands for working in the environment
+dialog
+file
+less
+vim-tiny

@@ -11,7 +11,7 @@ valid_package()
 {
     PACKAGE=$1
 
-    for SOURCE_PACKAGE in `cat packages.txt | egrep -v '^#' | awk '{print $1}'`; do
+    for SOURCE_PACKAGE in $(cat packages.txt | egrep -v '^#' | awk '{print $1}'); do
         if [ "${SOURCE_PACKAGE}" = "${PACKAGE}" ]; then
             return 0
         fi
@@ -25,7 +25,7 @@ update_package()
 {
     PACKAGE=$1
 
-    DIR="${TOP}/packages/${PACKAGE}"
+    DIR="${TOP}/packages/source/${PACKAGE}"
 
     echo "CHECKING: ${PACKAGE}"
 
@@ -34,7 +34,7 @@ update_package()
     rm -rf "${TMP}"
     mkdir -p "${TMP}"; cd "${TMP}"
     apt-get source --download-only --dsc-only "${PACKAGE}" >/dev/null || exit 3
-    DSC=`echo *.dsc`
+    DSC=$(echo *.dsc)
     cd "${DIR}"
 
     if [ ! -f "${DSC}" ]; then
@@ -66,7 +66,7 @@ if [ "$1" != "" ]; then
         fi
     done
 else
-    for SOURCE_PACKAGE in `cat packages.txt | egrep -v '^#' | awk '{print $1}'`; do
+    for SOURCE_PACKAGE in $(cat packages.txt | egrep -v '^#' | awk '{print $1}'); do
         update_package "${SOURCE_PACKAGE}"
     done
 fi
