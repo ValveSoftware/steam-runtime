@@ -54,8 +54,9 @@ libxi		libxi6 libxi-dev
 libxinerama	libxinerama1 libxinerama-dev
 libxrandr	libxrandr2 libxrandr-dev
 libxrender	libxrender1 libxrender-dev
+libxss		libxss1 libxss-dev
 libxxf86vm	libxxf86vm1 libxxf86vm-dev
-mesa		libglu1-mesa libglu1-mesa-dev
+mesa		libglu1-mesa libglu1-mesa-dev mesa-common-dev
 nspr		libnspr4 libnspr4-dev
 nss		libnss3 libnss3-dev
 openal-soft	libopenal1 libopenal-dev
@@ -65,5 +66,14 @@ pcre3		libpcre3 libpcre3-dev
 pixman		libpixman-1-0 libpixman-1-dev
 pulseaudio	libpulse0 libpulse-dev
 tcp-wrappers	libwrap0 libwrap0-dev
+udev		libudev0 libudev-dev
+x11proto-core	x11proto-core-dev
+x11proto-input	x11proto-input-dev
+x11proto-kb	x11proto-kb-dev
+x11proto-randr	x11proto-randr-dev
+x11proto-render	x11proto-render-dev
+x11proto-scrnsaver	x11proto-scrnsaver-dev
+x11proto-xext	x11proto-xext-dev
+x11proto-xf86vidmode	x11proto-xf86vidmode-dev
 xft		libxft2 libxft-dev
 zlib		zlib1g zlib1g-dev

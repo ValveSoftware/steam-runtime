@@ -6,3 +6,5 @@ packages/binary/
 packages/source/
 runtime/amd64/
 runtime/i386/
+x-tools/amd64/
+x-tools/i386/

@@ -3,7 +3,9 @@
 # Script to build and install packages into the Steam runtime
 
 # Set this to "true" to install debug symbols and developer headers
-DEVELOPER_RUNTIME=true
+if [ -z "${DEVELOPER_RUNTIME}" ]; then
+    DEVELOPER_RUNTIME=true
+fi
 
 # This is the distribution on which we're basing this version of the runtime.
 DISTRIBUTION=precise
@@ -158,7 +160,7 @@ process_package()
     echo ""
     echo "Processing ${SOURCE_PACKAGE}..."
     shift
-    sleep 1
+    #sleep 1
 
     build_package ${DISTRIBUTION} ${ARCHITECTURE} ${SOURCE_PACKAGE}
     for PACKAGE in $*; do
@@ -167,12 +169,17 @@ process_package()
             continue
         fi
 
-        ARCHIVE=$(echo "${TOP}"/packages/binary/${ARCHITECTURE}/${SOURCE_PACKAGE}/${PACKAGE}_*_${ARCHITECTURE}.deb)
+        ARCHIVE=$(echo "${TOP}"/packages/binary/${ARCHITECTURE}/${SOURCE_PACKAGE}/${PACKAGE}_*_all.deb)
         if [ -f "${ARCHIVE}" ]; then
             install_deb "${ARCHIVE}" "${RUNTIME}"
         else
-            echo "WARNING: Missing ${ARCHIVE}" >&2
-            continue
+            ARCHIVE=$(echo "${TOP}"/packages/binary/${ARCHITECTURE}/${SOURCE_PACKAGE}/${PACKAGE}_*_${ARCHITECTURE}.deb)
+            if [ -f "${ARCHIVE}" ]; then
+                install_deb "${ARCHIVE}" "${RUNTIME}"
+            else
+                echo "WARNING: Missing ${ARCHIVE}" >&2
+                continue
+            fi
         fi
 
         if [ "${DEVELOPER_RUNTIME}" = "true" ]; then
