@@ -20,8 +20,8 @@ To update the source packages from the distribution repository:
 To wipe the runtime environment and remove binary packages:
 > make clean
 
-Note that building all the packages from source takes a long time,
-so only remove binary packages if you are sure you want a clean slate.
+Note that building all the packages from source takes a long time, so only
+remove binary packages if you are sure you want to rebuild everything.
 
 
 buildroot.sh
@@ -66,5 +66,18 @@ clean-runtime.sh
 ----------------
 
 clean-runtime.sh wipes clean the runtime environment.
+
+
+build-crosstool.sh
+------------------
+
+build-crosstool.sh builds a cross-compiler targeting the Steam runtime.
+
+x-tools/shell.sh is a script that runs an arbitrary command with paths
+set up for building with the cross-compiler and development runtime.
+If a command isn't passed to shell.sh, it will run an interactive shell.
+
+You can set up paths manually for your build system by looking at the
+environment variables set in x-tools/shell.sh and scripts in x-tools/bin
 
 

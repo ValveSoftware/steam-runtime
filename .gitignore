@@ -2,6 +2,9 @@ build.log
 buildroot/amd64/
 buildroot/i386/
 buildroot/pbuilder/
+crosstool/amd64/.build/
+crosstool/crosstool-ng/
+crosstool/i386/.build/
 packages/binary/
 packages/source/
 runtime/amd64/
