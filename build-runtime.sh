@@ -18,7 +18,7 @@ valid_package()
 {
     PACKAGE=$1
 
-    for SOURCE_PACKAGE in $(cat packages.txt | egrep -v '^#' | awk '{print $1}'); do
+    for SOURCE_PACKAGE in $(cat packages.txt | grep -v '^#' | awk '{print $1}'); do
         if [ "${SOURCE_PACKAGE}" = "${PACKAGE}" ]; then
             return 0
         fi
@@ -196,19 +196,24 @@ fi
 
 # Build and install the packages
 if [ "$1" != "" ]; then
-    echo "======================================================="
-    echo "Building runtime for ${ARCHITECTURE}"
-
     for SOURCE_PACKAGE in "$@"; do
         if valid_package "${SOURCE_PACKAGE}"; then
-            process_package $(egrep "^${SOURCE_PACKAGE}" packages.txt)
+            process_package $(awk '{ if ($1 == "'${SOURCE_PACKAGE}'") print $0 }' <packages.txt)
         fi
     done
-    echo ""
 else
-    for SOURCE_PACKAGE in $(cat packages.txt | egrep -v '^#' | awk '{print $1}'); do
-        process_package $(egrep "^${SOURCE_PACKAGE}" packages.txt)
+    echo "======================================================="
+    echo "Building runtime for ${ARCHITECTURE}"
+    date
+
+    for SOURCE_PACKAGE in $(cat packages.txt | grep -v '^#' | awk '{print $1}'); do
+        process_package $(awk '{ if ($1 == "'${SOURCE_PACKAGE}'") print $0 }' <packages.txt)
     done
+
+    echo ""
+    date
+    echo "======================================================="
+    echo ""
 fi
 
 # vi: ts=4 sw=4 expandtab

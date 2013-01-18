@@ -4,7 +4,7 @@
 all: clean-log amd64 i386
 
 amd64 i386:
-	time ./buildroot.sh --arch=$@ ./build-runtime.sh | tee -a build.log
+	./buildroot.sh --arch=$@ ./build-runtime.sh | tee -a build.log
 
 update:
 	./update-packages.sh
