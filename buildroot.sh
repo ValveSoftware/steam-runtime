@@ -13,7 +13,7 @@ cd "$(dirname "$0")/buildroot" || exit 2
 
 exit_usage()
 {
-    echo "Usage: $0 [--create|--update|--shell|--unmount|--clean] [--arch=<arch>]" >&2
+    echo "Usage: $0 [--create|--update|--shell|--unmount|--clean] [--arch=<arch>] [command] [arguments...]" >&2
     exit 1
 }
 
