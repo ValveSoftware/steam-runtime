@@ -94,7 +94,7 @@ build_package()
         done
 
         # Build the package
-        (cd "${PACKAGE_DIR}" && dpkg-buildpackage -b) || exit 30
+        (cd "${PACKAGE_DIR}" && dpkg-buildpackage -b -uc) || exit 30
 
         # Back up any old binary packages
         OLD="${BUILD}/old-versions"
