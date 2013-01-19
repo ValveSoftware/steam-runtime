@@ -5,6 +5,7 @@ buildroot/pbuilder/
 crosstool/amd64/.build/
 crosstool/crosstool-ng/
 crosstool/i386/.build/
+crosstool/tarballs/
 packages/binary/
 packages/source/
 runtime/amd64/
