@@ -5,7 +5,7 @@ CROSSTOOL_REVISION="crosstool-ng-1.17.0"
 set -e
 
 echo -n \
-"This will take several hours, do you want to continue? [Y/n]: "
+"This will take a long time, do you want to continue? [Y/n]: "
 read answer
 if [ "$answer" = "n" ]; then
     exit 1
@@ -16,7 +16,7 @@ cd "${TOP}/crosstool" || exit 1
 
 if [ ! -d crosstool-ng -o "$(command -v ct-ng)" = "" ] ; then
     echo "Setting up crosstool-ng..."
-    sudo apt-get install autoconf bison flex gcc g++ gperf gawk libtool texinfo libncurses5-dev subversion mercurial
+    sudo apt-get install autoconf bison flex gcc g++ gperf gawk libtool texinfo libncurses5-dev subversion mercurial wget
     if [ ! -d crosstool-ng ]; then
         hg clone -u $CROSSTOOL_REVISION http://crosstool-ng.org/hg/crosstool-ng || exit 2
     fi
