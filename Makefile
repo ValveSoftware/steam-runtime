@@ -12,9 +12,10 @@ update:
 clean-log:
 	@rm -f build.log
 
-clean: clean-log
-	@rm -rf packages/binary
+clean-runtime:
 	@./clean-runtime.sh
+
+clean: clean-log clean-runtime
 
 distclean: clean
 	@rm -rf packages
