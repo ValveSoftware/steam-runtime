@@ -117,7 +117,7 @@ action_create()
 extra_mounts()
 {
     if [ -f mounts ]; then
-        egrep '^/' mounts
+        grep '^/' mounts
     fi
 }
 
@@ -184,8 +184,12 @@ action_update()
 
     # Add sources for apt-get
     APT_SOURCES="${root}/etc/apt/sources.list"
-    if ! egrep '^deb-src ' "${APT_SOURCES}"; then
-        egrep '^deb ' "${APT_SOURCES}" | sed 's,^deb ,deb-src ,' >>"${APT_SOURCES}"
+    if grep proposed "${APT_SOURCES}" >/dev/null; then
+        grep -v proposed "${APT_SOURCES}" >"${APT_SOURCES}.new"
+        mv "${APT_SOURCES}.new" "${APT_SOURCES}"
+    fi
+    if ! grep '^deb-src ' "${APT_SOURCES}"; then
+        grep '^deb ' "${APT_SOURCES}" | sed 's,^deb ,deb-src ,' >>"${APT_SOURCES}"
     fi
 
     # If sudo doesn't exist, we'll emulate it with fakeroot
