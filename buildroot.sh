@@ -90,6 +90,9 @@ check_create()
 
 action_create()
 {
+    # Make sure we have the software we need to create the bootstrap
+    sudo apt-get install ubuntu-dev-tools
+
     # Create the initial bootstrap
     bootstrap_archive=pbuilder/$distribution-$arch-base.tgz
     if [ ! -f $bootstrap_archive ]; then
