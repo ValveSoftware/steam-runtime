@@ -102,7 +102,7 @@ action_create()
             pbuilder_archive="$distribution-$arch-base.tgz" 
         fi
         if [ ! -f $HOME/pbuilder/$pbuilder_archive ]; then
-            pbuilder-dist $distribution $arch create
+            pbuilder-dist $distribution $arch create --updates-only
         fi
         mkdir -p pbuilder
         cp $HOME/pbuilder/$pbuilder_archive $bootstrap_archive || exit 2
@@ -187,10 +187,6 @@ action_update()
 
     # Add sources for apt-get
     APT_SOURCES="${root}/etc/apt/sources.list"
-    if grep proposed "${APT_SOURCES}" >/dev/null; then
-        grep -v proposed "${APT_SOURCES}" >"${APT_SOURCES}.new"
-        mv "${APT_SOURCES}.new" "${APT_SOURCES}"
-    fi
     if ! grep '^deb-src ' "${APT_SOURCES}"; then
         grep '^deb ' "${APT_SOURCES}" | sed 's,^deb ,deb-src ,' >>"${APT_SOURCES}"
     fi
