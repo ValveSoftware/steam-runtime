@@ -6,6 +6,7 @@
 distribution=precise # Codename for Ubuntu 12.04 LTS
 actions=""
 host_arch=$(dpkg --print-architecture)
+ARCHITECTURES="i386 amd64"
 
 # Get to the script directory
 CWD="$(pwd)"
@@ -13,13 +14,13 @@ cd "$(dirname "$0")/buildroot" || exit 2
 
 exit_usage()
 {
-    echo "Usage: $0 [--create|--update|--shell|--unmount|--clean] [--arch=<arch>] [command] [arguments...]" >&2
+    echo "Usage: $0 [--create|--update|--shell|--unmount|--archive|--clean] [--arch=<arch>] [command] [arguments...]" >&2
     exit 1
 }
 
 while [ "$1" ]; do
     case "$1" in
-    --create|--update|--shell|--unmount|--clean)
+    --create|--update|--shell|--unmount|--archive|--clean)
         actions="$actions $1"
         ;;
     --arch=*)
@@ -56,7 +57,6 @@ fi
 
 # Set our root directory (but don't create it yet)
 root=$arch
-mkdir -p "$root"
 
 
 check_create()
@@ -266,6 +266,47 @@ __EOF__
     unmount_chroot
 }
 
+check_archive()
+{
+    if [ "$actions" ]; then
+        case "$actions" in
+        *--archive*)
+            return 0;;
+        *)
+            return 1;;
+        esac
+    fi
+
+    # Default not to archive the directories
+    return 1
+}
+
+action_archive()
+{
+    for arch in ${ARCHITECTURES}; do
+        if [ -d "${arch}" ]; then
+            archive="${distribution}-${arch}-base.tgz"
+            echo "Creating pbuilder/${archive}"
+
+            if [ -e "${arch}/dev/null" ]; then
+                echo "${arch} dev is still mounted - aborting"
+                exit 2
+            fi
+            if [ -e "${arch}/proc/kcore" ]; then
+                echo "${arch} proc is still mounted - aborting"
+                exit 2
+            fi
+
+            # Remove cached data to save space
+            rm -f ${arch}/var/cache/apt/archives/*.deb
+
+            # Create the archive!
+            (cd ${arch} && tar zcf "../pbuilder/${archive}" *) || exit 3
+            ls -l "pbuilder/${archive}"
+        fi
+    done
+}
+
 check_clean()
 {
     if [ "$actions" ]; then
@@ -283,8 +324,8 @@ check_clean()
 
 action_clean()
 {
-    echo "Removing build root directories"
-    rm -rf amd64 i386 pbuilder
+    echo "Removing build root directories for ${ARCHITECTURES}"
+    rm -rf ${ARCHITECTURES}
 }
 
 if check_create; then
@@ -299,6 +340,9 @@ if check_unmount; then
 fi
 if check_shell; then
     action_shell $*
+fi
+if check_archive; then
+    action_archive
 fi
 if check_clean; then
     action_clean

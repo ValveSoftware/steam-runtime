@@ -15,8 +15,11 @@ clean-log:
 clean-runtime:
 	@./clean-runtime.sh
 
-clean: clean-log clean-runtime
+clean-buildroot:
+	@./buildroot.sh --archive --clean
+
+clean: clean-log clean-runtime clean-buildroot
 
 distclean: clean
 	@rm -rf packages
-	@./buildroot.sh --clean
+	@rm -rf buildroot/pbuilder
