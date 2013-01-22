@@ -119,6 +119,12 @@ action_create()
 
 extra_mounts()
 {
+    echo "/dev"
+    echo "/dev/pts"
+    echo "/sys"
+    echo "/proc"
+    echo "/home"
+    echo "$CWD"
     if [ -f mounts ]; then
         grep '^/' mounts
     fi
@@ -126,14 +132,7 @@ extra_mounts()
 
 mount_chroot()
 {
-    sudo mount -o bind /dev "$root/dev"
-    sudo mount -o bind /dev/pts "$root/dev/pts"
-    sudo mount -o bind /sys "$root/sys"
-    sudo mount -o bind /proc "$root/proc"
-    sudo mount -o bind /home "$root/home"
-
-    extra_mounts | while read dir; do
-        echo "Mounting $dir"
+    extra_mounts | sort | uniq | while read dir; do
         mkdir -p "$root/$dir"
         sudo mount -o bind "$dir" "$root/$dir"
     done
@@ -145,13 +144,7 @@ unmount_chroot()
         echo "Please enter your password to unmount chroot environment"
     fi
 
-    sudo umount "$root/dev/pts"
-    sudo umount "$root/sys"
-    sudo umount "$root/proc"
-    sudo umount "$root/home"
-    sudo umount "$root/dev"
-
-    extra_mounts | while read dir; do
+    extra_mounts | sort -r | uniq | while read dir; do
         sudo umount "$root/$dir"
     done
 }
