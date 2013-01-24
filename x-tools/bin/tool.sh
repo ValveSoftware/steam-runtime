@@ -92,7 +92,7 @@ function update_includes()
         -I)
             path="${ARGS[$(expr $i + 1)]}"
             case "${path}" in
-            /usr/include*)
+            /usr/include*|/usr/lib*)
                 ARGS[$(expr $i + 1)]="${STEAM_RUNTIME}${path}"
                 ;;
             esac
@@ -101,7 +101,7 @@ function update_includes()
         -I*)
             path="$(expr "${ARGS[$i]}" : "-I\(.*\)")"
             case "${path}" in
-            /usr/include*)
+            /usr/include*|/usr/lib*)
                 ARGS[$i]="-I${STEAM_RUNTIME}${path}"
                 ;;
             esac
