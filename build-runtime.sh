@@ -58,7 +58,9 @@ build_package()
     md5sum "${DSC}" >"${CHECKSUM}"
     for patch in "${TOP}/patches/${PACKAGE}"/*; do
         if [ -f "${patch}" ]; then
-            md5sum "${patch}" >>"${CHECKSUM}"
+            patchpath="$(dirname "${patch}")"
+            patchname="$(basename "${patch}")"
+            (cd "${patchpath}"; md5sum "${patchname}") >>"${CHECKSUM}"
         fi
     done
 
@@ -66,7 +68,7 @@ build_package()
     BUILD="${TOP}/packages/binary/${ARCHITECTURE}/${PACKAGE}"
     BUILDTAG="${BUILD}/.built"
     mkdir -p ${BUILD}
-    if [ ! -f "${BUILDTAG}" ] || ! cmp "${BUILDTAG}" "${CHECKSUM}" 2>/dev/null; then
+    if [ ! -f "${BUILDTAG}" ] || ! cmp "${BUILDTAG}" "${CHECKSUM}" >/dev/null; then
         echo "BUILDING: ${PACKAGE} for ${ARCHITECTURE}"
 
         # Make sure we have build dependencies
