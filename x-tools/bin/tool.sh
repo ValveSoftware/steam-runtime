@@ -11,20 +11,17 @@ if [ -z "${HOST_ARCH}" ]; then
     export HOST_ARCH=$(dpkg --print-architecture)
 fi
 
-if [ -z "${TARGET_ARCH}" ]; then
-    for arg in "$@"; do
-        if [ "${arg}" = "-m32" ]; then
-            TARGET_ARCH="i386"
-            break
-        elif [ "${arg}" = "-m64" ]; then
-            TARGET_ARCH="amd64"
-            break
-        fi
-    done
-    if [ -z "${TARGET_ARCH}" ]; then
-        TARGET_ARCH="${HOST_ARCH}"
+for arg in "$@"; do
+    if [ "${arg}" = "-m32" ]; then
+        TARGET_ARCH="i386"
+        break
+    elif [ "${arg}" = "-m64" ]; then
+        TARGET_ARCH="amd64"
+        break
     fi
-    export TARGET_ARCH
+done
+if [ -z "${TARGET_ARCH}" ]; then
+    export TARGET_ARCH="${HOST_ARCH}"
 fi
             
 if [ -z "${STEAM_RUNTIME}" ]; then
@@ -153,14 +150,26 @@ function update_libraries()
         esac
     done
 
+    if [ "${PROGRAM}" != "ld" ]; then
+        LINK_OPTION_PREFIX="-Wl,"
+    else
+        LINK_OPTION_PREFIX=""
+    fi
+
     if [ "${LIBRARY_PATHS["/usr/lib"]}" = "" ]; then
         append_arg "-L${STEAM_RUNTIME}/usr/lib"
-        append_arg "-Wl,-rpath-link=${STEAM_RUNTIME}/usr/lib"
+        append_arg "${LINK_OPTION_PREFIX}-rpath-link=${STEAM_RUNTIME}/usr/lib"
     fi
     if [ "${LIBRARY_PATHS["/usr/lib/${CROSSTOOL_LIBPATH}"]}" = "" ]; then
         append_arg "-L${STEAM_RUNTIME}/usr/lib/${CROSSTOOL_LIBPATH}"
-        append_arg "-Wl,-rpath-link=${STEAM_RUNTIME}/usr/lib/${CROSSTOOL_LIBPATH}"
+        append_arg "${LINK_OPTION_PREFIX}-rpath-link=${STEAM_RUNTIME}/usr/lib/${CROSSTOOL_LIBPATH}"
     fi
+}
+
+function print_search_dirs()
+{
+    EXTRA_LIBRARY_PATHS="${STEAM_RUNTIME}/usr/lib:${STEAM_RUNTIME}/usr/lib/${CROSSTOOL_LIBPATH}"
+    "${CROSSTOOL_PATH}/${CROSSTOOL_PREFIX}-${PROGRAM}" "${ARGS[@]}" | sed "s,\(libraries:.*\),\1:${EXTRA_LIBRARY_PATHS},"
 }
 
 # Add any additional command line parameters
@@ -177,6 +186,11 @@ if [ -z "${DISABLE_RUNTIME_PATH}" ]; then
             update_libraries
             ;;
         gcc|g++)
+            # Search dirs needs special handling to include runtime paths
+            if $(echo "$*" | grep -- "-print-search-dirs" >/dev/null); then
+                print_search_dirs
+                exit 0
+            fi
             update_includes
             update_libraries
             ;;
