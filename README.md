@@ -6,6 +6,9 @@ An experimental runtime environment for Steam applications
 This directory contains scripts for building a Steam runtime environment
 and tools to target that environment.
 
+The typical flow would be to just type 'make' in this directory to build
+the runtime environment.
+
 Makefile
 --------
 
@@ -17,15 +20,17 @@ To build amd64 and i386 packages:
 To update the source packages from the distribution repository:
 > make update
 
-To wipe the runtime environment and remove binary packages:
+To wipe the runtime environment and archive the build environment:
 > make clean
 
-Note that building all the packages from source takes a long time, so only
-remove binary packages if you are sure you want to rebuild everything.
+To completely clean so you have to rebuild everything:
+> make distclean
 
 
 buildroot.sh
 ------------
+
+buildroot.sh is automatically run by the Makefile.
 
 buildroot.sh is a script to build and use a chroot environment for creating
 the runtime packages and other software.
@@ -45,6 +50,8 @@ buildroot/[arch] is a directory containing the actual chroot environment for the
 
 build-runtime.sh
 ----------------
+
+build-runtime.sh is automatically run by the Makefile.
 
 build-runtime.sh is a script to download source, patch, build and install
 the runtime packages.
@@ -67,6 +74,8 @@ runtime/[arch] is the final install location for the runtime packages.
 clean-runtime.sh
 ----------------
 
+clean-runtime.sh is automatically run by the Makefile.
+
 clean-runtime.sh wipes clean the runtime environment.
 
 
@@ -76,10 +85,12 @@ build-crosstool.sh
 build-crosstool.sh builds a cross-compiler targeting the Steam runtime.
 
 x-tools/shell.sh is a script that runs an arbitrary command with paths
-set up for building with the cross-compiler and development runtime.
+set up for using the cross-compiler and development runtime.
 If a command isn't passed to shell.sh, it will run an interactive shell.
 
-You can set up paths manually for your build system by looking at the
-environment variables set in x-tools/shell.sh and scripts in x-tools/bin
+For simple builds you can set the path to x-tools/bin and it will use
+the correct compiler for your setup.
 
-
+For more complex build environments you can either run:
+	x-tools/shell.sh --arch=[i386|amd64] [command]
+or set up environment variables yourself by looking at x-tools/shell.sh
