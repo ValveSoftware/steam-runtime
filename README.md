@@ -30,7 +30,9 @@ buildroot.sh
 buildroot.sh is a script to build and use a chroot environment for creating
 the runtime packages and other software.
 
-Usage: ./buildroot.sh [--create|--update|--shell|--unmount|--clean] [--arch=arch] [command] [arguments...]
+When run with no arguments, it will run a login shell in the chroot.
+
+Usage: ./buildroot.sh [--create|--update|--unmount|--clean] [--arch=arch] [command] [arguments...]
 
 buildroot/content is a directory containing files that go into the chroot environment.
 

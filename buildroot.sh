@@ -14,13 +14,15 @@ cd "$(dirname "$0")/buildroot" || exit 2
 
 exit_usage()
 {
-    echo "Usage: $0 [--create|--update|--shell|--unmount|--archive|--clean] [--arch=<arch>] [command] [arguments...]" >&2
+    echo "This script is used to build and run programs in a chroot environment."
+    echo "With no arguments, it will run a login shell in the chroot."
+    echo "Usage: $0 [--create|--update|--unmount|--archive|--clean] [--arch=<arch>] [command] [arguments...]" >&2
     exit 1
 }
 
 while [ "$1" ]; do
     case "$1" in
-    --create|--update|--shell|--unmount|--archive|--clean)
+    --create|--update|--unmount|--archive|--clean)
         actions="$actions $1"
         ;;
     --arch=*)
