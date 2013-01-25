@@ -2,7 +2,7 @@
 #
 # This is a script which runs programs in the Steam runtime
 
-# The top level of the cross-compiler tree
+# The top level of the runtime tree
 TOP=$(cd "${0%/*}" && echo ${PWD})
 
 # Make sure we have something to run

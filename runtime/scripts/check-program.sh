@@ -2,12 +2,12 @@
 #
 # This script checks to make sure all library dependencies are in the runtime.
 
-# The top level of the cross-compiler tree
-TOP=$(cd "${0%/*}" && echo ${PWD})
+# The top level of the runtime tree
+TOP=$(cd "${0%/*}/.." && echo ${PWD})
 
 # Make sure we have something to run
 if [ "$1" = "" ]; then
-    echo "Usage: $0 executable"
+    echo "Usage: $0 executable [executable...]"
 fi
 
 STATUS=0

@@ -1,6 +1,11 @@
 
-This is a collection of software packages and scripts to build them.
-The individual packages each have their own licensing terms included with them.
+This is a collection of software packages for the Steam Linux Runtime.
+
+Each individual package has its own licensing terms, typically in:
+    <arch>/usr/share/doc/<package>/copyright.
+
+The source to the packages and the scripts used to build them is available:
+    http://media.steampowered.com/client/runtime/steam-runtime-source.tar.bz2
 
 The scripts and other documentation contributed by Valve are covered under
 the following copyright notice:

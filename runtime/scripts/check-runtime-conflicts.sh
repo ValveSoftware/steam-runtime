@@ -5,6 +5,10 @@
 # If this script ever returns no output, it's safe to merge the architecture
 # directories into a single runtime.
 
+# The top level of the runtime tree
+TOP=$(cd "${0%/*}/.." && echo ${PWD})
+cd "${TOP}"
+
 ARCHITECTURES="i386 amd64"
 OUTPUT="`mktemp`"
 
