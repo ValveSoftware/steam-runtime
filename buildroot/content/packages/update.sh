@@ -10,8 +10,10 @@ export PATH=/sbin:$PATH
 . /etc/environment; export http_proxy
 
 # Make sure locales are set up
-locale-gen en_US.UTF-8
-sudo dpkg-reconfigure locales
+if [ "$LANG" != "" ]; then
+    locale-gen $LANG
+    sudo dpkg-reconfigure locales
+fi
 
 # Upgrade environment
 sudo apt-get -y update
