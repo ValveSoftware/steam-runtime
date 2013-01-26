@@ -2,19 +2,45 @@
 #
 # Script to build and install packages into the Steam runtime
 
+# The top level directory
+TOP=$(cd "${0%/*}" && echo "${PWD}")
+cd "${TOP}"
+
+# Process command line options
+while [ "$1" != "" ]; do
+    case "$1" in
+    --runtime=*)
+        RUNTIME_PATH=$(expr "$1" : '[^=]*=\(.*\)')
+        shift
+        ;;
+    --devmode=*)
+        DEVELOPER_MODE=$(expr "$1" : '[^=]*=\(.*\)')
+        shift
+        ;;
+    -*)
+        echo "Usage: $0 [--runtime=<path>] [--devmode=<value>] [package] [package...]" >&2
+        exit 1
+        ;;
+    *)
+        break
+    esac
+done
+
 # Set this to "true" to install debug symbols and developer headers
-if [ -z "${DEVELOPER_RUNTIME}" ]; then
-    DEVELOPER_RUNTIME=true
+if [ -z "${DEVELOPER_MODE}" ]; then
+    DEVELOPER_MODE=false
 fi
 
 # This is the distribution on which we're basing this version of the runtime.
-DISTRIBUTION=precise
-ARCHITECTURE=$(dpkg --print-architecture)
-
-# The top level directory
-TOP=$(cd "${0%/*}" && echo ${PWD})
-cd "${TOP}"
-
+if [ -z "${DISTRIBUTION}" ]; then
+    DISTRIBUTION=precise
+fi
+if [ -z "${ARCHITECTURE}" ]; then
+    ARCHITECTURE=$(dpkg --print-architecture)
+fi
+if [ -z "${RUNTIME_PATH}" ]; then
+    RUNTIME_PATH="${TOP}/runtime/"
+fi
 
 valid_package()
 {
@@ -131,32 +157,30 @@ build_package()
 install_deb()
 {
     ARCHIVE=$1
-    RUNTIME=$2
+    INSTALL_PATH=$2
 
-    INSTALLTAG_DIR="${RUNTIME}/installed"
+    INSTALLTAG_DIR="${INSTALL_PATH}/installed"
     INSTALLTAG="$(basename "${ARCHIVE}" | sed -e 's,\.deb$,,' -e 's,\.ddeb$,,')"
     if [ -f "${INSTALLTAG_DIR}/${INSTALLTAG}" ]; then
         echo "INSTALLED: $(basename ${ARCHIVE})"
     else
         echo "INSTALLING: $(basename ${ARCHIVE})"
 
-        RUNTIME_TMP="${RUNTIME}/tmp"
-        rm -rf "${RUNTIME_TMP}"
-        mkdir -p "${RUNTIME_TMP}"
-        cd "${RUNTIME_TMP}"
-        ar x "${ARCHIVE}" || exit 40
-        tar xf data.tar.* -C .. || exit 40
-        cd "${TOP}"
-        rm -rf "${RUNTIME_TMP}"
-
         mkdir -p "${INSTALLTAG_DIR}"
-        touch "${INSTALLTAG_DIR}/${INSTALLTAG}"
+        INSTALL_TMP="${INSTALL_PATH}/tmp"
+        rm -rf "${INSTALL_TMP}"
+        mkdir -p "${INSTALL_TMP}"
+        cd "${INSTALL_TMP}"
+        ar x "${ARCHIVE}" || exit 40
+        tar xvf data.tar.* -C .. >"${INSTALLTAG_DIR}/${INSTALLTAG}" || exit 40
+        cd "${TOP}"
+        rm -rf "${INSTALL_TMP}"
     fi
 }
 
 process_package()
 {
-    RUNTIME="${TOP}/runtime/${ARCHITECTURE}"
+    INSTALL_PATH="${RUNTIME_PATH}/${ARCHITECTURE}"
     SOURCE_PACKAGE=$1
 
     echo ""
@@ -167,27 +191,27 @@ process_package()
     build_package ${DISTRIBUTION} ${ARCHITECTURE} ${SOURCE_PACKAGE}
     for PACKAGE in $*; do
         # Skip development packages for end-user runtime
-        if (echo "${PACKAGE}" | grep -- '-dev$' >/dev/null) && [ "${DEVELOPER_RUNTIME}" != "true" ]; then
+        if (echo "${PACKAGE}" | grep -- '-dev$' >/dev/null) && [ "${DEVELOPER_MODE}" != "true" ]; then
             continue
         fi
 
         ARCHIVE=$(echo "${TOP}"/packages/binary/${ARCHITECTURE}/${SOURCE_PACKAGE}/${PACKAGE}_*_all.deb)
         if [ -f "${ARCHIVE}" ]; then
-            install_deb "${ARCHIVE}" "${RUNTIME}"
+            install_deb "${ARCHIVE}" "${INSTALL_PATH}"
         else
             ARCHIVE=$(echo "${TOP}"/packages/binary/${ARCHITECTURE}/${SOURCE_PACKAGE}/${PACKAGE}_*_${ARCHITECTURE}.deb)
             if [ -f "${ARCHIVE}" ]; then
-                install_deb "${ARCHIVE}" "${RUNTIME}"
+                install_deb "${ARCHIVE}" "${INSTALL_PATH}"
             else
                 echo "WARNING: Missing ${ARCHIVE}" >&2
                 continue
             fi
         fi
 
-        if [ "${DEVELOPER_RUNTIME}" = "true" ]; then
+        if [ "${DEVELOPER_MODE}" = "true" ]; then
             SYMBOL_ARCHIVE=$(echo "${TOP}"/packages/binary/${ARCHITECTURE}/${SOURCE_PACKAGE}/${PACKAGE}-dbgsym_*_${ARCHITECTURE}.ddeb)
             if [ -f "${SYMBOL_ARCHIVE}" ]; then
-                install_deb "${SYMBOL_ARCHIVE}" "${RUNTIME}"
+                install_deb "${SYMBOL_ARCHIVE}" "${INSTALL_PATH}"
             fi
         fi
     done
