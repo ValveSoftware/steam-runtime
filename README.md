@@ -9,6 +9,7 @@ and tools to target that environment.
 The typical flow would be to just type 'make' in this directory to build
 the runtime environment.
 
+
 Makefile
 --------
 
@@ -82,15 +83,9 @@ clean-runtime.sh wipes clean the runtime environment.
 build-crosstool.sh
 ------------------
 
-build-crosstool.sh builds a cross-compiler targeting the Steam runtime.
+build-crosstool.sh builds a cross-compiler targeting the Steam runtime
+and puts it in x-tools.
 
-x-tools/shell.sh is a script that runs an arbitrary command with paths
-set up for using the cross-compiler and development runtime.
-If a command isn't passed to shell.sh, it will run an interactive shell.
+The file README.txt in the x-tools directory has more information about
+how to use the Steam runtime development environment.
 
-For simple builds you can set the path to x-tools/bin and it will use
-the correct compiler for your setup.
-
-For more complex build environments you can either run:
-	x-tools/shell.sh --arch=[i386|amd64] [command]
-or set up environment variables yourself by looking at x-tools/shell.sh
