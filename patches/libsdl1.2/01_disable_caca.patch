@@ -1,0 +1,12 @@
+diff -ruN libsdl1.2-1.2.14/debian/rules libsdl1.2-1.2.14.new/debian/rules
+--- libsdl1.2-1.2.14/debian/rules	2011-12-29 17:38:55.000000000 -0800
++++ libsdl1.2-1.2.14.new/debian/rules	2013-01-25 21:22:50.743097140 -0800
+@@ -9,7 +9,7 @@
+             --disable-nas --disable-esd --disable-arts \
+             --disable-alsa-shared --disable-pulseaudio-shared \
+             --disable-x11-shared
+-all_confflags = --enable-video-caca
++all_confflags = --disable-video-caca
+ udeb_confflags = --enable-video-directfb \
+                  --disable-video-x11 \
+                  --disable-dga --disable-video-photon \
