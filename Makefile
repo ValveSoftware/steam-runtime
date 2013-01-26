@@ -34,9 +34,9 @@ archive-customer-runtime:
 	cp -a runtime/* tmp/steam-runtime
 	make RUNTIME_PATH="$(CURDIR)/tmp/steam-runtime" DEVELOPER_MODE=false || exit 1
 	@echo ""
-	@echo "Creating $(ARCHIVE_OUTPUT_DIR)/steam-runtime.tar.bz2"
+	@echo "Creating $(ARCHIVE_OUTPUT_DIR)/steam-runtime-bin.tar.bz2"
 	mkdir -p "$(ARCHIVE_OUTPUT_DIR)"
-	(cd tmp; tar jcf "$(ARCHIVE_OUTPUT_DIR)"/steam-runtime.tar.bz2 steam-runtime) || exit 2
+	(cd tmp; tar jcf "$(ARCHIVE_OUTPUT_DIR)"/steam-runtime-bin.tar.bz2 steam-runtime) || exit 2
 	@if [ -d tmp ]; then chmod u+w -R tmp; rm -rf tmp; fi
 
 archive-developer-runtime:
