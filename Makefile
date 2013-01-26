@@ -63,7 +63,7 @@ archive-complete-runtime:
 	@echo ""
 	@echo "Creating $(ARCHIVE_COMPLETE_RUNTIME)"
 	mkdir -p "$(ARCHIVE_OUTPUT_DIR)"
-	(cd tmp; tar acf "$(ARCHIVE_COMPLETE_RUNTIME)" steam-runtime) || exit 2
+	(cd ..; tar acf "$(ARCHIVE_COMPLETE_RUNTIME)" steam-runtime) || exit 2
 
 distclean: clean
 	@rm -rf packages
