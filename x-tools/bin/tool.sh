@@ -24,17 +24,17 @@ if [ -z "${TARGET_ARCH}" ]; then
     export TARGET_ARCH="${HOST_ARCH}"
 fi
             
-if [ -z "${STEAM_RUNTIME}" ]; then
+if [ -z "${STEAM_RUNTIME_ROOT}" ]; then
     if [ -d "${TOP}/runtime/${TARGET_ARCH}" ]; then
-        STEAM_RUNTIME="${TOP}/runtime/${TARGET_ARCH}"
+        STEAM_RUNTIME_ROOT="${TOP}/runtime/${TARGET_ARCH}"
     elif [ -d "${TOP}/../runtime/${TARGET_ARCH}" ]; then
-        STEAM_RUNTIME="${TOP}/../runtime/${TARGET_ARCH}"
+        STEAM_RUNTIME_ROOT="${TOP}/../runtime/${TARGET_ARCH}"
     fi
-    if [ ! -d "${STEAM_RUNTIME}" ]; then
-        echo "Couldn't find runtime directory ${STEAM_RUNTIME}" >&2
+    if [ ! -d "${STEAM_RUNTIME_ROOT}" ]; then
+        echo "Couldn't find runtime directory ${STEAM_RUNTIME_ROOT}" >&2
         exit 2
     fi
-    export STEAM_RUNTIME
+    export STEAM_RUNTIME_ROOT
 fi
 
 case "${TARGET_ARCH}" in
@@ -90,7 +90,7 @@ function update_includes()
             path="${ARGS[$(expr $i + 1)]}"
             case "${path}" in
             /usr/include*|/usr/lib*)
-                ARGS[$(expr $i + 1)]="${STEAM_RUNTIME}${path}"
+                ARGS[$(expr $i + 1)]="${STEAM_RUNTIME_ROOT}${path}"
                 ;;
             esac
             INCLUDE_PATHS["${path}"]=true
@@ -99,7 +99,7 @@ function update_includes()
             path="$(expr "${ARGS[$i]}" : "-I\(.*\)")"
             case "${path}" in
             /usr/include*|/usr/lib*)
-                ARGS[$i]="-I${STEAM_RUNTIME}${path}"
+                ARGS[$i]="-I${STEAM_RUNTIME_ROOT}${path}"
                 ;;
             esac
             INCLUDE_PATHS["${path}"]=true
@@ -108,7 +108,7 @@ function update_includes()
     done
 
     if [ "${INCLUDE_PATHS["/usr/include"]}" = "" ]; then
-        append_arg "-I${STEAM_RUNTIME}/usr/include"
+        append_arg "-I${STEAM_RUNTIME_ROOT}/usr/include"
     fi
 }
 
@@ -122,8 +122,8 @@ function update_libraries()
             path="${ARGS[$(expr $i + 1)]}"
             case "${path}" in
             /usr/lib*)
-                ARGS[$(expr $i + 1)]="${STEAM_RUNTIME}${path}"
-                insert_arg $(expr $i + 2) "-Wl,-rpath-link=${STEAM_RUNTIME}${path}"
+                ARGS[$(expr $i + 1)]="${STEAM_RUNTIME_ROOT}${path}"
+                insert_arg $(expr $i + 2) "-Wl,-rpath-link=${STEAM_RUNTIME_ROOT}${path}"
                 ;;
             esac
             LIBRARY_PATHS["${path}"]=true
@@ -132,8 +132,8 @@ function update_libraries()
             path="$(expr "${ARGS[$i]}" : "-L\(.*\)")"
             case "${path}" in
             /usr/lib*)
-                ARGS[$i]="-L${STEAM_RUNTIME}${path}"
-                insert_arg $(expr $i + 1) "-Wl,-rpath-link=${STEAM_RUNTIME}${path}"
+                ARGS[$i]="-L${STEAM_RUNTIME_ROOT}${path}"
+                insert_arg $(expr $i + 1) "-Wl,-rpath-link=${STEAM_RUNTIME_ROOT}${path}"
                 ;;
             esac
             LIBRARY_PATHS["${path}"]=true
@@ -143,7 +143,7 @@ function update_libraries()
             path="$(expr "${ARGS[$i]}" : "[^=]*=\(.*\)")"
             case "${path}" in
             /usr/lib*)
-                ARGS[$i]="${option}=${STEAM_RUNTIME}${path}"
+                ARGS[$i]="${option}=${STEAM_RUNTIME_ROOT}${path}"
                 ;;
             esac
             ;;
@@ -157,18 +157,18 @@ function update_libraries()
     fi
 
     if [ "${LIBRARY_PATHS["/usr/lib"]}" = "" ]; then
-        append_arg "-L${STEAM_RUNTIME}/usr/lib"
-        append_arg "${LINK_OPTION_PREFIX}-rpath-link=${STEAM_RUNTIME}/usr/lib"
+        append_arg "-L${STEAM_RUNTIME_ROOT}/usr/lib"
+        append_arg "${LINK_OPTION_PREFIX}-rpath-link=${STEAM_RUNTIME_ROOT}/usr/lib"
     fi
     if [ "${LIBRARY_PATHS["/usr/lib/${CROSSTOOL_LIBPATH}"]}" = "" ]; then
-        append_arg "-L${STEAM_RUNTIME}/usr/lib/${CROSSTOOL_LIBPATH}"
-        append_arg "${LINK_OPTION_PREFIX}-rpath-link=${STEAM_RUNTIME}/usr/lib/${CROSSTOOL_LIBPATH}"
+        append_arg "-L${STEAM_RUNTIME_ROOT}/usr/lib/${CROSSTOOL_LIBPATH}"
+        append_arg "${LINK_OPTION_PREFIX}-rpath-link=${STEAM_RUNTIME_ROOT}/usr/lib/${CROSSTOOL_LIBPATH}"
     fi
 }
 
 function print_search_dirs()
 {
-    EXTRA_LIBRARY_PATHS="${STEAM_RUNTIME}/usr/lib:${STEAM_RUNTIME}/usr/lib/${CROSSTOOL_LIBPATH}"
+    EXTRA_LIBRARY_PATHS="${STEAM_RUNTIME_ROOT}/usr/lib:${STEAM_RUNTIME_ROOT}/usr/lib/${CROSSTOOL_LIBPATH}"
     "${CROSSTOOL_PATH}/${CROSSTOOL_PREFIX}-${PROGRAM}" "${ARGS[@]}" | sed "s,\(libraries:.*\),\1:${EXTRA_LIBRARY_PATHS},"
 }
 

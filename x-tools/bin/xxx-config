@@ -4,12 +4,12 @@
 
 PROGRAM=$(basename "$0")
 
-if [ -z "${STEAM_RUNTIME}" ]; then
+if [ -z "${STEAM_RUNTIME_ROOT}" ]; then
     echo "Missing development environment variables, did you run shell.sh?"
     exit 1
 fi
 
 # Run the tool...
-"${STEAM_RUNTIME}/usr/bin/${PROGRAM}" "$@" | sed -e "s,-I/,-I${STEAM_RUNTIME}/,g" -e "s,-L/,-L${STEAM_RUNTIME}/,g" 
+"${STEAM_RUNTIME_ROOT}/usr/bin/${PROGRAM}" "$@" | sed -e "s,-I/,-I${STEAM_RUNTIME_ROOT}/,g" -e "s,-L/,-L${STEAM_RUNTIME_ROOT}/,g" 
 
 # vi: ts=4 sw=4 expandtab

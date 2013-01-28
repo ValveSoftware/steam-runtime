@@ -49,18 +49,18 @@ i386|amd64)
 esac
 
 # The top level of the Steam runtime tree
-if [ -z "${STEAM_RUNTIME}" ]; then
+if [ -z "${STEAM_RUNTIME_ROOT}" ]; then
     if [ -d "${TOP}/runtime/${TARGET_ARCH}" ]; then
-        STEAM_RUNTIME="${TOP}/runtime/${TARGET_ARCH}"
+        STEAM_RUNTIME_ROOT="${TOP}/runtime/${TARGET_ARCH}"
     elif [ -d "${TOP}/../runtime/${TARGET_ARCH}" ]; then
-        STEAM_RUNTIME="${TOP}/../runtime/${TARGET_ARCH}"
+        STEAM_RUNTIME_ROOT="${TOP}/../runtime/${TARGET_ARCH}"
     fi
 fi
-if [ ! -d "${STEAM_RUNTIME}" ]; then
-    echo "Couldn't find runtime directory ${STEAM_RUNTIME}" >&2
+if [ ! -d "${STEAM_RUNTIME_ROOT}" ]; then
+    echo "Couldn't find runtime directory ${STEAM_RUNTIME_ROOT}" >&2
     exit 2
 fi
-export STEAM_RUNTIME
+export STEAM_RUNTIME_ROOT
 
 # Set up environment variables for this build
 export PATH="${TOP}/bin:$PATH"

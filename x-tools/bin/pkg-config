@@ -2,7 +2,7 @@
 #
 # This is a script which runs tools set up for the Steam runtime
 
-if [ -z "${STEAM_RUNTIME}" ]; then
+if [ -z "${STEAM_RUNTIME_ROOT}" ]; then
     echo "Missing development environment variables, did you run shell.sh?"
     exit 1
 fi
@@ -20,10 +20,10 @@ amd64)
     ;;
 esac
 
-PKG_CONFIG_PATH="${STEAM_RUNTIME}/usr/lib/${CROSSTOOL_LIBPATH}/pkgconfig:${STEAM_RUNTIME}/usr/lib/pkgconfig:${STEAM_RUNTIME}/usr/share/pkgconfig"
+PKG_CONFIG_PATH="${STEAM_RUNTIME_ROOT}/usr/lib/${CROSSTOOL_LIBPATH}/pkgconfig:${STEAM_RUNTIME_ROOT}/usr/lib/pkgconfig:${STEAM_RUNTIME_ROOT}/usr/share/pkgconfig"
 export PKG_CONFIG_PATH
 
 # Run the tool...
-/usr/bin/pkg-config "$@" | sed -e "s,-I/,-I${STEAM_RUNTIME}/,g" -e "s,-L/,-L${STEAM_RUNTIME}/,g" 
+/usr/bin/pkg-config "$@" | sed -e "s,-I/,-I${STEAM_RUNTIME_ROOT}/,g" -e "s,-L/,-L${STEAM_RUNTIME_ROOT}/,g" 
 
 # vi: ts=4 sw=4 expandtab
