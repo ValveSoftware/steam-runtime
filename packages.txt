@@ -21,7 +21,7 @@ expat		libexpat1 libexpat1-dev
 flac		libflac8 libflac-dev
 fontconfig	libfontconfig1 libfontconfig1-dev
 freetype	libfreetype6 libfreetype6-dev
-gcc-4.6		libgcc1 libstdc++6 libstdc++6-4.6-dev
+gcc-4.6		libgcc1 libstdc++6 libstdc++6-4.6-dev gcc-4.6-base
 gdk-pixbuf	libgdk-pixbuf2.0-0 libgdk-pixbuf2.0-dev
 glib2.0		libglib2.0-0 libglib2.0-dev
 gnutls26	libgnutls26 libgnutls-dev
@@ -31,6 +31,7 @@ keyutils	libkeyutils1 libkeyutils-dev
 krb5		libkrb5-3 libkrb5-dev libk5crypto3 libkrb5support0 libgssapi-krb5-2
 libappindicator	libappindicator1 libappindicator-dev
 libasyncns	libasyncns0 libasyncns-dev
+libcanberra	libcanberra0 libcanberra-dev libcanberra-gtk0 libcanberra-gtk-dev libcanberra-gtk-module
 libdbusmenu	libdbusmenu-glib4 libdbusmenu-gtk4
 libffi		libffi6 libffi-dev
 libgcrypt11	libgcrypt11 libgcrypt11-dev
@@ -43,6 +44,7 @@ libselinux	libselinux1 libselinux1-dev
 libsndfile	libsndfile1 libsndfile1-dev
 libtasn1-3	libtasn1-3 libtasn1-3-dev
 libtheora	libtheora0 libtheora-dev
+libtool		libltdl7 libltdl-dev
 libvorbis	libvorbis0a libvorbisfile3 libvorbisenc2 libvorbis-dev
 libx11		libx11-6 libx11-dev libx11-xcb1 libx11-xcb-dev
 libxau		libxau6 libxau-dev
@@ -69,6 +71,7 @@ pcre3		libpcre3 libpcre3-dev
 pixman		libpixman-1-0 libpixman-1-dev
 pulseaudio	libpulse0 libpulse-dev
 tcp-wrappers	libwrap0 libwrap0-dev
+tdb		libtdb1 libtdb-dev
 udev		libudev0 libudev-dev
 util-linux	libuuid1 uuid-dev
 x11proto-core	x11proto-core-dev
