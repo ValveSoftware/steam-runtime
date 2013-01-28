@@ -66,10 +66,10 @@ build_package()
     mkdir -p "${DIR}"; cd "${DIR}"
 
     # Get the source
-    if [ ! -f .downloaded ]; then
+    if [ ! -f downloaded ]; then
         echo "DOWNLOADING: ${PACKAGE}"
         apt-get source --download-only ${PACKAGE} || exit 10
-        touch .downloaded
+        touch downloaded
     fi
 
     # Make sure the package description exists
@@ -92,7 +92,7 @@ build_package()
 
     # Build
     BUILD="${TOP}/packages/binary/${ARCHITECTURE}/${PACKAGE}"
-    BUILDTAG="${BUILD}/.built"
+    BUILDTAG="${BUILD}/built"
     mkdir -p ${BUILD}
     if [ ! -f "${BUILDTAG}" ] || ! cmp "${BUILDTAG}" "${CHECKSUM}" >/dev/null; then
         echo "BUILDING: ${PACKAGE} for ${ARCHITECTURE}"
