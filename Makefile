@@ -40,6 +40,7 @@ archive-customer-runtime:
 	make clean-runtime
 	mkdir -p tmp/$(CUSTOMER_RUNTIME)
 	cp -a runtime/* tmp/$(CUSTOMER_RUNTIME)
+	chmod u+w tmp/$(CUSTOMER_RUNTIME)/README.txt
 	sed "s,http://media.steampowered.com/client/runtime/.*,http://media.steampowered.com/client/runtime/$(COMPLETE_RUNTIME).$(ARCHIVE_EXT)," <runtime/README.txt >tmp/$(CUSTOMER_RUNTIME)/README.txt
 	make RUNTIME_PATH="$(CURDIR)/tmp/$(CUSTOMER_RUNTIME)" DEVELOPER_MODE=false || exit 1
 	@echo ""
@@ -53,6 +54,7 @@ archive-developer-runtime:
 	make clean-runtime
 	mkdir -p tmp/$(DEVELOPER_RUNTIME)
 	cp -a x-tools/* runtime tmp/$(DEVELOPER_RUNTIME)
+	chmod u+w tmp/$(DEVELOPER_RUNTIME)/runtime/README.txt
 	sed "s,http://media.steampowered.com/client/runtime/.*,http://media.steampowered.com/client/runtime/$(COMPLETE_RUNTIME).$(ARCHIVE_EXT)," <runtime/README.txt >tmp/$(DEVELOPER_RUNTIME)/runtime/README.txt
 	make RUNTIME_PATH="$(CURDIR)/tmp/$(DEVELOPER_RUNTIME)/runtime" DEVELOPER_MODE=true || exit 1
 	@echo ""
