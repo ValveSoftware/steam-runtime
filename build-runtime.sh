@@ -94,7 +94,7 @@ build_package()
     BUILD="${TOP}/packages/binary/${ARCHITECTURE}/${PACKAGE}"
     BUILDTAG="${BUILD}/built"
     mkdir -p ${BUILD}
-    if [ ! -f "${BUILDTAG}" ] || ! cmp "${BUILDTAG}" "${CHECKSUM}" >/dev/null; then
+    if [ ! -f "${BUILDTAG}" ] || ! cmp "${BUILDTAG}" "${CHECKSUM}" >/dev/null 2>&1; then
         echo "BUILDING: ${PACKAGE} for ${ARCHITECTURE}"
 
         # Make sure we have build dependencies
@@ -129,14 +129,14 @@ build_package()
         mkdir -p "${OLD}"
         for file in "${BUILD}"/*.*; do
             if [ -f "${file}" ]; then
-                mv -v "${file}" "${OLD}/"
+                mv -fv "${file}" "${OLD}/"
             fi
         done
 
         # Move the binary packages into place
         for file in *.changes *.deb *.ddeb *.udeb; do
             if [ -f "${file}" ]; then
-                mv -v "${file}" "${BUILD}/${file}"
+                mv -fv "${file}" "${BUILD}/${file}"
             fi
         done
 
