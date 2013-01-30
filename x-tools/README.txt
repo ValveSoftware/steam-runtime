@@ -2,21 +2,30 @@
 This is a set of tools targeting the Steam Linux Runtime.
 
 
-Building
---------
+Simple Builds
+-------------
 
-shell.sh is a script that runs an arbitrary command with paths set up
-for using the cross-compiler and development runtime.
-If a command isn't passed to shell.sh, it will run an interactive shell.
+Just add the bin directory to your PATH.
 
-For simple builds you can set the path to the bin directory and it will use
-the correct compiler for your setup.
+The bin directory contains scripts which wrap the compiler with the
+appropriate flags for the runtime, so if your project is already set
+up with gcc or g++, all you have to do is add the bin directory to
+your path.
 
-For more complex build environments you can either run:
-	shell.sh --arch=[i386|amd64] [command]
-or you can look at shell.sh and the scripts in the bin directory and set
-things up manually.  Using the scripts provided is recommended since they
-take care of some surprising edge cases in tool configuration.
+
+Complex Builds
+--------------
+
+If your build process uses configure scripts or pkg-config, you can use
+shell.sh to set up the environment for building with the runtime, or just
+look to see what environment variables it sets and use them directly in
+your build process.
+
+For example to run a shell targeting 32-bit architecture:
+	shell.sh --arch=i386
+
+For example to run a shell targeting 64-bit architecture:
+	shell.sh --arch=amd64
 
 
 Testing
