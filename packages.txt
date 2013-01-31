@@ -9,22 +9,36 @@
 # You can get the source package for a given binary package with:
 #	apt-cache showsrc package
 
+# Newer versions of ld.so crash trying load our libc, and it turns out that
+# newer versions of libc are compatible with our libraries, so for now we
+# won't include libc at all.
+#eglibc		libc6 libc-bin
+
+# If we don't have our own libc, I think we don't need our own executables.
+# There may be issues with system executables linking to the host libc and
+# some of our libraries, so we'll have to keep an eye out for that.
+#bash		bash
+#coreutils	coreutils
+#dash		dash
+#sed		sed
+#xdg-utils	xdg-utils
+
+#
+# The complete package list
+#
+
 acl		libacl1 libacl1-dev
 alsa-lib	libasound2 libasound2-dev
 atk1.0		libatk1.0-0 libatk1.0-dev
 attr		libattr1 libattr1-dev
 avahi		libavahi-common3 libavahi-common-dev libavahi-client3 libavahi-client-dev
-bash		bash
 bzip2		libbz2-1.0 libbz2-dev
 cairo		libcairo2 libcairo2-dev
-coreutils	coreutils
 cups		libcups2 libcups2-dev
 curl		libcurl3 libcurl3-gnutls libcurl4-gnutls-dev
 cyrus-sasl2	libsasl2-2 libsasl2-dev
-dash		dash
 dbus		libdbus-1-3 libdbus-1-dev
 e2fsprogs	libcomerr2 comerr-dev
-eglibc		libc6 libc-bin
 expat		libexpat1 libexpat1-dev
 flac		libflac8 libflac-dev
 fltk1.1		libfltk1.1 libfltk1.1-dev
@@ -115,7 +129,6 @@ schroedinger	libschroedinger-1.0-0 libschroedinger-dev
 sdl-image1.2	libsdl-image1.2	libsdl-image1.2-dev
 sdl-mixer1.2	libsdl-mixer1.2 libsdl-mixer1.2-dev
 sdl-ttf2.0	libsdl-ttf2.0-0 libsdl-ttf2.0-dev
-sed		sed
 speex		libspeex1 libspeex-dev
 sqlite3		libsqlite3-0 libsqlite3-dev
 tbb		libtbb2 libtbb-dev
@@ -132,6 +145,5 @@ x11proto-render	x11proto-render-dev
 x11proto-scrnsaver	x11proto-scrnsaver-dev
 x11proto-xext	x11proto-xext-dev
 x11proto-xf86vidmode	x11proto-xf86vidmode-dev
-xdg-utils	xdg-utils
 xft		libxft2 libxft-dev
 zlib		zlib1g zlib1g-dev
