@@ -176,9 +176,9 @@ action_update()
 {
     # Copy in initial content
     for file in /etc/passwd /etc/group; do
-        cp -av "$file" "$root/$file"
+        cp -afv "$file" "$root/$file"
     done
-    cp -av content/* "$root/"
+    cp -afv content/* "$root/"
 
     # Add sources for apt-get
     APT_SOURCES="${root}/etc/apt/sources.list"
