@@ -58,7 +58,7 @@ heimdal		libasn1-8-heimdal libgssapi3-heimdal libhcrypto4-heimdal libheimbase1-h
 jasper		libjasper1 libjasper-dev
 json-c		libjson0 libjson0-dev
 keyutils	libkeyutils1 libkeyutils-dev
-krb5		libkrb5-3 libkrb5-dev libk5crypto3 libkrb5support0 libgssapi-krb5-2
+krb5		libkrb5-3 libkrb5-dev libk5crypto3 libkrb5support0 libgssapi-krb5-2 krb5-multidev
 lcms2		liblcms2-2 liblcms2-dev
 libappindicator	libappindicator1 libappindicator-dev
 libasyncns	libasyncns0 libasyncns-dev

@@ -191,7 +191,7 @@ process_package()
     build_package ${DISTRIBUTION} ${ARCHITECTURE} ${SOURCE_PACKAGE}
     for PACKAGE in $*; do
         # Skip development packages for end-user runtime
-        if (echo "${PACKAGE}" | grep -- '-dev$' >/dev/null) && [ "${DEVELOPER_MODE}" != "true" ]; then
+        if (echo "${PACKAGE}" | egrep -- '-dev$|-multidev$' >/dev/null) && [ "${DEVELOPER_MODE}" != "true" ]; then
             continue
         fi
 
@@ -248,5 +248,8 @@ else
     echo "======================================================="
     echo ""
 fi
+
+# Fix up the runtime
+"${RUNTIME_PATH}/scripts/fix-symlinks.sh"
 
 # vi: ts=4 sw=4 expandtab
