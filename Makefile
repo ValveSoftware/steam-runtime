@@ -32,7 +32,7 @@ clean-buildroot:
 
 clean: clean-log clean-runtime clean-buildroot
 
-archive: archive-customer-runtime archive-developer-runtime archive-complete-runtime
+archives: archive-customer-runtime archive-developer-runtime archive-complete-runtime
 	@ls -l "$(ARCHIVE_OUTPUT_DIR)"
 
 archive-customer-runtime:
