@@ -29,6 +29,7 @@
 
 acl		libacl1 libacl1-dev
 alsa-lib	libasound2 libasound2-dev
+alsa-plugins	libasound2-plugins
 atk1.0		libatk1.0-0 libatk1.0-dev
 attr		libattr1 libattr1-dev
 avahi		libavahi-common3 libavahi-common-dev libavahi-client3 libavahi-client-dev
@@ -55,6 +56,7 @@ gtk+2.0		libgtk2.0-common libgtk2.0-0 libgtk2.0-dev
 gtk2-engines-murrine	gtk2-engines-murrine
 gtk2-engines-pixbuf	gtk2-engines-pixbuf
 heimdal		libasn1-8-heimdal libgssapi3-heimdal libhcrypto4-heimdal libheimbase1-heimdal libheimntlm0-heimdal libhx509-5-heimdal libkrb5-26-heimdal libroken18-heimdal libwind0-heimdal
+jack-audio-connection-kit	libjack0 libjack-dev
 jasper		libjasper1 libjasper-dev
 json-c		libjson0 libjson0-dev
 keyutils	libkeyutils1 libkeyutils-dev
@@ -81,7 +83,7 @@ libmikmod	libmikmod2 libmikmod2-dev
 libogg		libogg0 libogg-dev
 #libogre-1.7.4	libogre-1.7.4 libogre-dev
 libpng		libpng12-0 libpng12-dev
-libpng		libpng12-0 libpng12-dev
+libsamplerate	libsamplerate0 libsamplerate0-dev
 libsdl1.2	libsdl1.2debian libsdl1.2-dev
 libselinux	libselinux1 libselinux1-dev
 libsm		libsm6 libsm-dev
@@ -131,7 +133,7 @@ schroedinger	libschroedinger-1.0-0 libschroedinger-dev
 sdl-image1.2	libsdl-image1.2	libsdl-image1.2-dev
 sdl-mixer1.2	libsdl-mixer1.2 libsdl-mixer1.2-dev
 sdl-ttf2.0	libsdl-ttf2.0-0 libsdl-ttf2.0-dev
-speex		libspeex1 libspeex-dev
+speex		libspeex1 libspeex-dev libspeexdsp1 libspeexdsp-dev
 sqlite3		libsqlite3-0 libsqlite3-dev
 tbb		libtbb2 libtbb-dev
 tcp-wrappers	libwrap0 libwrap0-dev
