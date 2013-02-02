@@ -136,7 +136,7 @@ build_package()
         # Move the binary packages into place
         for file in *.changes *.deb *.ddeb *.udeb; do
             if [ -f "${file}" ]; then
-                mv -fv "${file}" "${BUILD}/${file}"
+                mv -v "${file}" "${BUILD}/${file}" || exit 40
             fi
         done
 
@@ -144,7 +144,7 @@ build_package()
         rm -rf "${PACKAGE_DIR}"
 
         # Copy the checksum to mark the build complete
-        cp "${CHECKSUM}" "${BUILDTAG}"
+        cp "${CHECKSUM}" "${BUILDTAG}" || exit 40
     else
         echo "${PACKAGE} for ${ARCHITECTURE} is up to date"
     fi
