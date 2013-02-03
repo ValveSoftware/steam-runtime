@@ -1,0 +1,31 @@
+diff -ruN pulseaudio-1.1/src/pulsecore/core-util.c pulseaudio-1.1.new/src/pulsecore/core-util.c
+--- pulseaudio-1.1/src/pulsecore/core-util.c	2011-10-20 05:54:16.000000000 -0700
++++ pulseaudio-1.1.new/src/pulsecore/core-util.c	2013-02-03 10:51:17.016891741 -0800
+@@ -1580,13 +1580,26 @@
+     if ((d = getenv("PULSE_RUNTIME_PATH"))) {
+ 
+         if (pa_make_secure_dir(d, m, (uid_t) -1, (gid_t) -1) < 0) {
+-            pa_log_error("Failed to create secure directory: %s", pa_cstrerror(errno));
++            pa_log_error("Failed to create secure directory (%s): %s", d, pa_cstrerror(errno));
+             goto fail;
+         }
+ 
+         return pa_xstrdup(d);
+     }
+ 
++    /* Use the XDG standard for the runtime directory. */
++    d = getenv("XDG_RUNTIME_DIR");
++    if (d) {
++        k = pa_sprintf_malloc("%s" PA_PATH_SEP "pulse", d);
++
++        if (pa_make_secure_dir(k, m, (uid_t) -1, (gid_t) -1) < 0) {
++            pa_log_error("Failed to create secure directory (%s): %s", k, pa_cstrerror(errno));
++            goto fail;
++        }
++
++        return k;
++    }
++
+     if (!(d = get_pulse_home()))
+         goto fail;
+ 
