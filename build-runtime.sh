@@ -31,10 +31,6 @@ if [ -z "${DEVELOPER_MODE}" ]; then
     DEVELOPER_MODE=false
 fi
 
-# This is the distribution on which we're basing this version of the runtime.
-if [ -z "${DISTRIBUTION}" ]; then
-    DISTRIBUTION=precise
-fi
 if [ -z "${ARCHITECTURE}" ]; then
     ARCHITECTURE=$(dpkg --print-architecture)
 fi
@@ -58,9 +54,8 @@ valid_package()
 
 build_package()
 {
-    DISTRIBUTION=$1
-    ARCHITECTURE=$2
-    PACKAGE=$3
+    ARCHITECTURE=$1
+    PACKAGE=$2
 
     DIR="${TOP}/packages/source/${PACKAGE}"
     mkdir -p "${DIR}"; cd "${DIR}"
@@ -188,7 +183,7 @@ process_package()
     shift
     #sleep 1
 
-    build_package ${DISTRIBUTION} ${ARCHITECTURE} ${SOURCE_PACKAGE}
+    build_package ${ARCHITECTURE} ${SOURCE_PACKAGE}
     for PACKAGE in $*; do
         # Skip development packages for end-user runtime
         if (echo "${PACKAGE}" | egrep -- '-dev$|-multidev$' >/dev/null) && [ "${DEVELOPER_MODE}" != "true" ]; then
