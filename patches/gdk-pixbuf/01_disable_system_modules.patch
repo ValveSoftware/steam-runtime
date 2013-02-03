@@ -1,0 +1,66 @@
+diff -ruN gdk-pixbuf-2.26.1/debian/libgdk-pixbuf2.0-0-udeb.install gdk-pixbuf-2.26.1.new/debian/libgdk-pixbuf2.0-0-udeb.install
+--- gdk-pixbuf-2.26.1/debian/libgdk-pixbuf2.0-0-udeb.install	2011-07-15 15:00:26.000000000 -0700
++++ gdk-pixbuf-2.26.1.new/debian/libgdk-pixbuf2.0-0-udeb.install	2013-02-03 10:30:43.684871749 -0800
+@@ -1,3 +1,2 @@
+ usr/lib/*/*.so.* usr/lib
+-usr/lib/*/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-png.so
+ usr/share/locale
+diff -ruN gdk-pixbuf-2.26.1/debian/rules gdk-pixbuf-2.26.1.new/debian/rules
+--- gdk-pixbuf-2.26.1/debian/rules	2012-02-05 19:26:11.000000000 -0800
++++ gdk-pixbuf-2.26.1.new/debian/rules	2013-02-03 10:33:36.424874550 -0800
+@@ -8,6 +8,7 @@
+ DEB_MAKE_CHECK_TARGET = check
+ DEB_CONFIGURE_EXTRA_FLAGS := --with-libjasper \
+                              --with-x11 \
++                             --with-included-loaders="icns,pcx,ras,tga,png,pnm,wbmp,xbm,xpm,qtif,bmp,ico,jpeg,tiff" \
+                              --enable-introspection \
+                              --libdir=\$${prefix}/lib/$(DEB_HOST_MULTIARCH)
+ 
+diff -ruN gdk-pixbuf-2.26.1/gdk-pixbuf/gdk-pixbuf-io.c gdk-pixbuf-2.26.1.new/gdk-pixbuf/gdk-pixbuf-io.c
+--- gdk-pixbuf-2.26.1/gdk-pixbuf/gdk-pixbuf-io.c	2012-02-04 15:21:30.000000000 -0800
++++ gdk-pixbuf-2.26.1.new/gdk-pixbuf/gdk-pixbuf-io.c	2013-02-03 10:30:43.684871749 -0800
+@@ -391,8 +391,10 @@
+ {
+   gchar *result = g_strdup (g_getenv ("GDK_PIXBUF_MODULE_FILE"));
+ 
++#if 0 /* For the Steam runtime we don't want to load system modules */
+   if (!result)
+           result = g_build_filename (GDK_PIXBUF_LIBDIR, "gdk-pixbuf-2.0", GDK_PIXBUF_BINARY_VERSION, "loaders.cache", NULL);
++#endif
+ 
+   return result;
+ }
+diff -ruN gdk-pixbuf-2.26.1/gdk-pixbuf/io-jpeg.c gdk-pixbuf-2.26.1.new/gdk-pixbuf/io-jpeg.c
+--- gdk-pixbuf-2.26.1/gdk-pixbuf/io-jpeg.c	2011-08-15 18:45:14.000000000 -0700
++++ gdk-pixbuf-2.26.1.new/gdk-pixbuf/io-jpeg.c	2013-02-03 10:33:10.772874130 -0800
+@@ -277,9 +277,9 @@
+ }
+ 
+ 
+-const char leth[]  = {0x49, 0x49, 0x2a, 0x00};	// Little endian TIFF header
+-const char beth[]  = {0x4d, 0x4d, 0x00, 0x2a};	// Big endian TIFF header
+-const char types[] = {0x00, 0x01, 0x01, 0x02, 0x04, 0x08, 0x00, 
++static const char leth[]  = {0x49, 0x49, 0x2a, 0x00};	// Little endian TIFF header
++static const char beth[]  = {0x4d, 0x4d, 0x00, 0x2a};	// Big endian TIFF header
++static const char types[] = {0x00, 0x01, 0x01, 0x02, 0x04, 0x08, 0x00, 
+ 		      0x08, 0x00, 0x04, 0x08}; 	// size in bytes for EXIF types
+  
+ #define DE_ENDIAN16(val) endian == G_BIG_ENDIAN ? GUINT16_FROM_BE(val) : GUINT16_FROM_LE(val)
+@@ -1037,7 +1037,7 @@
+ 	GError            **error;
+ } ToFunctionDestinationManager;
+ 
+-void
++static void
+ to_callback_init (j_compress_ptr cinfo)
+ {
+ 	ToFunctionDestinationManager *destmgr;
+@@ -1086,7 +1086,7 @@
+ 	return TRUE;
+ }
+ 
+-void
++static void
+ to_callback_terminate (j_compress_ptr cinfo)
+ {
+ 	ToFunctionDestinationManager *destmgr;
