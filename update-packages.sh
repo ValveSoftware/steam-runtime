@@ -6,6 +6,8 @@
 TOP=$(cd "${0%/*}" && echo ${PWD})
 cd "${TOP}"
 
+# These are custom packages that can't be automatically downloaded
+CUSTOM_PACKAGES="dummygl jasper"
 
 valid_package()
 {
@@ -26,6 +28,14 @@ update_package()
     PACKAGE=$1
 
     DIR="${TOP}/packages/source/${PACKAGE}"
+
+    # Check for custom packages
+    for CUSTOM in ${CUSTOM_PACKAGES}; do
+        if [ "${PACKAGE}" = "${CUSTOM}" ]; then
+            echo "CUSTOM: ${PACKAGE}"
+            return
+        fi
+    done
 
     echo "CHECKING: ${PACKAGE}"
 
