@@ -245,6 +245,6 @@ else
 fi
 
 # Fix up the runtime
-"${RUNTIME_PATH}/scripts/fix-symlinks.sh"
+"${RUNTIME_PATH}/scripts/fix-symlinks.sh" "${ARCHITECTURE}"
 
 # vi: ts=4 sw=4 expandtab

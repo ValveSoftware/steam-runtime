@@ -5,7 +5,11 @@
 # The top level of the runtime tree
 TOP=$(cd "${0%/*}/.." && echo ${PWD})
 
-ARCHITECTURES="amd64 i386"
+if [ "$1" ]; then
+    ARCHITECTURES="$1"
+else
+    ARCHITECTURES="amd64 i386"
+fi
 
 STATUS=0
 for ARCH in ${ARCHITECTURES}; do
