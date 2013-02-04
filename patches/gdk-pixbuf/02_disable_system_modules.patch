@@ -16,20 +16,6 @@ diff -ruN gdk-pixbuf-2.26.1/debian/rules gdk-pixbuf-2.26.1.new/debian/rules
                               --enable-introspection \
                               --libdir=\$${prefix}/lib/$(DEB_HOST_MULTIARCH)
  
-diff -ruN gdk-pixbuf-2.26.1/gdk-pixbuf/gdk-pixbuf-io.c gdk-pixbuf-2.26.1.new/gdk-pixbuf/gdk-pixbuf-io.c
---- gdk-pixbuf-2.26.1/gdk-pixbuf/gdk-pixbuf-io.c	2012-02-04 15:21:30.000000000 -0800
-+++ gdk-pixbuf-2.26.1.new/gdk-pixbuf/gdk-pixbuf-io.c	2013-02-03 10:30:43.684871749 -0800
-@@ -391,8 +391,10 @@
- {
-   gchar *result = g_strdup (g_getenv ("GDK_PIXBUF_MODULE_FILE"));
- 
-+#if 0 /* For the Steam runtime we don't want to load system modules */
-   if (!result)
-           result = g_build_filename (GDK_PIXBUF_LIBDIR, "gdk-pixbuf-2.0", GDK_PIXBUF_BINARY_VERSION, "loaders.cache", NULL);
-+#endif
- 
-   return result;
- }
 diff -ruN gdk-pixbuf-2.26.1/gdk-pixbuf/io-jpeg.c gdk-pixbuf-2.26.1.new/gdk-pixbuf/io-jpeg.c
 --- gdk-pixbuf-2.26.1/gdk-pixbuf/io-jpeg.c	2011-08-15 18:45:14.000000000 -0700
 +++ gdk-pixbuf-2.26.1.new/gdk-pixbuf/io-jpeg.c	2013-02-03 10:33:10.772874130 -0800
