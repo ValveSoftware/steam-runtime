@@ -156,7 +156,17 @@ install_deb()
 
     INSTALLTAG_DIR="${INSTALL_PATH}/installed"
     INSTALLTAG="$(basename "${ARCHIVE}" | sed -e 's,\.deb$,,' -e 's,\.ddeb$,,')"
-    if [ -f "${INSTALLTAG_DIR}/${INSTALLTAG}" ]; then
+
+    if [ -f "${INSTALLTAG_DIR}/${INSTALLTAG}.md5" ]; then
+        EXISTING="$(cat "${INSTALLTAG_DIR}/${INSTALLTAG}.md5")"
+    else
+        EXISTING=""
+    fi
+    CHECKSUM="$(cd "$(dirname "${ARCHIVE}")"; md5sum "$(basename "${ARCHIVE}")")"
+
+    if [ -f "${INSTALLTAG_DIR}/${INSTALLTAG}" -a \
+         -f "${INSTALLTAG_DIR}/${INSTALLTAG}.md5" -a \
+         "${EXISTING}" = "${CHECKSUM}" ]; then
         echo "INSTALLED: $(basename ${ARCHIVE})"
     else
         echo "INSTALLING: $(basename ${ARCHIVE})"
@@ -168,6 +178,7 @@ install_deb()
         cd "${INSTALL_TMP}"
         ar x "${ARCHIVE}" || exit 40
         tar xvf data.tar.* -C .. >"${INSTALLTAG_DIR}/${INSTALLTAG}" || exit 40
+        echo "${CHECKSUM}" >"${INSTALLTAG_DIR}/${INSTALLTAG}.md5" || exit 40
         cd "${TOP}"
         rm -rf "${INSTALL_TMP}"
     fi
