@@ -80,6 +80,7 @@ libjpeg6b	libjpeg62 libjpeg62-dev
 libjpeg-turbo	libjpeg-turbo8
 libmad		libmad0 libmad0-dev
 libmikmod	libmikmod2 libmikmod2-dev
+libnotify	libnotify4 libnotify-dev
 libogg		libogg0 libogg-dev
 #libogre-1.7.4	libogre-1.7.4 libogre-dev
 libpng		libpng12-0 libpng12-dev
@@ -150,4 +151,5 @@ x11proto-scrnsaver	x11proto-scrnsaver-dev
 x11proto-xext	x11proto-xext-dev
 x11proto-xf86vidmode	x11proto-xf86vidmode-dev
 xft		libxft2 libxft-dev
+zenity		zenity
 zlib		zlib1g zlib1g-dev
