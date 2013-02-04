@@ -245,6 +245,9 @@ else
 fi
 
 # Fix up the runtime
+if [ "${DEVELOPER_MODE}" = "true" ]; then
+    "${RUNTIME_PATH}/scripts/fix-debuglinks.sh" "${ARCHITECTURE}"
+fi
 "${RUNTIME_PATH}/scripts/fix-symlinks.sh" "${ARCHITECTURE}"
 
 # vi: ts=4 sw=4 expandtab
