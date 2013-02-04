@@ -39,6 +39,7 @@ cups		libcups2 libcups2-dev
 curl		libcurl3 libcurl3-gnutls libcurl4-gnutls-dev
 cyrus-sasl2	libsasl2-2 libsasl2-dev
 dbus		libdbus-1-3 libdbus-1-dev
+dummygl		dummygl-dev
 e2fsprogs	libcomerr2 comerr-dev
 expat		libexpat1 libexpat1-dev
 flac		libflac8 libflac-dev
@@ -68,7 +69,6 @@ libav		libavcodec53 libavcodec-dev libavfilter2 libavfilter-dev libavformat53 li
 libcanberra	libcanberra0 libcanberra-dev libcanberra-gtk0 libcanberra-gtk-dev libcanberra-gtk-module
 libcap2		libcap2 libcap-dev
 libdbusmenu	libdbusmenu-glib4 libdbusmenu-gtk4
-libdrm		libdrm2 libdrm-dev
 libffi		libffi6 libffi-dev
 libgcrypt11	libgcrypt11 libgcrypt11-dev
 libgpg-error	libgpg-error0 libgpg-error-dev
@@ -114,7 +114,7 @@ libxrender	libxrender1 libxrender-dev
 libxss		libxss1 libxss-dev
 libxt		libxt6 libxt-dev
 libxxf86vm	libxxf86vm1 libxxf86vm-dev
-mesa		libgl1-mesa-glx libgl1-mesa-dev libglu1-mesa libglu1-mesa-dev mesa-common-dev libglapi-mesa
+mesa		libglu1-mesa libglu1-mesa-dev
 ncurses		libncursesw5 libncursesw5-dev libtinfo5 libtinfo-dev
 nspr		libnspr4 libnspr4-dev
 nss		libnss3 libnss3-dev
