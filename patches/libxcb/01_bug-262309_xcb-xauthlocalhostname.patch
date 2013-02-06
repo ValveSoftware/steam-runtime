@@ -1,0 +1,36 @@
+diff -ruN libxcb-1.8.1/src/xcb_auth.c libxcb-1.8.1.new/src/xcb_auth.c
+--- libxcb-1.8.1/src/xcb_auth.c	2012-03-09 06:37:20.000000000 -0800
++++ libxcb-1.8.1.new/src/xcb_auth.c	2013-02-06 00:13:51.216163292 -0800
+@@ -117,6 +117,7 @@
+     char hostnamebuf[256];   /* big enough for max hostname */
+     char dispbuf[40];   /* big enough to hold more than 2^64 base 10 */
+     int dispbuflen;
++    Xauth *authptr = NULL;
+ 
+     family = FamilyLocal; /* 256 */
+     switch(sockname->sa_family)
+@@ -160,10 +161,20 @@
+         addrlen = strlen(addr);
+     }
+ 
+-    return XauGetBestAuthByAddr (family,
+-                                 (unsigned short) addrlen, addr,
+-                                 (unsigned short) dispbuflen, dispbuf,
+-                                 N_AUTH_PROTOS, authnames, authnameslen);
++    authptr = XauGetBestAuthByAddr (family,
++				   (unsigned short) addrlen, addr,
++				   (unsigned short) dispbuflen, dispbuf,
++				   N_AUTH_PROTOS, authnames, authnameslen);
++    // && !phostname
++    if ((!authptr || !authptr->data_length) && family == FamilyLocal) {
++	if ( (addr = getenv("XAUTHLOCALHOSTNAME")) ) {
++	    authptr = XauGetBestAuthByAddr (family,
++					   (unsigned short) strlen(addr), addr,
++					   (unsigned short) dispbuflen, dispbuf,
++					   N_AUTH_PROTOS, authnames, authnameslen);
++	}
++    }
++    return authptr;
+ }
+ 
+ #ifdef HASXDMAUTH
