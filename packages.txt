@@ -152,5 +152,6 @@ x11proto-scrnsaver	x11proto-scrnsaver-dev
 x11proto-xext	x11proto-xext-dev
 x11proto-xf86vidmode	x11proto-xf86vidmode-dev
 xft		libxft2 libxft-dev
+xtrans		xtrans-dev
 zenity		zenity
 zlib		zlib1g zlib1g-dev
