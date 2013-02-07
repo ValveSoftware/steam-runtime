@@ -186,7 +186,7 @@ install_deb()
 
 process_package()
 {
-    INSTALL_PATH="${RUNTIME_PATH}/${ARCHITECTURE}"
+    INSTALL_PATH="$(realpath "${RUNTIME_PATH}/${ARCHITECTURE}")"
     SOURCE_PACKAGE=$1
 
     echo ""
