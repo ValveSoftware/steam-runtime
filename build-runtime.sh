@@ -177,7 +177,12 @@ install_deb()
         mkdir -p "${INSTALL_TMP}"
         cd "${INSTALL_TMP}"
         ar x "${ARCHIVE}" || exit 40
-        tar xvf data.tar.* -C .. >"${INSTALLTAG_DIR}/${INSTALLTAG}" || exit 40
+        : >"${INSTALLTAG_DIR}/${INSTALLTAG}"
+        (tar xvf data.tar.* -C .. | while read file; do
+            if [ -f "../${file}" ]; then
+                echo "${file}" >>"${INSTALLTAG_DIR}/${INSTALLTAG}"
+            fi
+        done) || exit 40
         echo "${CHECKSUM}" >"${INSTALLTAG_DIR}/${INSTALLTAG}.md5" || exit 40
         cd "${TOP}"
         rm -rf "${INSTALL_TMP}"
@@ -186,7 +191,7 @@ install_deb()
 
 process_package()
 {
-    INSTALL_PATH="$(realpath "${RUNTIME_PATH}/${ARCHITECTURE}")"
+    INSTALL_PATH="$(realpath -s "${RUNTIME_PATH}/${ARCHITECTURE}")"
     SOURCE_PACKAGE=$1
 
     echo ""
