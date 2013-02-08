@@ -1,0 +1,21 @@
+diff -ruN libappindicator-0.4.92/src/app-indicator.c libappindicator-0.4.92.new/src/app-indicator.c
+--- libappindicator-0.4.92/src/app-indicator.c	2012-03-21 11:11:43.967367303 -0700
++++ libappindicator-0.4.92.new/src/app-indicator.c	2013-02-07 13:51:54.773720789 -0800
+@@ -611,6 +611,8 @@
+ 	priv->sec_activate_target = NULL;
+ 	priv->sec_activate_enabled = FALSE;
+ 
++	self->priv = priv; // Needs to be set BEFORE calling g_bus_get so our handler can read it.
++
+ 	/* Start getting the session bus */
+ 	g_object_ref(self); /* ref for the bus creation callback */
+ 	g_bus_get(G_BUS_TYPE_SESSION, NULL, bus_creation, self);
+@@ -618,8 +620,6 @@
+ 	g_signal_connect(G_OBJECT(gtk_icon_theme_get_default()),
+ 		"changed", G_CALLBACK(theme_changed_cb), self);
+ 
+-	self->priv = priv;
+-
+ 	return;
+ }
+ 
