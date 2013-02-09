@@ -1,6 +1,6 @@
 diff -ruN pulseaudio-1.1/src/daemon/main.c pulseaudio-1.1.new/src/daemon/main.c
 --- pulseaudio-1.1/src/daemon/main.c	2011-10-20 05:54:16.000000000 -0700
-+++ pulseaudio-1.1.new/src/daemon/main.c	2013-02-08 17:06:48.725258419 -0800
++++ pulseaudio-1.1.new/src/daemon/main.c	2013-02-08 23:22:16.158135601 -0800
 @@ -202,12 +202,12 @@
      if (strcmp(pw->pw_dir, PA_SYSTEM_RUNTIME_PATH) != 0)
          pa_log_warn(_("Home directory of user '%s' is not '%s', ignoring."), PA_SYSTEM_USER, PA_SYSTEM_RUNTIME_PATH);
@@ -18,7 +18,7 @@ diff -ruN pulseaudio-1.1/src/daemon/main.c pulseaudio-1.1.new/src/daemon/main.c
      }
 diff -ruN pulseaudio-1.1/src/modules/module-protocol-stub.c pulseaudio-1.1.new/src/modules/module-protocol-stub.c
 --- pulseaudio-1.1/src/modules/module-protocol-stub.c	2011-10-20 05:54:16.000000000 -0700
-+++ pulseaudio-1.1.new/src/modules/module-protocol-stub.c	2013-02-08 17:06:48.725258419 -0800
++++ pulseaudio-1.1.new/src/modules/module-protocol-stub.c	2013-02-08 23:22:16.162135602 -0800
 @@ -337,7 +337,7 @@
      /* This socket doesn't reside in our own runtime dir but in
       * /tmp/.esd/, hence we have to create the dir first */
@@ -30,7 +30,7 @@ diff -ruN pulseaudio-1.1/src/modules/module-protocol-stub.c pulseaudio-1.1.new/s
      }
 diff -ruN pulseaudio-1.1/src/pulsecore/core-util.c pulseaudio-1.1.new/src/pulsecore/core-util.c
 --- pulseaudio-1.1/src/pulsecore/core-util.c	2011-10-20 05:54:16.000000000 -0700
-+++ pulseaudio-1.1.new/src/pulsecore/core-util.c	2013-02-08 17:06:48.725258419 -0800
++++ pulseaudio-1.1.new/src/pulsecore/core-util.c	2013-02-08 23:22:16.162135602 -0800
 @@ -137,6 +137,7 @@
  #include <pulsecore/pipe.h>
  
@@ -317,13 +317,13 @@ diff -ruN pulseaudio-1.1/src/pulsecore/core-util.c pulseaudio-1.1.new/src/pulsec
      const char *e;
  
 -    if (!(e = getenv("XDG_SESSION_COOKIE")))
-+    if (!(e = getenv("XDG_SESSION_ID") && !(e = getenv("XDG_SESSION_COOKIE"))) )
++    if (!(e = getenv("XDG_SESSION_ID")) && !(e = getenv("XDG_SESSION_COOKIE"))) 
          return NULL;
  
      return pa_utf8_filter(e);
 diff -ruN pulseaudio-1.1/src/pulsecore/core-util.h pulseaudio-1.1.new/src/pulsecore/core-util.h
 --- pulseaudio-1.1/src/pulsecore/core-util.h	2011-10-20 05:54:16.000000000 -0700
-+++ pulseaudio-1.1.new/src/pulsecore/core-util.h	2013-02-08 17:06:48.725258419 -0800
++++ pulseaudio-1.1.new/src/pulsecore/core-util.h	2013-02-08 23:22:16.162135602 -0800
 @@ -58,8 +58,8 @@
  void pa_make_fd_nonblock(int fd);
  void pa_make_fd_cloexec(int fd);
