@@ -7,7 +7,7 @@ TOP=$(cd "${0%/*}" && echo ${PWD})
 cd "${TOP}"
 
 # These are custom packages that can't be automatically downloaded
-CUSTOM_PACKAGES="dummygl jasper"
+CUSTOM_PACKAGES="dummygl jasper libsdl2"
 
 valid_package()
 {

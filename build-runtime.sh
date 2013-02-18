@@ -202,7 +202,7 @@ process_package()
     build_package ${ARCHITECTURE} ${SOURCE_PACKAGE}
     for PACKAGE in $*; do
         # Skip development packages for end-user runtime
-        if (echo "${PACKAGE}" | egrep -- '-dev$|-multidev$' >/dev/null) && [ "${DEVELOPER_MODE}" != "true" ]; then
+        if (echo "${PACKAGE}" | egrep -- '-dbg$|-dev$|-multidev$' >/dev/null) && [ "${DEVELOPER_MODE}" != "true" ]; then
             continue
         fi
 

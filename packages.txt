@@ -87,6 +87,7 @@ libogg		libogg0 libogg-dev
 libpng		libpng12-0 libpng12-dev
 libsamplerate	libsamplerate0 libsamplerate0-dev
 libsdl1.2	libsdl1.2debian libsdl1.2-dev
+libsdl2		libsdl2 libsdl2-dev
 libselinux	libselinux1 libselinux1-dev
 libsm		libsm6 libsm-dev
 libsmpeg0	libsmpeg0 libsmpeg-dev
@@ -121,7 +122,7 @@ ncurses		libncursesw5 libncursesw5-dev libtinfo5 libtinfo-dev
 nspr		libnspr4 libnspr4-dev
 nss		libnss3 libnss3-dev
 nvidia-cg-toolkit	nvidia-cg-toolkit libcg
-openal-soft	libopenal1 libopenal-dev
+openal-soft	libopenal1 libopenal1-dbg libopenal-dev
 openldap	libldap-2.4-2 libldap2-dev
 openssl		libssl1.0.0
 orc		liborc-0.4-0 liborc-0.4-dev
