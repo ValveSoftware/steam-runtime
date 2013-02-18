@@ -96,7 +96,7 @@ build_package()
         sudo apt-get build-dep -y "${PACKAGE}"
 
         # Extract the source and apply patches
-        PACKAGE_DIR=$(echo "${DSC}" | sed -e 's,-[^-]*$,,' -e 's,_,-,g' -e 's,.dsc,,')
+        PACKAGE_DIR=$(basename "${DSC}" .dsc | sed 's,_\([^-]*\).*,-\1,')
         if [ -d "${PACKAGE_DIR}" ]; then
             echo -n "${PACKAGE_DIR} already exists, remove it? [Y/n]: "
             read answer

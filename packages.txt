@@ -88,6 +88,10 @@ libpng		libpng12-0 libpng12-dev
 libsamplerate	libsamplerate0 libsamplerate0-dev
 libsdl1.2	libsdl1.2debian libsdl1.2-dev
 libsdl2		libsdl2 libsdl2-dev
+libsdl2-image	libsdl2-image libsdl2-image-dev
+libsdl2-mixer	libsdl2-mixer libsdl2-mixer-dev
+libsdl2-net	libsdl2-net libsdl2-net-dev
+libsdl2-ttf	libsdl2-ttf libsdl2-ttf-dev
 libselinux	libselinux1 libselinux1-dev
 libsm		libsm6 libsm-dev
 libsmpeg0	libsmpeg0 libsmpeg-dev
