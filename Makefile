@@ -13,12 +13,14 @@ CUSTOMER_RUNTIME := steam-runtime-bin-$(ARCHIVE_VERSION_TAG)
 DEVELOPER_RUNTIME := steam-runtime-dev-$(ARCHIVE_VERSION_TAG)
 COMPLETE_RUNTIME := steam-runtime-src-$(ARCHIVE_VERSION_TAG)
 
-all: clean-log amd64 i386
+all: clean-log i386 amd64
 
 amd64 i386:
 	./buildroot.sh --arch=$@ ./build-runtime.sh --runtime="$(RUNTIME_PATH)" --devmode="$(DEVELOPER_MODE)" | tee -a build.log
 
 update:
+	./buildroot.sh --arch=i386 --update
+	./buildroot.sh --arch=amd64 --update
 	./update-packages.sh
 
 clean-log:

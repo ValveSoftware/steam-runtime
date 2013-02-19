@@ -63,7 +63,7 @@ root=$arch
 
 check_create()
 {
-    if check_shell; then
+    if check_shell || check_update; then
         if [ ! -f "pbuilder/$distribution-$arch-base.tgz" ]; then
             echo "Missing pbuilder/$distribution-$arch-base.tgz, creating..."
             sleep 1
@@ -77,17 +77,12 @@ check_create()
         fi
     fi
 
-    if [ "$actions" ]; then
-        case "$actions" in
-        *--create*)
-            return 0;;
-        *)
-            return 1;;
-        esac
-    fi
-
-    # Default to not create unless we need to
-    return 1
+    case "$actions" in
+    *--create*)
+        return 0;;
+    *)
+        return 1;;
+    esac
 }
 
 action_create()
@@ -108,6 +103,9 @@ action_create()
         fi
         mkdir -p pbuilder
         cp $HOME/pbuilder/$pbuilder_archive $bootstrap_archive || exit 2
+
+        # We need to update the new chroot
+        actions="$actions --update"
     fi
 
     # Create our chroot directory
@@ -159,17 +157,12 @@ unmount_exit()
 
 check_update()
 {
-    if [ "$actions" ]; then
-        case "$actions" in
-        *--update*)
-            return 0;;
-        *)
-            return 1;;
-        esac
-    fi
-
-    # Default to always update
-    return 0
+    case "$actions" in
+    *--update*)
+        return 0;;
+    *)
+        return 1;;
+    esac
 }
 
 action_update()
@@ -203,17 +196,12 @@ action_update()
 
 check_unmount()
 {
-    if [ "$actions" ]; then
-        case "$actions" in
-        *--unmount*)
-            return 0;;
-        *)
-            return 1;;
-        esac
-    fi
-
-    # Default not to unmount everything
-    return 1
+    case "$actions" in
+    *--unmount*)
+        return 0;;
+    *)
+        return 1;;
+    esac
 }
 
 action_unmount()
@@ -223,17 +211,12 @@ action_unmount()
 
 check_shell()
 {
-    if [ "$actions" ]; then
-        case "$actions" in
-        *--shell*)
-            return 0;;
-        *)
-            return 1;;
-        esac
-    fi
-
-    # Default not to run the shell
-    return 1
+    case "$actions" in
+    *--shell*)
+        return 0;;
+    *)
+        return 1;;
+    esac
 }
 
 action_shell()
@@ -270,17 +253,12 @@ __EOF__
 
 check_archive()
 {
-    if [ "$actions" ]; then
-        case "$actions" in
-        *--archive*)
-            return 0;;
-        *)
-            return 1;;
-        esac
-    fi
-
-    # Default not to archive the directories
-    return 1
+    case "$actions" in
+    *--archive*)
+        return 0;;
+    *)
+        return 1;;
+    esac
 }
 
 action_archive()
@@ -311,17 +289,12 @@ action_archive()
 
 check_clean()
 {
-    if [ "$actions" ]; then
-        case "$actions" in
-        *--clean*)
-            return 0;;
-        *)
-            return 1;;
-        esac
-    fi
-
-    # Default not to clean the directories
-    return 1
+    case "$actions" in
+    *--clean*)
+        return 0;;
+    *)
+        return 1;;
+    esac
 }
 
 action_clean()
@@ -332,7 +305,6 @@ action_clean()
 
 if check_create; then
     action_create
-    action_update
 fi
 if check_update; then
     action_update
