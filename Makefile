@@ -59,6 +59,7 @@ archive-developer-runtime:
 	chmod u+w tmp/$(DEVELOPER_RUNTIME)/runtime/README.txt
 	sed "s,http://media.steampowered.com/client/runtime/.*,http://media.steampowered.com/client/runtime/$(COMPLETE_RUNTIME).$(ARCHIVE_EXT)," <runtime/README.txt >tmp/$(DEVELOPER_RUNTIME)/runtime/README.txt
 	make RUNTIME_PATH="$(CURDIR)/tmp/$(DEVELOPER_RUNTIME)/runtime" DEVELOPER_MODE=true || exit 1
+	if [ -x publish_symbols.sh ]; then ./publish_symbols.sh $(CURDIR)/tmp/$(DEVELOPER_RUNTIME)/runtime; fi
 	@echo ""
 	@echo "Creating $(ARCHIVE_OUTPUT_DIR)/$(DEVELOPER_RUNTIME).$(ARCHIVE_EXT)"
 	mkdir -p "$(ARCHIVE_OUTPUT_DIR)"
