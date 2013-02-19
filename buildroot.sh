@@ -278,6 +278,7 @@ action_archive()
             fi
 
             # Remove cached data to save space
+            rm -rf ${arch}/tmp/*
             rm -f ${arch}/var/cache/apt/archives/*.deb
 
             # Create the archive!
