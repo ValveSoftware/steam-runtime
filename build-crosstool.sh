@@ -36,12 +36,11 @@ for arch in i386 amd64 ; do
 done
 
 HOST_ARCH=$(dpkg --print-architecture)
-echo "Moving tools to ${HOST_ARCH} directory"
 cd "${TOP}/x-tools" || exit 3
+chmod u+w -R *
 mkdir -p "${HOST_ARCH}"
-chmod u+w *
 mv -v *-unknown-linux-gnu "${HOST_ARCH}"
 
-echo "Done. Your compilers are in ${TOP}/x-tools "
+echo "Done. Your compilers are in ${TOP}/x-tools/${HOST_ARCH}"
 
 # vi: ts=4 sw=4 expandtab
