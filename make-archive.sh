@@ -6,9 +6,9 @@
 TOP=$(cd "${0%/*}" && echo "${PWD}")
 cd "${TOP}"
 
-# We'll compress with bzip2
+# We'll compress with xz
 # If this changes you need to update steam.sh when it downloads the runtime
-ARCHIVE_EXT="tar.bz2"
+ARCHIVE_EXT="tar.xz"
 
 function ExitUsage()
 {

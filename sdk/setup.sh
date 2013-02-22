@@ -9,7 +9,7 @@ cd "${TOP}"
 
 CONFIG=.config
 ARCHITECTURES="i386 amd64"
-ARCHIVE_EXT="tar.bz2"
+ARCHIVE_EXT="tar.xz"
 RUNTIME_VERSION=latest
 
 exit_usage()
@@ -159,6 +159,27 @@ echo "RUNTIME_FLAVOR=${RUNTIME_FLAVOR}" >>${CONFIG}
 
 UPDATED_FILES_RETURNCODE=42
 
+function extract_archive()
+{
+    case "$1" in
+    *.gz)
+        BF=$(($(gzip --list "$1" | sed -n -e "s/.*[[:space:]]\+[0-9]\+[[:space:]]\+\([0-9]\+\)[[:space:]].*$/\1/p") / $((512 * 71)) + 1))
+        ;;
+    *.xz)
+        BF=$(($(xz --robot --list "$1" | grep totals | awk '{print $5}') / $((512 * 71)) + 1))
+        ;;
+    *)
+        BF=""
+        ;;
+    esac
+    if [ "${BF}" ]; then
+        tar --blocking-factor=${BF} --checkpoint=1 --checkpoint-action="ttyout=#" -xf "$1" -C "$2"
+        echo " 100.0%"
+    else
+        tar -xf "$1" -C "$2"
+    fi
+}
+
 function update_archive()
 {
     local NAME=$1
@@ -195,14 +216,23 @@ function update_archive()
     rm -rf "${WORKDIR}"
     mkdir "${WORKDIR}"
     echo "Extracting downloads/${ARCHIVE}..."
-    tar xf "downloads/${ARCHIVE}" -C "${WORKDIR}" || exit 12
+    extract_archive "downloads/${ARCHIVE}" "${WORKDIR}" || exit 12
 
     # Copy in the new files
     echo "Installing new files..."
+    NF=$(cd "${WORKDIR}"/*; find . \( -type f -o -type l \) -print | wc -l)
+    BF=$((${NF} / 73 + 1))
+    COUNT=0
     (cd "${WORKDIR}"/*; find . \( -type f -o -type l \) -print) | while read file; do
         mkdir -p "$(dirname "${DEST}/${file}")"
         mv -f "${WORKDIR}"/*/"${file}" "${DEST}/${file}" || exit 14
+
+        COUNT=$((${COUNT} + 1))
+        if [ $((${COUNT} % ${BF})) -eq 0 ]; then
+            echo -n "#"
+        fi
     done
+    echo " 100.0%"
 
     # Update the checksum
     mkdir -p checksums
