@@ -1,6 +1,24 @@
 
 This is a set of tools targeting the Steam Linux Runtime.
 
+Setup & Updates
+-------------
+
+The first time you install the runtime SDK, you should run the setup
+script from the command line to download the set of packages you need
+for development:
+	setup.sh
+
+
+Updates
+-------------
+
+You can run the setup script at any time to get the latest version of the SDK:
+	setup.sh --auto-upgrade
+
+If you need to get an old version, you can get it using --version:
+	setup.sh --version=2013-02-21
+
 
 Simple Builds
 -------------
@@ -39,6 +57,15 @@ that all the dependencies are covered by the runtime with:
 
 You can run programs in the runtime environment for testing with:
 	runtime/run.sh <program> <arguments>
+
+You can switch between the debug and release runtime environments by
+switching the runtime symbolic link to point to the desired directory.
+e.g.
+	ln -sf runtime-debug runtime
+or
+	ln -sf runtime-release runtime
+
+The source to the entire runtime is available in runtime-debug/source/
 
 
 More Info

@@ -104,7 +104,7 @@ libvorbis	libvorbis0a libvorbisfile3 libvorbisenc2 libvorbis-dev
 libvpx		libvpx1 libvpx-dev
 libx11		libx11-6 libx11-dev libx11-xcb1 libx11-xcb-dev libx11-data
 libxau		libxau6 libxau-dev
-libxaw7		libxaw7 libxaw7-dev
+libxaw		libxaw7 libxaw7-dev
 libxcb		libxcb1 libxcb1-dev libxcb-shm0 libxcb-shm0-dev libxcb-render0 libxcb-render0-dev libxcb-glx0 libxcb-glx0-dev
 libxcomposite	libxcomposite1 libxcomposite-dev
 libxcursor	libxcursor1 libxcursor-dev

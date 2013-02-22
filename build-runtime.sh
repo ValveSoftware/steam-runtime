@@ -13,12 +13,16 @@ while [ "$1" != "" ]; do
         RUNTIME_PATH=$(expr "$1" : '[^=]*=\(.*\)')
         shift
         ;;
+    --debug=*)
+        DEBUG=$(expr "$1" : '[^=]*=\(.*\)')
+        shift
+        ;;
     --devmode=*)
         DEVELOPER_MODE=$(expr "$1" : '[^=]*=\(.*\)')
         shift
         ;;
     -*)
-        echo "Usage: $0 [--runtime=<path>] [--devmode=<value>] [package] [package...]" >&2
+        echo "Usage: $0 [--runtime=<path>] [--debug=<value>] [--devmode=<value>] [package] [package...]" >&2
         exit 1
         ;;
     *)
@@ -29,6 +33,9 @@ done
 # Set this to "true" to install debug symbols and developer headers
 if [ -z "${DEVELOPER_MODE}" ]; then
     DEVELOPER_MODE=false
+fi
+if [ -z "${DEBUG}" ]; then
+    DEBUG=false
 fi
 
 if [ -z "${ARCHITECTURE}" ]; then
@@ -86,38 +93,44 @@ build_package()
     done
 
     # Build
-    BUILD="${TOP}/packages/binary/${ARCHITECTURE}/${PACKAGE}"
+    BUILD="${BINARY_PACKAGE_DIR}/${PACKAGE}"
     BUILDTAG="${BUILD}/built"
     mkdir -p ${BUILD}
     if [ ! -f "${BUILDTAG}" ] || ! cmp "${BUILDTAG}" "${CHECKSUM}" >/dev/null 2>&1; then
         echo "BUILDING: ${PACKAGE} for ${ARCHITECTURE}"
 
         # Make sure we have build dependencies
-        sudo apt-get build-dep -y "${PACKAGE}"
+        sudo apt-get build-dep -y --only-source "${PACKAGE}"
 
         # Extract the source and apply patches
-        PACKAGE_DIR=$(basename "${DSC}" .dsc | sed 's,_\([^-]*\).*,-\1,')
-        if [ -d "${PACKAGE_DIR}" ]; then
-            echo -n "${PACKAGE_DIR} already exists, remove it? [Y/n]: "
+        SOURCE_DIR="/tmp/source/${PACKAGE}"
+        PACKAGE_DIR="$(basename "${DSC}" .dsc | sed 's,_\([^-]*\).*,-\1,')"
+        if [ -d "${SOURCE_DIR}" ]; then
+            echo -n "${SOURCE_DIR} already exists, remove it? [Y/n]: "
             read answer
             if [ "$answer" = "n" ]; then
                 echo "Please create a patch of any local changes and restart." >&2
                 exit 20
             fi
-            rm -rf "${PACKAGE_DIR}"
+            rm -rf "${SOURCE_DIR}"
         fi
 
-        dpkg-source -x "${DSC}" || exit 20
+        mkdir -p "${SOURCE_DIR}"
+        dpkg-source -x "${DSC}" "${SOURCE_DIR}/${PACKAGE_DIR}" || exit 20
         for patch in "${TOP}/patches/${PACKAGE}"/*; do
             if [ -f "${patch}" ]; then
                 patchname="$(basename "${patch}")"
                 echo "APPLYING: ${patchname}"
-                (cd "${PACKAGE_DIR}" && patch -p1 <"${patch}") || exit 20
+                (cd "${SOURCE_DIR}/${PACKAGE_DIR}" && patch -p1 <"${patch}") || exit 20
             fi
         done
 
         # Build the package
-        (cd "${PACKAGE_DIR}" && dpkg-buildpackage -b -uc) || exit 30
+        if [ "${DEBUG}" = "true" ]; then
+            export DEB_BUILD_OPTIONS="debug noopt nostrip"
+            export DPKG_GENSYMBOLS_CHECK_LEVEL=1
+        fi
+        (cd "${SOURCE_DIR}/${PACKAGE_DIR}" && dpkg-buildpackage -b -uc) || exit 30
 
         # Back up any old binary packages
         OLD="${BUILD}/old-versions"
@@ -129,21 +142,61 @@ build_package()
         done
 
         # Move the binary packages into place
+        pushd "${SOURCE_DIR}"
         for file in *.changes *.deb *.ddeb *.udeb; do
             if [ -f "${file}" ]; then
                 mv -v "${file}" "${BUILD}/${file}" || exit 40
             fi
         done
+        popd
 
         # Clean up the source
-        rm -rf "${PACKAGE_DIR}"
+        rm -rf "${SOURCE_DIR}"
 
         # Copy the checksum to mark the build complete
         cp "${CHECKSUM}" "${BUILDTAG}" || exit 40
     else
         echo "${PACKAGE} for ${ARCHITECTURE} is up to date"
     fi
-    rm -f "${CHECKSUM}"
+    # Don't do this in case there are multiple builds in parallel
+    #rm -f "${CHECKSUM}"
+
+    # Done!
+    cd "${TOP}"
+}
+
+install_source()
+{
+    PACKAGE=$1
+    INSTALL_PATH=$2
+
+    DIR="${TOP}/packages/source/${PACKAGE}"
+    mkdir -p "${DIR}"; cd "${DIR}"
+
+    # Make sure the package description exists
+    DSC=$(echo *.dsc)
+    if [ ! -f "${DSC}" ]; then
+        echo "WARNING: Missing dsc file for ${PACKAGE}" >&2
+        return
+    fi
+
+    # Extract the source and apply patches
+    SOURCE_DIR="${INSTALL_PATH}/source/${PACKAGE}"
+    PACKAGE_DIR="$(basename "${DSC}" .dsc | sed 's,_\([^-]*\).*,-\1,')"
+    rm -rf "${SOURCE_DIR}"
+
+    mkdir -p "${SOURCE_DIR}"
+pwd
+echo extracting to "${SOURCE_DIR}/${PACKAGE_DIR}"
+    dpkg-source -x "${DSC}" "${SOURCE_DIR}/${PACKAGE_DIR}" || exit 20
+    for patch in "${TOP}/patches/${PACKAGE}"/*; do
+        if [ -f "${patch}" ]; then
+            patchname="$(basename "${patch}")"
+            echo "APPLYING: ${patchname}"
+            (cd "${SOURCE_DIR}/${PACKAGE_DIR}" && patch -p1 <"${patch}") || exit 20
+        fi
+    done
+    rm -f "${SOURCE_DIR}"/*.orig.*
 
     # Done!
     cd "${TOP}"
@@ -191,7 +244,7 @@ install_deb()
 
 process_package()
 {
-    INSTALL_PATH="$(realpath -s "${RUNTIME_PATH}/${ARCHITECTURE}")"
+    INSTALL_PATH="${RUNTIME_PATH}/${ARCHITECTURE}"
     SOURCE_PACKAGE=$1
 
     echo ""
@@ -206,11 +259,11 @@ process_package()
             continue
         fi
 
-        ARCHIVE=$(echo "${TOP}"/packages/binary/${ARCHITECTURE}/${SOURCE_PACKAGE}/${PACKAGE}_*_all.deb)
+        ARCHIVE=$(echo "${BINARY_PACKAGE_DIR}"/${SOURCE_PACKAGE}/${PACKAGE}_*_all.deb)
         if [ -f "${ARCHIVE}" ]; then
             install_deb "${ARCHIVE}" "${INSTALL_PATH}"
         else
-            ARCHIVE=$(echo "${TOP}"/packages/binary/${ARCHITECTURE}/${SOURCE_PACKAGE}/${PACKAGE}_*_${ARCHITECTURE}.deb)
+            ARCHIVE=$(echo "${BINARY_PACKAGE_DIR}"/${SOURCE_PACKAGE}/${PACKAGE}_*_${ARCHITECTURE}.deb)
             if [ -f "${ARCHIVE}" ]; then
                 install_deb "${ARCHIVE}" "${INSTALL_PATH}"
             else
@@ -219,13 +272,16 @@ process_package()
             fi
         fi
 
-        if [ "${DEVELOPER_MODE}" = "true" ]; then
-            SYMBOL_ARCHIVE=$(echo "${TOP}"/packages/binary/${ARCHITECTURE}/${SOURCE_PACKAGE}/${PACKAGE}-dbgsym_*_${ARCHITECTURE}.ddeb)
+        if [ "${DEVELOPER_MODE}" = "true" -a "${DEBUG}" != "true" ]; then
+            SYMBOL_ARCHIVE=$(echo "${BINARY_PACKAGE_DIR}"/${SOURCE_PACKAGE}/${PACKAGE}-dbgsym_*_${ARCHITECTURE}.ddeb)
             if [ -f "${SYMBOL_ARCHIVE}" ]; then
                 install_deb "${SYMBOL_ARCHIVE}" "${INSTALL_PATH}"
             fi
         fi
     done
+    if [ "${DEBUG}" = "true" ]; then
+        install_source ${SOURCE_PACKAGE} "${RUNTIME_PATH}"
+    fi
 }
 
 # Make sure we're in the build environment
@@ -236,6 +292,21 @@ if [ ! -f "/README.txt" ]; then
     if [ "$answer" != "y" -a "$answer" != "Y" ]; then
         exit 2
     fi
+fi
+
+# Figure out where the runtime path is
+RESOLVED_PATH="$(realpath -s "${RUNTIME_PATH}")"
+if [ ! -d "${RESOLVED_PATH}" ]; then
+    echo "Couldn't resolve path for: ${RUNTIME_PATH}" >&2
+    exit 2
+fi
+RUNTIME_PATH="${RESOLVED_PATH}"
+
+# Figure out where binary packages go
+if [ "${DEBUG}" = "true" ]; then
+    BINARY_PACKAGE_DIR="${TOP}/packages/debug/${ARCHITECTURE}"
+else
+    BINARY_PACKAGE_DIR="${TOP}/packages/binary/${ARCHITECTURE}"
 fi
 
 # Build and install the packages
@@ -261,7 +332,7 @@ else
 fi
 
 # Fix up the runtime
-if [ "${DEVELOPER_MODE}" = "true" ]; then
+if [ "${DEVELOPER_MODE}" = "true" -a "${DEBUG}" != "true" ]; then
     "${RUNTIME_PATH}/scripts/fix-debuglinks.sh" "${ARCHITECTURE}"
 fi
 "${RUNTIME_PATH}/scripts/fix-symlinks.sh" "${ARCHITECTURE}"

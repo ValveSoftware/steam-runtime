@@ -4,8 +4,12 @@ This is a collection of software packages for the Steam Linux Runtime.
 Each individual package has its own licensing terms, typically in:
     <arch>/usr/share/doc/<package>/copyright.
 
-The source to the packages and the scripts used to build them is available:
+The scripts used to build these packages can be found on GitHub:
+https://github.com/ValveSoftware/steam-runtime
+
+The source code and debug versions of the packages can be found here:
 http://media.steampowered.com/client/runtime/PLACEHOLDER_URL
+
 
 The scripts and other documentation contributed by Valve are covered under
 the following copyright notice:

@@ -2,7 +2,7 @@
 #
 # Script to remove all packages from the runtime
 
-ARCHITECTURES="i386 amd64"
+ARCHITECTURES="i386 amd64 source"
 
 TOP=$(cd "${0%/*}" && echo ${PWD})
 cd "${TOP}"

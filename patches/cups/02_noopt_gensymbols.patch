@@ -1,0 +1,14 @@
+diff -ruN cups-1.5.3/debian/rules cups-1.5.3.new/debian/rules
+--- cups-1.5.3/debian/rules	2012-04-04 17:09:23.000000000 -0700
++++ cups-1.5.3.new/debian/rules	2013-02-19 04:48:15.350136243 -0800
+@@ -45,8 +45,10 @@
+ else
+ DEB_MAKE_CHECK_TARGET := check
+ endif
++ifeq (,$(findstring noopt,$(DEB_BUILD_OPTIONS))) 
+ DPKG_GENSYMBOLS_CHECK_LEVEL=4
+ export DPKG_GENSYMBOLS_CHECK_LEVEL
++endif
+ 
+ post-patches::
+ 	set -e; if dpkg-vendor --is ubuntu && ! [ -e debian/patches/ubuntu/stamp-applied ]; then \

@@ -279,7 +279,11 @@ action_archive()
 
             # Remove cached data to save space
             rm -rf ${arch}/tmp/*
-            rm -f ${arch}/var/cache/apt/archives/*.deb
+
+            # Leave the cached packages because some of the source packages
+            # have conflicting build dependencies and we want to be able to
+            # flip between them without going upstream for updates.
+            #rm -f ${arch}/var/cache/apt/archives/*.deb
 
             # Create the archive!
             (cd ${arch} && tar zcf "../pbuilder/${archive}" *) || exit 3

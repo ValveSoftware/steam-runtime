@@ -1,0 +1,15 @@
+diff -ruN glib2.0-2.32.3/debian/rules glib2.0-2.32.3.new/debian/rules
+--- glib2.0-2.32.3/debian/rules	2012-05-29 09:04:00.000000000 -0700
++++ glib2.0-2.32.3.new/debian/rules	2013-02-19 05:02:55.590170517 -0800
+@@ -40,7 +40,10 @@
+ 
+ DEB_MAKE_DESTDIRSKEL = $(CURDIR)/debian/install/@FLAVOR@
+ 
+-DEB_DH_MAKESHLIBS_ARGS_$(SHARED_PKG) += -V --add-udeb=$(UDEB_PKG) -- -c4
++DEB_DH_MAKESHLIBS_ARGS_$(SHARED_PKG) += -V --add-udeb=$(UDEB_PKG)
++ifeq (,$(findstring noopt,$(DEB_BUILD_OPTIONS))) 
++DEB_DH_MAKESHLIBS_ARGS_$(SHARED_PKG) += -- -c4
++endif
+ DEB_DH_MAKESHLIBS_ARGS_$(REFDBG_PKG) = --no-act
+ DEB_DH_STRIP_ARGS_$(REFDBG_PKG) = --no-act
+ # Don't put the symbols in the -dbg package

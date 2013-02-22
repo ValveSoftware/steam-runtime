@@ -24,19 +24,6 @@ if [ -z "${TARGET_ARCH}" ]; then
     export TARGET_ARCH="${HOST_ARCH}"
 fi
             
-if [ -z "${STEAM_RUNTIME_ROOT}" ]; then
-    if [ -d "${TOP}/runtime/${TARGET_ARCH}" ]; then
-        STEAM_RUNTIME_ROOT="${TOP}/runtime/${TARGET_ARCH}"
-    elif [ -d "${TOP}/../runtime/${TARGET_ARCH}" ]; then
-        STEAM_RUNTIME_ROOT="${TOP}/../runtime/${TARGET_ARCH}"
-    fi
-    if [ ! -d "${STEAM_RUNTIME_ROOT}" ]; then
-        echo "Couldn't find runtime directory ${STEAM_RUNTIME_ROOT}" >&2
-        exit 2
-    fi
-    export STEAM_RUNTIME_ROOT
-fi
-
 case "${TARGET_ARCH}" in
 i386)
     CROSSTOOL_PREFIX="i686-unknown-linux-gnu"
@@ -80,8 +67,25 @@ function append_arg()
 declare -A INCLUDE_PATHS
 declare -A LIBRARY_PATHS
 
+function check_runtime_root()
+{
+    if [ -z "${STEAM_RUNTIME_ROOT}" ]; then
+        if [ -d "${TOP}/runtime/${TARGET_ARCH}" ]; then
+            STEAM_RUNTIME_ROOT="${TOP}/runtime/${TARGET_ARCH}"
+        fi
+        if [ ! -d "${STEAM_RUNTIME_ROOT}" ]; then
+            echo "$0: ERROR: Couldn't find steam runtime directory, do you need to run the setup script?" >&2
+            realpath "${TOP}/setup.sh" >&2
+            exit 2
+        fi
+        export STEAM_RUNTIME_ROOT
+    fi
+}
+
 function update_includes()
 {
+    check_runtime_root
+
     i=${#ARGS[@]}
     while [ $i -gt 0 ]; do
         i=$(expr $i - 1)
@@ -114,6 +118,8 @@ function update_includes()
 
 function update_libraries()
 {
+    check_runtime_root
+
     i=${#ARGS[@]}
     while [ $i -gt 0 ]; do
         i=$(expr $i - 1)
@@ -168,6 +174,8 @@ function update_libraries()
 
 function print_search_dirs()
 {
+    check_runtime_root
+
     EXTRA_LIBRARY_PATHS="${STEAM_RUNTIME_ROOT}/usr/lib:${STEAM_RUNTIME_ROOT}/usr/lib/${CROSSTOOL_LIBPATH}"
     "${CROSSTOOL_PATH}/${CROSSTOOL_PREFIX}-${PROGRAM}" "${ARGS[@]}" | sed "s,\(libraries:.*\),\1:${EXTRA_LIBRARY_PATHS},"
 }
@@ -185,7 +193,7 @@ if [ -z "${DISABLE_RUNTIME_PATH}" ]; then
         ld)
             update_libraries
             ;;
-        gcc|g++)
+        gcc|g++|cc|c++)
             # Search dirs needs special handling to include runtime paths
             if $(echo "$*" | grep -- "-print-search-dirs" >/dev/null); then
                 print_search_dirs

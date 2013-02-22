@@ -1,6 +1,9 @@
 # This is required to automatically build symbol packages
 pkg-create-dbgsym
 
+# This is required for the buildroot script
+realpath
+
 # These are useful commands for working in the environment
 dialog
 file

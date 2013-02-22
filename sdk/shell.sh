@@ -52,12 +52,11 @@ esac
 if [ -z "${STEAM_RUNTIME_ROOT}" ]; then
     if [ -d "${TOP}/runtime/${TARGET_ARCH}" ]; then
         STEAM_RUNTIME_ROOT="${TOP}/runtime/${TARGET_ARCH}"
-    elif [ -d "${TOP}/../runtime/${TARGET_ARCH}" ]; then
-        STEAM_RUNTIME_ROOT="${TOP}/../runtime/${TARGET_ARCH}"
     fi
 fi
 if [ ! -d "${STEAM_RUNTIME_ROOT}" ]; then
-    echo "Couldn't find runtime directory ${STEAM_RUNTIME_ROOT}" >&2
+    echo "$0: ERROR: Couldn't find steam runtime directory, do you need to run the setup script?" >&2
+    realpath "${TOP}/setup.sh" >&2
     exit 2
 fi
 export STEAM_RUNTIME_ROOT

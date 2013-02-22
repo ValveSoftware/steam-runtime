@@ -13,6 +13,9 @@ fi
 
 STATUS=0
 for ARCH in ${ARCHITECTURES}; do
+    if [ ! -d "${TOP}/${ARCH}/usr/lib/debug" ]; then
+        continue
+    fi
     cd "${TOP}/${ARCH}/usr/lib/debug"
     find . -type f | while read file; do
         file="$(echo $file | sed 's,./,,')"

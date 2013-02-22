@@ -1,0 +1,13 @@
+diff -ruN gnutls26-2.12.14/debian/rules gnutls26-2.12.14.new/debian/rules
+--- gnutls26-2.12.14/debian/rules	2012-01-24 12:04:44.000000000 -0800
++++ gnutls26-2.12.14.new/debian/rules	2013-02-19 07:10:27.162468456 -0800
+@@ -10,7 +10,8 @@
+ 	--with-packager=Debian \
+ 	--with-packager-bug-reports=http://bugs.debian.org/ \
+ 	--with-packager-version="$(DEB_VERSION)" \
+-	--libdir=\$${prefix}/lib/$(DEB_HOST_MULTIARCH)
++	--libdir=\$${prefix}/lib/$(DEB_HOST_MULTIARCH) \
++	--disable-valgrind-tests
+ DEB_MAKE_CHECK_TARGET = check
+ DEB_DH_MAKESHLIBS_ARGS_libgnutls26 := -V 'libgnutls26 (>= 2.12.6.1-0)'
+ DEB_COMPRESS_EXCLUDE := gnutls.pdf

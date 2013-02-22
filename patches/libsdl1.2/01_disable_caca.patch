@@ -1,12 +1,18 @@
-diff -ruN libsdl1.2-1.2.14/debian/rules libsdl1.2-1.2.14.new/debian/rules
---- libsdl1.2-1.2.14/debian/rules	2011-12-29 17:38:55.000000000 -0800
-+++ libsdl1.2-1.2.14.new/debian/rules	2013-01-25 21:22:50.743097140 -0800
-@@ -9,7 +9,7 @@
+diff -ruN libsdl1.2-1.2.15/debian/rules libsdl1.2-1.2.15.new/debian/rules
+--- libsdl1.2-1.2.15/debian/rules	2012-06-21 06:18:45.000000000 -0700
++++ libsdl1.2-1.2.15.new/debian/rules	2013-02-20 13:49:52.072811267 -0800
+@@ -8,11 +8,9 @@
+             --disable-video-ggi --disable-video-svga --disable-video-aalib \
              --disable-nas --disable-esd --disable-arts \
              --disable-alsa-shared --disable-pulseaudio-shared \
-             --disable-x11-shared
+-            --disable-x11-shared \
+-            --enable-video-directfb
 -all_confflags = --enable-video-caca
-+all_confflags = --disable-video-caca
- udeb_confflags = --enable-video-directfb \
-                  --disable-video-x11 \
+-udeb_confflags = --enable-video-directfb \
+-                 --disable-video-x11 \
++            --disable-x11-shared
++all_confflags = --disable-video-caca --disable-video-directfb --disable-input-tslib
++udeb_confflags = --disable-video-x11 \
                   --disable-dga --disable-video-photon \
+                  --disable-video-fbcon --disable-video-ps2gs \
+                  --disable-video-opengl --disable-video-xbios \
