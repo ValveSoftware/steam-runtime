@@ -334,6 +334,11 @@ fi
 rm -f runtime || exit 16
 ln -s runtime-${RUNTIME_FLAVOR} runtime
 
+# Set up symbolic link to automatically find source when debugging
+if [ "${RUNTIME_FLAVOR}" = "debug" ]; then
+    ln -sf "${TOP}/runtime-${RUNTIME_FLAVOR}/source" /tmp/source
+fi
+
 if [ "${USE_P4}" = "true" ]; then
     echo "======================================"
     echo "Creating Perforce changelist..."
