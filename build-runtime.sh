@@ -47,7 +47,7 @@ fi
 
 valid_package()
 {
-    PACKAGE=$1
+    local PACKAGE=$1
 
     for SOURCE_PACKAGE in $(cat packages.txt | grep -v '^#' | awk '{print $1}'); do
         if [ "${SOURCE_PACKAGE}" = "${PACKAGE}" ]; then
@@ -61,10 +61,10 @@ valid_package()
 
 build_package()
 {
-    ARCHITECTURE=$1
-    PACKAGE=$2
+    local ARCHITECTURE=$1
+    local PACKAGE=$2
 
-    DIR="${TOP}/packages/source/${PACKAGE}"
+    local DIR="${TOP}/packages/source/${PACKAGE}"
     mkdir -p "${DIR}"; cd "${DIR}"
 
     # Get the source
@@ -75,14 +75,14 @@ build_package()
     fi
 
     # Make sure the package description exists
-    DSC=$(echo *.dsc)
+    local DSC=$(echo *.dsc)
     if [ ! -f "${DSC}" ]; then
         echo "WARNING: Missing dsc file for ${PACKAGE}" >&2
         return
     fi
 
     # Calculate the checksum for the source
-    CHECKSUM=.checksum
+    local CHECKSUM=.checksum
     md5sum "${DSC}" >"${CHECKSUM}"
     for patch in "${TOP}/patches/${PACKAGE}"/*; do
         if [ -f "${patch}" ]; then
@@ -93,8 +93,8 @@ build_package()
     done
 
     # Build
-    BUILD="${BINARY_PACKAGE_DIR}/${PACKAGE}"
-    BUILDTAG="${BUILD}/built"
+    local BUILD="${BINARY_PACKAGE_DIR}/${PACKAGE}"
+    local BUILDTAG="${BUILD}/built"
     mkdir -p ${BUILD}
     if [ ! -f "${BUILDTAG}" ] || ! cmp "${BUILDTAG}" "${CHECKSUM}" >/dev/null 2>&1; then
         echo "BUILDING: ${PACKAGE} for ${ARCHITECTURE}"
@@ -167,27 +167,25 @@ build_package()
 
 install_source()
 {
-    PACKAGE=$1
-    INSTALL_PATH=$2
+    local PACKAGE=$1
+    local INSTALL_PATH=$2
 
-    DIR="${TOP}/packages/source/${PACKAGE}"
+    local DIR="${TOP}/packages/source/${PACKAGE}"
     mkdir -p "${DIR}"; cd "${DIR}"
 
     # Make sure the package description exists
-    DSC=$(echo *.dsc)
+    local DSC=$(echo *.dsc)
     if [ ! -f "${DSC}" ]; then
         echo "WARNING: Missing dsc file for ${PACKAGE}" >&2
         return
     fi
 
     # Extract the source and apply patches
-    SOURCE_DIR="${INSTALL_PATH}/source/${PACKAGE}"
-    PACKAGE_DIR="$(basename "${DSC}" .dsc | sed 's,_\([^-]*\).*,-\1,')"
+    local SOURCE_DIR="${INSTALL_PATH}/source/${PACKAGE}"
+    local PACKAGE_DIR="$(basename "${DSC}" .dsc | sed 's,_\([^-]*\).*,-\1,')"
     rm -rf "${SOURCE_DIR}"
 
     mkdir -p "${SOURCE_DIR}"
-pwd
-echo extracting to "${SOURCE_DIR}/${PACKAGE_DIR}"
     dpkg-source -x "${DSC}" "${SOURCE_DIR}/${PACKAGE_DIR}" || exit 20
     for patch in "${TOP}/patches/${PACKAGE}"/*; do
         if [ -f "${patch}" ]; then
@@ -202,20 +200,41 @@ echo extracting to "${SOURCE_DIR}/${PACKAGE_DIR}"
     cd "${TOP}"
 }
 
+install_compile_path()
+{
+    local ARCHIVE=$1
+    local INSTALL_PATH=$2
+    local SOURCE_ROOT=$3
+
+    local INSTALLTAG_DIR="${INSTALL_PATH}/installed"
+    local INSTALLTAG="$(basename "${ARCHIVE}" | sed -e 's,\.deb$,,' -e 's,\.ddeb$,,')"
+
+    # Create the compile paths for symbol resolution
+    for file in $(cat "${INSTALLTAG_DIR}/${INSTALLTAG}"); do
+        readelf --debug-dump=info "${INSTALL_PATH=}/$file" 2>/dev/null | grep DW_AT_comp_dir | sed -e 's,.*: ,,' -e 's,/tmp/,,' | sort | uniq | while read path; do
+            if [ ! -e "${SOURCE_ROOT}/${path}" ]; then
+                #echo "Adding source path: '/tmp/${path}'"
+                mkdir -p "${SOURCE_ROOT}/${path}"
+            fi
+        done
+    done
+}
+
 install_deb()
 {
-    ARCHIVE=$1
-    INSTALL_PATH=$2
+    local ARCHIVE=$1
+    local INSTALL_PATH=$2
+    local SOURCE_PATH=$3
 
-    INSTALLTAG_DIR="${INSTALL_PATH}/installed"
-    INSTALLTAG="$(basename "${ARCHIVE}" | sed -e 's,\.deb$,,' -e 's,\.ddeb$,,')"
+    local INSTALLTAG_DIR="${INSTALL_PATH}/installed"
+    local INSTALLTAG="$(basename "${ARCHIVE}" | sed -e 's,\.deb$,,' -e 's,\.ddeb$,,')"
 
     if [ -f "${INSTALLTAG_DIR}/${INSTALLTAG}.md5" ]; then
-        EXISTING="$(cat "${INSTALLTAG_DIR}/${INSTALLTAG}.md5")"
+        local EXISTING="$(cat "${INSTALLTAG_DIR}/${INSTALLTAG}.md5")"
     else
-        EXISTING=""
+        local EXISTING=""
     fi
-    CHECKSUM="$(cd "$(dirname "${ARCHIVE}")"; md5sum "$(basename "${ARCHIVE}")")"
+    local CHECKSUM="$(cd "$(dirname "${ARCHIVE}")"; md5sum "$(basename "${ARCHIVE}")")"
 
     if [ -f "${INSTALLTAG_DIR}/${INSTALLTAG}" -a \
          -f "${INSTALLTAG_DIR}/${INSTALLTAG}.md5" -a \
@@ -244,15 +263,19 @@ install_deb()
 
 process_package()
 {
-    INSTALL_PATH="${RUNTIME_PATH}/${ARCHITECTURE}"
-    SOURCE_PACKAGE=$1
+    local INSTALL_PATH="${RUNTIME_PATH}/${ARCHITECTURE}"
+    local SOURCE_PACKAGE=$1
 
     echo ""
     echo "Processing ${SOURCE_PACKAGE}..."
     shift
-    #sleep 1
 
     build_package ${ARCHITECTURE} ${SOURCE_PACKAGE}
+
+    if [ "${DEBUG}" = "true" ]; then
+        install_source ${SOURCE_PACKAGE} "${RUNTIME_PATH}"
+    fi
+
     for PACKAGE in $*; do
         # Skip development packages for end-user runtime
         if (echo "${PACKAGE}" | egrep -- '-dbg$|-dev$|-multidev$' >/dev/null) && [ "${DEVELOPER_MODE}" != "true" ]; then
@@ -278,10 +301,11 @@ process_package()
                 install_deb "${SYMBOL_ARCHIVE}" "${INSTALL_PATH}"
             fi
         fi
+
+        if [ "${DEBUG}" = "true" ]; then
+            install_compile_path "${ARCHIVE}" "${INSTALL_PATH}" "${RUNTIME_PATH}"
+        fi
     done
-    if [ "${DEBUG}" = "true" ]; then
-        install_source ${SOURCE_PACKAGE} "${RUNTIME_PATH}"
-    fi
 }
 
 # Make sure we're in the build environment
