@@ -14,7 +14,7 @@ RUNTIME_VERSION=latest
 
 exit_usage()
 {
-    echo "Usage: $0 [--host=<arch>] [--target=<arch>] [--debug|--release] [--version=<version>] [--depot=<url>] [--perforce] [--auto-upgrade] [--checkonly]" >&2
+    echo "Usage: $0 [--host=<arch>] [--target=<arch>] [--debug|--release] [--version=<version>] [--depot=<url>] [--perforce] [--reset] [--auto-upgrade] [--checkonly]" >&2
     exit 1
 }
 
@@ -28,6 +28,21 @@ function detect_arch()
 		echo "i386"
 		;;
 	esac
+}
+
+function reset_sdk()
+{
+    if [ "${AUTO_UPGRADE}" != "true" ]; then
+        echo "This will clean the SDK and redownload packages."
+        read -p "Are you sure you want to continue? [y/N]: " response
+        if [ "${response}" != "y" -a "${response}" != "Y" ]; then
+            exit 2
+        fi
+    fi
+
+    rm -rf checksums ${ARCHITECTURES} runtime*
+    echo "Reset complete."
+    echo
 }
 
 declare -a ARGS=("$@")
@@ -56,6 +71,11 @@ while [ "$1" ]; do
         ;;
     --perforce)
         USE_P4=true
+        ;;
+    --reset)
+        if [ "${RELAUNCHED}" != "true" ]; then
+            reset_sdk
+        fi
         ;;
     --auto-upgrade)
         AUTO_UPGRADE=true
@@ -224,6 +244,7 @@ if [ "${response}" != "n" ]; then
         fi
         ;;
     ${UPDATED_FILES_RETURNCODE})
+        echo
         exec "$0" --relaunch --host="${HOST_ARCH}" --target="${TARGET_ARCH}" --${RUNTIME_FLAVOR} "${ARGS[@]}"
         ;;
     esac
@@ -246,7 +267,6 @@ if [ "${response}" != "n" ]; then
             0)
                 ;;
             *)
-                echo
                 AVAILABLE_UPDATES=true
                 ;;
             esac
@@ -274,7 +294,6 @@ if [ "${response}" != "n" ]; then
         0)
             ;;
         *)
-            echo
             AVAILABLE_UPDATES=true
             ;;
         esac
@@ -297,6 +316,7 @@ if [ "${USE_P4}" = "true" ]; then
     echo "======================================"
     echo "Creating Perforce changelist..."
     p4reconcile
+    echo
 fi
 
 echo "======================================"

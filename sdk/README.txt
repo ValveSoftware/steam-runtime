@@ -1,13 +1,20 @@
 
 This is a set of tools targeting the Steam Linux Runtime.
 
-Setup & Updates
+Setup
 -------------
 
 The first time you install the runtime SDK, you should run the setup
 script from the command line to download the set of packages you need
 for development:
 	setup.sh
+
+You can re-run the script at any time to reconfigure the SDK. There are
+a number of command line options for automating the script, which you can
+see by running the script with the --help option.
+
+If you want to re-download packages, you can do it with the --reset option:
+	setup.sh --reset
 
 
 Updates
@@ -16,7 +23,7 @@ Updates
 You can run the setup script at any time to get the latest version of the SDK:
 	setup.sh --auto-upgrade
 
-If you need to get an old version, you can get it using --version:
+If you need to get an old version, you can specify it with --version:
 	setup.sh --version=2013-02-22
 
 
