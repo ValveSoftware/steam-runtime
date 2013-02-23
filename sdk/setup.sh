@@ -101,8 +101,7 @@ Which architectures would you like to target?
     2) amd64 (x64 64-bit)
     3) all supported architectures
 __EOF__
-    read -p "Default ${DEFAULT_TARGET}: " -n 1 response
-    if [ "$response" != "" ]; then echo; fi
+    read -p "Default ${DEFAULT_TARGET}: " response
     case "${response}" in
     1|i386)
         TARGET_ARCH=i386
@@ -135,8 +134,7 @@ Which runtime flavor would you like to use?
     1) release
     2) debug
 __EOF__
-    read -p "Default ${DEFAULT_FLAVOR}: " -n 1 response
-    if [ "$response" != "" ]; then echo; fi
+    read -p "Default ${DEFAULT_FLAVOR}: " response
     case "${response}" in
     1)  RUNTIME_FLAVOR=release;;
     2)  RUNTIME_FLAVOR=debug;;
@@ -258,8 +256,7 @@ elif [ "${AUTO_UPGRADE}" = "true" ]; then
     response=y
 else
     echo "======================================"
-    read -p "Update base SDK? [Y/n]: " -n 1 response
-    if [ "$response" != "" ]; then echo; fi
+    read -p "Update base SDK? [Y/n]: " response
 fi
 if [ "${response}" != "n" ]; then
     update_archive steam-runtime-sdk .
@@ -281,8 +278,7 @@ if [ "${AUTO_UPGRADE}" = "true" ]; then
     response=y
 else
     echo "======================================"
-    read -p "Update tools? [Y/n]: " -n 1 response
-    if [ "$response" != "" ]; then echo; fi
+    read -p "Update tools? [Y/n]: " response
 fi
 if [ "${response}" != "n" ]; then
     AVAILABLE_UPDATES=false
@@ -310,8 +306,7 @@ if [ "${AUTO_UPGRADE}" = "true" ]; then
     response=y
 else
     echo "======================================"
-    read -p "Update runtime? [Y/n]: " -n 1 response
-    if [ "$response" != "" ]; then echo; fi
+    read -p "Update runtime? [Y/n]: " response
 fi
 if [ "${response}" != "n" ]; then
     AVAILABLE_UPDATES=false
