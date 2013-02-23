@@ -17,7 +17,7 @@ You can run the setup script at any time to get the latest version of the SDK:
 	setup.sh --auto-upgrade
 
 If you need to get an old version, you can get it using --version:
-	setup.sh --version=2013-02-21
+	setup.sh --version=2013-02-22
 
 
 Simple Builds
