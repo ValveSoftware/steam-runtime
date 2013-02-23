@@ -157,27 +157,6 @@ echo "RUNTIME_FLAVOR=${RUNTIME_FLAVOR}" >>${CONFIG}
 
 UPDATED_FILES_RETURNCODE=42
 
-function extract_archive()
-{
-    case "$1" in
-    *.gz)
-        BF=$(($(gzip --list "$1" | sed -n -e "s/.*[[:space:]]\+[0-9]\+[[:space:]]\+\([0-9]\+\)[[:space:]].*$/\1/p") / $((512 * 71)) + 1))
-        ;;
-    *.xz)
-        BF=$(($(xz --robot --list "$1" | grep totals | awk '{print $5}') / $((512 * 71)) + 1))
-        ;;
-    *)
-        BF=""
-        ;;
-    esac
-    if [ "${BF}" ]; then
-        tar --blocking-factor=${BF} --checkpoint=1 --checkpoint-action="ttyout=#" -xf "$1" -C "$2"
-        echo " 100.0%"
-    else
-        tar -xf "$1" -C "$2"
-    fi
-}
-
 function update_archive()
 {
     local NAME=$1
@@ -189,15 +168,15 @@ function update_archive()
     fi
 
     # Download the latest archive checksum and see if we already have it
-    mkdir -p downloads
     local ARCHIVE="${NAME}_${RUNTIME_VERSION}.${ARCHIVE_EXT}"
-    local CHECKSUM="${ARCHIVE}.md5"
-    (cd downloads; curl -sOf "${URL_PREFIX}/${CHECKSUM}")
-    if [ ! -f "downloads/${CHECKSUM}" ]; then
+    local CHECKSUM_FILE="${ARCHIVE}.md5"
+    local CHECKSUM=$(curl -sf "${URL_PREFIX}/${CHECKSUM_FILE}")
+    if [ "${CHECKSUM}" = "" ]; then
         # No updates available
         return 0
     fi
-    if [ -f "checksums/${CHECKSUM}" ] && cmp "checksums/${CHECKSUM}" "downloads/${CHECKSUM}" >/dev/null; then
+    if [ -f "checksums/${CHECKSUM_FILE}" ] && \
+       [ "$(cat "checksums/${CHECKSUM_FILE}")" = "${CHECKSUM}" ]; then
         # We're all done!
         return 0
     fi
@@ -208,37 +187,15 @@ function update_archive()
     fi
 
     # Download and extract the archive
-    echo "Downloading ${URL_PREFIX}/${ARCHIVE}..."
-    local WORKDIR="downloads/tmp"
-    (cd downloads; curl -#Of "${URL_PREFIX}/${ARCHIVE}") || exit 11
-    rm -rf "${WORKDIR}"
-    mkdir "${WORKDIR}"
-    echo "Extracting downloads/${ARCHIVE}..."
-    extract_archive "downloads/${ARCHIVE}" "${WORKDIR}" || exit 12
-
-    # Copy in the new files
-    echo "Installing new files..."
-    NF=$(cd "${WORKDIR}"/*; find . \( -type f -o -type l \) -print | wc -l)
-    BF=$((${NF} / 73 + 1))
-    COUNT=0
-    (cd "${WORKDIR}"/*; find . \( -type f -o -type l \) -print) | while read file; do
-        mkdir -p "$(dirname "${DEST}/${file}")"
-        mv -f "${WORKDIR}"/*/"${file}" "${DEST}/${file}" || exit 14
-
-        COUNT=$((${COUNT} + 1))
-        if [ $((${COUNT} % ${BF})) -eq 0 ]; then
-            echo -n "#"
-        fi
-    done
-    echo " 100.0%"
+    echo "Installing ${URL_PREFIX}/${ARCHIVE}..."
+    curl -#f "${URL_PREFIX}/${ARCHIVE}" | tar xJf - --strip-components=1 -C "${DEST}"
 
     # Update the checksum
     mkdir -p checksums
     rm -f checksums/${NAME}_*
-    cp "downloads/$CHECKSUM" checksums/ || exit 15
+    echo "${CHECKSUM}" >"checksums/${CHECKSUM_FILE}"
 
     # All done!
-    rm -rf "${WORKDIR}"
     return ${UPDATED_FILES_RETURNCODE}
 }
 
@@ -311,6 +268,7 @@ fi
 if [ "${response}" != "n" ]; then
     AVAILABLE_UPDATES=false
     for target_arch in ${TARGET_ARCH}; do
+        mkdir -p runtime-${RUNTIME_FLAVOR}
         update_archive steam-runtime-dev-${RUNTIME_FLAVOR}-${target_arch} runtime-${RUNTIME_FLAVOR}
         case $? in
         0)
@@ -331,13 +289,13 @@ ln -s runtime-${RUNTIME_FLAVOR} runtime
 
 # Set up symbolic link to automatically find source when debugging
 if [ "${RUNTIME_FLAVOR}" = "debug" ]; then
+    rm -f /tmp/source && \
     ln -sf "${TOP}/runtime-${RUNTIME_FLAVOR}/source" /tmp/source
 fi
 
 if [ "${USE_P4}" = "true" ]; then
     echo "======================================"
     echo "Creating Perforce changelist..."
-    rm -rf downloads old
     p4reconcile
 fi
 
