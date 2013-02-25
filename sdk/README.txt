@@ -9,6 +9,10 @@ script from the command line to download the set of packages you need
 for development:
 	setup.sh
 
+You can pick your target architecture(s) and either the release or debug
+version of the runtime.  The debug runtime is built without optimizations
+and includes full source code.
+
 You can re-run the script at any time to reconfigure the SDK. There are
 a number of command line options for automating the script, which you can
 see by running the script with the --help option.
@@ -60,19 +64,10 @@ Once you have built a program that targets the runtime, you can verify
 that all the dependencies are covered by the runtime with:
 	runtime/scripts/check-program.sh <program_or_shared_library>
 
-(note that OpenGL and 3D driver libraries are outside the runtime)
+(note that the C library, OpenGL and 3D drivers are outside the runtime)
 
 You can run programs in the runtime environment for testing with:
-	runtime/run.sh <program> <arguments>
-
-You can switch between the debug and release runtime environments by
-switching the runtime symbolic link to point to the desired directory.
-e.g.
-	ln -sf runtime-debug runtime
-or
-	ln -sf runtime-release runtime
-
-The source to the entire runtime is available in runtime-debug/source/
+	run.sh <program> <arguments>
 
 
 More Info
