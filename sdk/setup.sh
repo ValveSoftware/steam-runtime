@@ -18,6 +18,12 @@ exit_usage()
     exit 1
 }
 
+function has_command()
+{
+    command -v $1 >/dev/null
+    return $?
+}
+
 function detect_arch()
 {
 	case $(uname -m) in
@@ -98,6 +104,23 @@ while [ "$1" ]; do
     shift
 done
 
+function check_curl()
+{
+    if ! has_command curl; then
+        if has_command apt-get; then
+            echo "Installing curl to download packages..."
+            sudo apt-get install curl
+            echo
+        else
+            echo "Please install curl to download packages."
+            exit 2
+        fi
+    fi
+}
+
+# Make sure we have curl to download packages
+check_curl
+    
 if [ -z "${HOST_ARCH}" ]; then
     HOST_ARCH=$(grep HOST_ARCH ${CONFIG} 2>/dev/null | awk -F= '{print $2}')
     if [ "${HOST_ARCH}" = "" ]; then
