@@ -101,6 +101,11 @@ mv "${WORKDIR}/README.txt.new" "${WORKDIR}/README.txt"
 # Install the runtime packages
 make ${ARCHITECTURE} DEVELOPER_MODE=${DEVELOPER_MODE} DEBUG=${DEBUG} RUNTIME_PATH="tmp/${RUNTIME_NAME}" || exit 3
 
+# Publish the symbols if desired
+if [ "${DEVELOPER_MODE}" = "true" -a "${DEBUG}" = "false" -a -x publish_symbols.sh ]; then
+    ./publish_symbols.sh tmp/${RUNTIME_NAME}/${ARCHITECTURE} | tee /tmp/publish-symbols-${ARCHITECTURE}.log
+fi
+
 # Pack it up!
 ARCHIVE_NAME="${RUNTIME_NAME}.${ARCHIVE_EXT}"
 ARCHIVE="${ARCHIVE_OUTPUT_DIR}/${ARCHIVE_NAME}"

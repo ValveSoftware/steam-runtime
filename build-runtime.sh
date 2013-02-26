@@ -260,34 +260,6 @@ install_deb()
     fi
 }
 
-fixup_libopenal1_dbg()
-{
-    local PACKAGE=$1
-    local INSTALL_PATH=$2
-
-    local INSTALLTAG_DIR="${INSTALL_PATH}/installed"
-    local INSTALLTAG="$(echo "${INSTALL_PATH}"/installed/libopenal1-dbg_*_${ARCHITECTURE})"
-
-    debug_file="$(cat "${INSTALLTAG}" | fgrep .debug)"
-    symbol_file="./usr/lib/debug/$(cat "${INSTALL_PATH}"/installed/libopenal1_*_${ARCHITECTURE} | fgrep "libopenal.so.1." | sed 's,./,,')"
-    mkdir -p "${INSTALL_PATH}/$(dirname ${symbol_file})"
-    mv "${INSTALL_PATH}/${debug_file}" "${INSTALL_PATH}/${symbol_file}"
-    sed 's,${debug_file},${symbol_file},' <"${INSTALLTAG}" >"${INSTALLTAG}.new"
-    mv "${INSTALLTAG}.new" "${INSTALLTAG}"
-}
-
-fixup_package()
-{
-    local PACKAGE=$1
-    local INSTALL_PATH=$2
-
-    case "${PACKAGE}" in
-    libopenal1-dbg)
-        fixup_libopenal1_dbg "${PACKAGE}" "${INSTALL_PATH}"
-        ;;
-    esac
-}
-
 process_package()
 {
     local INSTALL_PATH="${RUNTIME_PATH}/${ARCHITECTURE}"
@@ -332,8 +304,6 @@ process_package()
         if [ "${DEBUG}" = "true" ]; then
             install_compile_path "${ARCHIVE}" "${INSTALL_PATH}" "${RUNTIME_PATH}"
         fi
-
-        fixup_package "${PACKAGE}" "${INSTALL_PATH}"
     done
 }
 

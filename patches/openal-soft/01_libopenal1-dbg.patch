@@ -1,50 +1,12 @@
-diff -ruN openal-soft-1.13/debian/control openal-soft-1.13.new/debian/control
---- openal-soft-1.13/debian/control	2012-03-06 08:27:12.000000000 -0800
-+++ openal-soft-1.13.new/debian/control	2013-02-17 20:56:33.012073635 -0800
-@@ -75,6 +75,34 @@
-  .
-  This package installs the OpenAL Soft shared library.
- 
-+Package: libopenal1-dbg
-+Section: debug
-+Priority: extra
-+Architecture: any
-+Depends: libopenal1 (= ${binary:Version}), ${misc:Depends}
-+Description: Software implementation of the OpenAL API (debugging symbols)
-+ OpenAL, the Open Audio Library, is a joint effort to create an open,
-+ vendor-neutral, cross-platform API for interactive, primarily spatialized
-+ audio. OpenAL's primary audience are application developers and desktop
-+ users that rely on portable standards like OpenGL, for games and other
-+ multimedia applications.
-+ .
-+ This library is meant as a compatible update/replacement to the OpenAL Sample
-+ Implementation (the SI). The SI has been unmaintained for quite a while, and
-+ would require a lot of work to clean up. This is a fork the old Windows version
-+ to attempt an accelerated ALSA version of an OpenAL implementation.
-+ .
-+ OpenAL Soft supports mono, stereo, 4-channel, 5.1, 6.1, and 7.1 output, as
-+ opposed to the SI's 4-channel max (though it did have some provisions for 6
-+ channel, this was not 5.1, and was seemingly a "late" addition). OpenAL Soft
-+ does not support the Vorbis and MP3 extensions, however those were considered
-+ deprecated even in the SI. It does, though, support some of the newer
-+ extensions like AL_EXT_FLOAT32 and AL_EXT_MCFORMATS for multi-channel and
-+ floating-point formats, as well as ALC_EXT_EFX for environmental audio effects,
-+ and others.
-+ .
-+ This package installs the OpenAL Soft library debugging symbols.
-+
- Package: libopenal-data
- Architecture: all
- Multi-Arch: foreign
 diff -ruN openal-soft-1.13/debian/rules openal-soft-1.13.new/debian/rules
 --- openal-soft-1.13/debian/rules	2011-10-19 16:10:00.000000000 -0700
-+++ openal-soft-1.13.new/debian/rules	2013-02-17 20:56:41.492073965 -0800
-@@ -42,5 +42,8 @@
- override_dh_auto_install:
- 	$(MAKE) --directory=$(BUILD_TREE) install DESTDIR=$(CURDIR)/debian/tmp
++++ openal-soft-1.13.new/debian/rules	2013-02-26 14:15:04.453542890 -0800
+@@ -2,7 +2,7 @@
  
-+override_dh_strip:
-+	dh_strip --dbg-package=libopenal1-dbg
-+
- get-orig-source:
- 	$(dir $_)openal-soft-get-orig-source
+ # nostrip option implies noopt
+ ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
+-   TYPE=Release
++   TYPE=RelWithDebInfo
+ else
+    TYPE=Debug
+ endif
