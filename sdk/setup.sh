@@ -191,6 +191,11 @@ if [ -z "${URL_PREFIX}" ]; then
     URL_PREFIX="http://media.steampowered.com/client/runtime"
 fi
 
+# Make everything writable if we're using Perforce
+if [ "${USE_P4}" = "true" ]; then
+    chmod -R +w .
+fi
+
 # Save our config
 : >${CONFIG}
 echo "HOST_ARCH=${HOST_ARCH}" >>${CONFIG}
