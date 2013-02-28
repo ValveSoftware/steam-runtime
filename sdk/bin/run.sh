@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 #
 # This is a script which runs programs in the Steam runtime
 
@@ -8,6 +8,7 @@ TOP=$(cd "${0%/*}" && echo "${PWD}/..")
 # Make sure we have something to run
 if [ "$1" = "" ]; then
     echo "Usage: $0 program [args]"
+    exit 1
 fi
 
 if [ -z "${STEAM_RUNTIME}" ]; then

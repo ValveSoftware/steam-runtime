@@ -8,6 +8,7 @@ TOP=$(cd "${0%/*}" && echo ${PWD})
 # Make sure we have something to run
 if [ "$1" = "" ]; then
     echo "Usage: $0 program [args]"
+    exit 1
 fi
 
 # Note that we put the Steam runtime first
