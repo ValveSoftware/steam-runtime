@@ -99,7 +99,7 @@ sed "s,http://media.steampowered.com/client/runtime/.*,http://media.steampowered
 mv "${WORKDIR}/README.txt.new" "${WORKDIR}/README.txt"
 
 # Install the runtime packages
-make ${ARCHITECTURE} DEVELOPER_MODE=${DEVELOPER_MODE} DEBUG=${DEBUG} RUNTIME_PATH="tmp/${RUNTIME_NAME}" || exit 3
+make packages ARCH=${ARCHITECTURE} DEVELOPER_MODE=${DEVELOPER_MODE} DEBUG=${DEBUG} RUNTIME_PATH="tmp/${RUNTIME_NAME}" || exit 3
 
 # Publish the symbols if desired
 if [ "${DEVELOPER_MODE}" = "true" -a "${DEBUG}" = "false" -a -x publish_symbols.sh ]; then
