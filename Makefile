@@ -9,7 +9,7 @@ amd64 i386:
 update:
 	./buildroot.sh --arch=i386 --update
 	./buildroot.sh --arch=amd64 --update
-	./update-packages.sh
+	./buildroot.sh ./update-packages.sh
 
 clean-log:
 	@rm -f build.log
