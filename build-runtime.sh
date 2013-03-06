@@ -106,12 +106,13 @@ build_package()
         SOURCE_DIR="/tmp/source/${PACKAGE}"
         PACKAGE_DIR="$(basename "${DSC}" .dsc | sed 's,_\([^-]*\).*,-\1,')"
         if [ -d "${SOURCE_DIR}" ]; then
-            echo -n "${SOURCE_DIR} already exists, remove it? [Y/n]: "
-            read answer
-            if [ "$answer" = "n" ]; then
-                echo "Please create a patch of any local changes and restart." >&2
-                exit 20
-            fi
+            # Always start fresh...
+            #echo -n "${SOURCE_DIR} already exists, remove it? [Y/n]: "
+            #read answer
+            #if [ "$answer" = "n" ]; then
+            #    echo "Please create a patch of any local changes and restart." >&2
+            #    exit 20
+            #fi
             rm -rf "${SOURCE_DIR}"
         fi
 
