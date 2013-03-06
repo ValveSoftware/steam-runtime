@@ -6,14 +6,11 @@ cd "$(dirname "$0")"
 # Use root path
 export PATH=/sbin:$PATH
 
+# Use the C locale for simplicity
+export LC_ALL="C"
+
 # Use proxy environment
 . /etc/environment; export http_proxy
-
-# Make sure locales are set up
-if [ "$LANG" != "" ]; then
-    locale-gen $LANG
-    sudo dpkg-reconfigure locales
-fi
 
 # Upgrade environment
 sudo apt-get -y update

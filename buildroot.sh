@@ -231,6 +231,11 @@ action_shell()
     cat >"$root/shell.sh" <<__EOF__
 #!/bin/sh
 
+# Make sure LC_ALL is set for the chroot environment
+if [ "$LC_ALL" = "" ]; then
+    export LC_ALL="C"
+fi
+
 # This adds the word "buildroot" to the bash prompt
 debian_chroot=buildroot-$arch
 export debian_chroot
