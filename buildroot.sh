@@ -140,7 +140,8 @@ mount_chroot()
 
 unmount_chroot()
 {
-    if ! sudo -nv 2>/dev/null; then
+    SUDO_ASKPASS=/bin/false sudo -v -A 2>/dev/null
+    if [ $? -ne 0 ]; then
         echo "Please enter your password to unmount chroot environment"
     fi
 
