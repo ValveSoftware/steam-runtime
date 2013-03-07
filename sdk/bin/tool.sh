@@ -49,8 +49,8 @@ function insert_arg()
     # Shift other elements up
     i=${#ARGS[@]}
     while [ $i -gt ${INDEX} ]; do
-        ARGS[$i]="${ARGS[$(expr $i - 1)]}"
-        i=$(expr $i - 1)
+        ARGS[$i]="${ARGS[$(($i - 1))]}"
+        i=$(($i - 1))
     done
 
     # Add the new argument
@@ -88,13 +88,13 @@ function update_includes()
 
     i=${#ARGS[@]}
     while [ $i -gt 0 ]; do
-        i=$(expr $i - 1)
+        i=$(($i - 1))
         case "${ARGS[$i]}" in
         -I)
-            path="${ARGS[$(expr $i + 1)]}"
+            path="${ARGS[$(($i + 1))]}"
             case "${path}" in
             /usr/include*|/usr/lib*)
-                ARGS[$(expr $i + 1)]="${STEAM_RUNTIME_ROOT}${path}"
+                ARGS[$(($i + 1))]="${STEAM_RUNTIME_ROOT}${path}"
                 ;;
             esac
             INCLUDE_PATHS["${path}"]=true
@@ -122,14 +122,14 @@ function update_libraries()
 
     i=${#ARGS[@]}
     while [ $i -gt 0 ]; do
-        i=$(expr $i - 1)
+        i=$(($i - 1))
         case "${ARGS[$i]}" in
         -L)
-            path="${ARGS[$(expr $i + 1)]}"
+            path="${ARGS[$(($i + 1))]}"
             case "${path}" in
             /usr/lib*)
-                ARGS[$(expr $i + 1)]="${STEAM_RUNTIME_ROOT}${path}"
-                insert_arg $(expr $i + 2) "-Wl,-rpath-link=${STEAM_RUNTIME_ROOT}${path}"
+                ARGS[$(($i + 1))]="${STEAM_RUNTIME_ROOT}${path}"
+                insert_arg $(($i + 2)) "-Wl,-rpath-link=${STEAM_RUNTIME_ROOT}${path}"
                 ;;
             esac
             LIBRARY_PATHS["${path}"]=true
@@ -139,7 +139,7 @@ function update_libraries()
             case "${path}" in
             /usr/lib*)
                 ARGS[$i]="-L${STEAM_RUNTIME_ROOT}${path}"
-                insert_arg $(expr $i + 1) "-Wl,-rpath-link=${STEAM_RUNTIME_ROOT}${path}"
+                insert_arg $(($i + 1)) "-Wl,-rpath-link=${STEAM_RUNTIME_ROOT}${path}"
                 ;;
             esac
             LIBRARY_PATHS["${path}"]=true
