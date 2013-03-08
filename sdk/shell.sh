@@ -12,13 +12,13 @@ exit_usage()
     exit 1
 }
 
-HOST_ARCH=$(dpkg --print-architecture)
-export HOST_ARCH
+STEAM_RUNTIME_HOST_ARCH=$(dpkg --print-architecture)
+export STEAM_RUNTIME_HOST_ARCH
 
 while [ "$1" ]; do
     case "$1" in
     --arch=*)
-        TARGET_ARCH=$(expr "$1" : '[^=]*=\(.*\)')
+        STEAM_RUNTIME_TARGET_ARCH=$(expr "$1" : '[^=]*=\(.*\)')
         ;;
     -h|--help)
         exit_usage
@@ -34,24 +34,24 @@ while [ "$1" ]; do
 
     shift
 done
-if [ -z "${TARGET_ARCH}" ]; then
-    TARGET_ARCH="${HOST_ARCH}"
+if [ -z "${STEAM_RUNTIME_TARGET_ARCH}" ]; then
+    STEAM_RUNTIME_TARGET_ARCH="${STEAM_RUNTIME_HOST_ARCH}"
 fi
-export TARGET_ARCH
+export STEAM_RUNTIME_TARGET_ARCH
 
-case "${TARGET_ARCH}" in
+case "${STEAM_RUNTIME_TARGET_ARCH}" in
 i386|amd64)
     ;;
 *)
-    echo "Unknown target architecture: ${TARGET_ARCH}"
+    echo "Unknown target architecture: ${STEAM_RUNTIME_TARGET_ARCH}"
     exit 1
     ;;
 esac
 
 # The top level of the Steam runtime tree
 if [ -z "${STEAM_RUNTIME_ROOT}" ]; then
-    if [ -d "${TOP}/runtime/${TARGET_ARCH}" ]; then
-        STEAM_RUNTIME_ROOT="${TOP}/runtime/${TARGET_ARCH}"
+    if [ -d "${TOP}/runtime/${STEAM_RUNTIME_TARGET_ARCH}" ]; then
+        STEAM_RUNTIME_ROOT="${TOP}/runtime/${STEAM_RUNTIME_TARGET_ARCH}"
     fi
 fi
 if [ ! -d "${STEAM_RUNTIME_ROOT}" ]; then

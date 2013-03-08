@@ -7,24 +7,24 @@ PROGRAM=$(basename "$0")
 # The top level of the cross-compiler tree
 TOP=$(cd "${0%/*}" && echo "${PWD}/..")
 
-if [ -z "${HOST_ARCH}" ]; then
-    export HOST_ARCH=$(dpkg --print-architecture)
+if [ -z "${STEAM_RUNTIME_HOST_ARCH}" ]; then
+    export STEAM_RUNTIME_HOST_ARCH=$(dpkg --print-architecture)
 fi
 
 for arg in "$@"; do
     if [ "${arg}" = "-m32" ]; then
-        TARGET_ARCH="i386"
+        STEAM_RUNTIME_TARGET_ARCH="i386"
         break
     elif [ "${arg}" = "-m64" ]; then
-        TARGET_ARCH="amd64"
+        STEAM_RUNTIME_TARGET_ARCH="amd64"
         break
     fi
 done
-if [ -z "${TARGET_ARCH}" ]; then
-    export TARGET_ARCH="${HOST_ARCH}"
+if [ -z "${STEAM_RUNTIME_TARGET_ARCH}" ]; then
+    export STEAM_RUNTIME_TARGET_ARCH="${STEAM_RUNTIME_HOST_ARCH}"
 fi
             
-case "${TARGET_ARCH}" in
+case "${STEAM_RUNTIME_TARGET_ARCH}" in
 i386)
     CROSSTOOL_PREFIX="i686-unknown-linux-gnu"
     CROSSTOOL_LIBPATH="i386-linux-gnu"
@@ -34,11 +34,11 @@ amd64)
     CROSSTOOL_LIBPATH="x86_64-linux-gnu"
     ;;
 *)
-    echo "Unknown target architecture: ${TARGET_ARCH}"
+    echo "Unknown target architecture: ${STEAM_RUNTIME_TARGET_ARCH}"
     exit 1
     ;;
 esac
-CROSSTOOL_PATH="${TOP}/${HOST_ARCH}/${CROSSTOOL_PREFIX}/bin"
+CROSSTOOL_PATH="${TOP}/${STEAM_RUNTIME_HOST_ARCH}/${CROSSTOOL_PREFIX}/bin"
 
 # Function to insert an argument into a bash array
 function insert_arg()
@@ -70,8 +70,8 @@ declare -A LIBRARY_PATHS
 function check_runtime_root()
 {
     if [ -z "${STEAM_RUNTIME_ROOT}" ]; then
-        if [ -d "${TOP}/runtime/${TARGET_ARCH}" ]; then
-            STEAM_RUNTIME_ROOT="${TOP}/runtime/${TARGET_ARCH}"
+        if [ -d "${TOP}/runtime/${STEAM_RUNTIME_TARGET_ARCH}" ]; then
+            STEAM_RUNTIME_ROOT="${TOP}/runtime/${STEAM_RUNTIME_TARGET_ARCH}"
         fi
         if [ ! -d "${STEAM_RUNTIME_ROOT}" ]; then
             echo "$0: ERROR: Couldn't find steam runtime directory, do you need to run the setup script?" >&2
