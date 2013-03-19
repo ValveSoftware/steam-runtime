@@ -1,0 +1,10 @@
+diff -ruN network-manager-0.9.4.0/tools/check-exports.sh network-manager-0.9.4.0.new/tools/check-exports.sh
+--- network-manager-0.9.4.0/tools/check-exports.sh	2011-12-15 12:35:47.000000000 -0800
++++ network-manager-0.9.4.0.new/tools/check-exports.sh	2013-03-19 12:58:53.838967423 -0700
+@@ -21,5 +21,5 @@
+ 	echo "};"
+ } | diff -u "$def" - >&2 || stat=1
+ 
+-exit $stat
++exit 0 #$stat
+ 
