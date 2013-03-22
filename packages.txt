@@ -130,7 +130,7 @@ nss		libnss3 libnss3-dev
 nvidia-cg-toolkit	nvidia-cg-toolkit libcg
 openal-soft	libopenal1 libopenal-dev
 openldap	libldap-2.4-2 libldap2-dev
-openssl		libssl1.0.0
+openssl		libssl1.0.0 libssl-dev
 orc		liborc-0.4-0 liborc-0.4-dev
 p11-kit		libp11-kit0 libp11-kit-dev
 pango1.0	libpango1.0-0 libpango1.0-dev
