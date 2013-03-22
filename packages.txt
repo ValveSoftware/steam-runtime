@@ -54,6 +54,8 @@ glew		libglew1.6 libglew1.6-dev
 glib2.0		libglib2.0-0 libglib2.0-dev
 gmp		libgmp10 libgmp-dev
 gnutls26	libgnutls26 libgnutls-dev
+gst-plugins-base0.10	libgstreamer-plugins-base0.10-0 libgstreamer-plugins-base0.10-0-dev
+gstreamer0.10	libgstreamer0.10-0 libgstreamer0.10-0-dev
 gtk+2.0		libgtk2.0-common libgtk2.0-0 libgtk2.0-dev
 gtk2-engines	gtk2-engines
 gtk2-engines-murrine	gtk2-engines-murrine
@@ -115,6 +117,7 @@ libxext		libxext6 libxext-dev
 libxfixes	libxfixes3 libxfixes-dev
 libxi		libxi6 libxi-dev
 libxinerama	libxinerama1 libxinerama-dev
+libxml2		libxml2 libxml2-dev
 libxmu		libxmu6 libxmu-dev
 libxpm		libxpm4 libxpm-dev
 libxrandr	libxrandr2 libxrandr-dev
