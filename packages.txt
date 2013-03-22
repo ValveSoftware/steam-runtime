@@ -121,6 +121,7 @@ libxrandr	libxrandr2 libxrandr-dev
 libxrender	libxrender1 libxrender-dev
 libxss		libxss1 libxss-dev
 libxt		libxt6 libxt-dev
+libxtst		libxtst6 libxtst-dev
 libxxf86vm	libxxf86vm1 libxxf86vm-dev
 mesa		libglu1-mesa libglu1-mesa-dev
 ncurses		libncursesw5 libncursesw5-dev libtinfo5 libtinfo-dev
