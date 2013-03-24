@@ -253,7 +253,6 @@ function fold_case()
     find . \( -type f -o -type l \) | sort -f | uniq -i -d | while read file; do
         find "$(dirname "$file")" -iname "$(basename "$file")" | while read other; do
             if [ "$other" != "$file" ]; then
-                p4 revert "$other"
                 rm -v "$other"
             fi
         done
