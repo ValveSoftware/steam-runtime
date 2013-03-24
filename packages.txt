@@ -73,6 +73,7 @@ libav		libavcodec53 libavcodec-dev libavfilter2 libavfilter-dev libavformat53 li
 libcanberra	libcanberra0 libcanberra-dev libcanberra-gtk0 libcanberra-gtk-dev libcanberra-gtk-module
 libcap2		libcap2 libcap-dev
 libdbusmenu	libdbusmenu-glib4 libdbusmenu-gtk4
+libexif		libexif12 libexif-dev
 libffi		libffi6 libffi-dev
 libgcrypt11	libgcrypt11 libgcrypt11-dev
 libgpg-error	libgpg-error0 libgpg-error-dev
