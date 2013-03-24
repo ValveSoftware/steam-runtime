@@ -247,9 +247,23 @@ function update_archive()
     return ${UPDATED_FILES_RETURNCODE}
 }
 
+function fold_case()
+{
+    echo "Removing files with the same case..."
+    find . \( -type f -o -type l \) | sort -f | uniq -i -d | while read file; do
+        find "$(dirname "$file")" -iname "$(basename "$file")" | while read other; do
+            if [ "$other" != "$file" ]; then
+                p4 revert "$other"
+                rm -v "$other"
+            fi
+        done
+    done
+}
+
 function p4reconcile()
 {
     P4LOG=/tmp/p4.log
+    fold_case
     p4 reconcile -f ... >"${P4LOG}"
     echo "Perforce log is in ${P4LOG}"
 }
