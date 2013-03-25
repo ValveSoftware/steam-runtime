@@ -157,6 +157,7 @@ udev		libudev0 libudev-dev libgudev-1.0-0 libgudev-1.0-dev
 util-linux	libuuid1 uuid-dev
 x11proto-composite	x11proto-composite-dev
 x11proto-core	x11proto-core-dev
+x11proto-fixes	x11proto-fixes-dev
 x11proto-input	x11proto-input-dev
 x11proto-kb	x11proto-kb-dev
 x11proto-randr	x11proto-randr-dev
