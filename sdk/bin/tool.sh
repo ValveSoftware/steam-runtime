@@ -162,6 +162,14 @@ function update_libraries()
         LINK_OPTION_PREFIX=""
     fi
 
+    if [ "${LIBRARY_PATHS["/lib"]}" = "" ]; then
+        append_arg "-L${STEAM_RUNTIME_ROOT}/lib"
+        append_arg "${LINK_OPTION_PREFIX}-rpath-link=${STEAM_RUNTIME_ROOT}/lib"
+    fi
+    if [ "${LIBRARY_PATHS["/lib/${CROSSTOOL_LIBPATH}"]}" = "" ]; then
+        append_arg "-L${STEAM_RUNTIME_ROOT}/lib/${CROSSTOOL_LIBPATH}"
+        append_arg "${LINK_OPTION_PREFIX}-rpath-link=${STEAM_RUNTIME_ROOT}/lib/${CROSSTOOL_LIBPATH}"
+    fi
     if [ "${LIBRARY_PATHS["/usr/lib"]}" = "" ]; then
         append_arg "-L${STEAM_RUNTIME_ROOT}/usr/lib"
         append_arg "${LINK_OPTION_PREFIX}-rpath-link=${STEAM_RUNTIME_ROOT}/usr/lib"
