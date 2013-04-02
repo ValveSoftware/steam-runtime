@@ -14,7 +14,7 @@ RUNTIME_VERSION=latest
 
 exit_usage()
 {
-    echo "Usage: $0 [--host=<arch>] [--target=<arch>] [--debug|--release] [--version=<version>] [--depot=<url>] [--perforce] [--reset] [--auto-upgrade] [--checkonly]" >&2
+    echo "Usage: $0 [--host=<arch>] [--target=<arch>] [--debug|--release] [--version=<version>] [--depot=<url>] [--perforce] [--reset] [--auto-update] [--checkonly]" >&2
     exit 1
 }
 
@@ -83,7 +83,7 @@ while [ "$1" ]; do
             reset_sdk
         fi
         ;;
-    --auto-upgrade)
+    --auto-update|--auto-upgrade)
         AUTO_UPGRADE=true
         ;;
     --checkonly)
