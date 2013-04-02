@@ -1,0 +1,23 @@
+diff -ruN libsdl2-mixer-2.0.0/debian/rules libsdl2-mixer-2.0.0.new/debian/rules
+--- libsdl2-mixer-2.0.0/debian/rules	2013-02-18 08:28:21.000000000 -0800
++++ libsdl2-mixer-2.0.0.new/debian/rules	2013-04-02 00:16:14.588834110 -0700
+@@ -22,19 +22,6 @@
+ confflags += --enable-music-fluidsynth
+ confflags += --enable-music-timidity-midi
+ 
+-# mafm 20111203: removed the "disable shared" support from previous versions, I
+-# couldn't find any reason for it in the changelog
+-#
+-# mafm 20111204: issue "disable-*-shared" flags for 'configure' again, otherwise
+-# SDL_mixer library opens those libraries in a plugin-like way (with
+-# SDL_LoadObject), and dpkg-shlibdeps doesn't seem to generate the needed
+-# dependencies in the binary library package
+-confflags += --disable-music-flac-shared
+-confflags += --disable-music-fluidsynth-shared
+-confflags += --disable-music-mod-shared
+-confflags += --disable-music-mp3-shared
+-confflags += --disable-music-ogg-shared
+-
+ %:
+ 	dh $@ --with autoreconf --parallel
+ 
