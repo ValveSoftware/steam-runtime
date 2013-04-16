@@ -7,7 +7,7 @@ if [ -z "${STEAM_RUNTIME_ROOT}" ]; then
     exit 1
 fi
 
-case "${TARGET_ARCH}" in
+case "${STEAM_RUNTIME_TARGET_ARCH}" in
 i386)
     CROSSTOOL_LIBPATH="i386-linux-gnu"
     ;;
@@ -15,7 +15,7 @@ amd64)
     CROSSTOOL_LIBPATH="x86_64-linux-gnu"
     ;;
 *)
-    echo "Unknown target architecture: ${TARGET_ARCH}"
+    echo "Unknown target architecture: ${STEAM_RUNTIME_TARGET_ARCH}"
     exit 1
     ;;
 esac
