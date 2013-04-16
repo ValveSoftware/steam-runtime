@@ -12,8 +12,8 @@ Package-List:
  libsdl2-image deb libs optional
  libsdl2-image-dev deb libdevel optional
 Checksums-Sha1: 
- 03c38e60c0c79e12822a900872db0819e7928726 1786362 libsdl2-image_2.0.0.tar.gz
+ 6e256f253120a519e119ed82a36eb503b01f1fd5 1794049 libsdl2-image_2.0.0.tar.gz
 Checksums-Sha256: 
- b8181766f3853d535c6c7c3216a08f42d70854b6abb67086843a2c40882cc903 1786362 libsdl2-image_2.0.0.tar.gz
+ c3015ef2fbb26af0c8182180abdfa3e3452c31c21833a7d174317b84ec9abf64 1794049 libsdl2-image_2.0.0.tar.gz
 Files: 
- f652b3b98f30b340c9df2740cd3fda94 1786362 libsdl2-image_2.0.0.tar.gz
+ da47a2a115e37e40949e30cd664ca8c1 1794049 libsdl2-image_2.0.0.tar.gz
