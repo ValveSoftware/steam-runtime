@@ -48,7 +48,7 @@ fltk1.1		libfltk1.1 libfltk1.1-dev
 fontconfig	libfontconfig1 libfontconfig1-dev
 freeglut	freeglut3 freeglut3-dev
 freetype	libfreetype6 libfreetype6-dev
-gcc-4.6		libgcc1 libstdc++6 libstdc++6-4.6-dev libgomp1 gcc-4.6-base
+gcc-4.6		libgcc1 libstdc++6 libstdc++6-4.6-dev libstdc++6-4.6-pic libgomp1 gcc-4.6-base
 gdk-pixbuf	libgdk-pixbuf2.0-0 libgdk-pixbuf2.0-dev
 glew		libglew1.6 libglew1.6-dev
 glib2.0		libglib2.0-0 libglib2.0-dev
@@ -103,6 +103,7 @@ libsndfile	libsndfile1 libsndfile1-dev
 libtasn1-3	libtasn1-3 libtasn1-3-dev
 libtheora	libtheora0 libtheora-dev
 libtool		libltdl7 libltdl-dev
+libusb-1.0	libusb-1.0-0 libusb-1.0-dev
 libva		libva1 libva-dev
 libvorbis	libvorbis0a libvorbisfile3 libvorbisenc2 libvorbis-dev
 libvpx		libvpx1 libvpx-dev
