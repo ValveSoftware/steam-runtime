@@ -184,7 +184,7 @@ function print_search_dirs()
 {
     check_runtime_root
 
-    EXTRA_LIBRARY_PATHS="${STEAM_RUNTIME_ROOT}/usr/lib:${STEAM_RUNTIME_ROOT}/usr/lib/${CROSSTOOL_LIBPATH}"
+    EXTRA_LIBRARY_PATHS="${STEAM_RUNTIME_ROOT}/lib:${STEAM_RUNTIME_ROOT}/lib/${CROSSTOOL_LIBPATH}:${STEAM_RUNTIME_ROOT}/usr/lib:${STEAM_RUNTIME_ROOT}/usr/lib/${CROSSTOOL_LIBPATH}"
     "${CROSSTOOL_PATH}/${CROSSTOOL_PREFIX}-${PROGRAM}" "${ARGS[@]}" | sed "s,\(libraries:.*\),\1:${EXTRA_LIBRARY_PATHS},"
 }
 
