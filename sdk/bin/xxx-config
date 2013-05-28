@@ -10,6 +10,11 @@ if [ -z "${STEAM_RUNTIME_ROOT}" ]; then
 fi
 
 # Run the tool...
-"${STEAM_RUNTIME_ROOT}/usr/bin/${PROGRAM}" "$@" | sed -e "s,-I/,-I${STEAM_RUNTIME_ROOT}/,g" -e "s,-L/,-L${STEAM_RUNTIME_ROOT}/,g" 
+result=$("${STEAM_RUNTIME_ROOT}/usr/bin/${PROGRAM}" "$@")
+status=$?
+if [ "$result" != "" ]; then
+    echo "$result" | sed -e "s,-I/,-I${STEAM_RUNTIME_ROOT}/,g" -e "s,-L/,-L${STEAM_RUNTIME_ROOT}/,g" 
+fi
+exit $status
 
 # vi: ts=4 sw=4 expandtab

@@ -24,6 +24,11 @@ PKG_CONFIG_PATH="${STEAM_RUNTIME_ROOT}/usr/lib/${CROSSTOOL_LIBPATH}/pkgconfig:${
 export PKG_CONFIG_PATH
 
 # Run the tool...
-/usr/bin/pkg-config "$@" | sed -e "s,-I/,-I${STEAM_RUNTIME_ROOT}/,g" -e "s,-L/,-L${STEAM_RUNTIME_ROOT}/,g" 
+result=$(/usr/bin/pkg-config "$@")
+status=$?
+if [ "$result" != "" ]; then
+    echo "$result" | sed -e "s,-I/,-I${STEAM_RUNTIME_ROOT}/,g" -e "s,-L/,-L${STEAM_RUNTIME_ROOT}/,g" 
+fi
+exit $status
 
 # vi: ts=4 sw=4 expandtab
