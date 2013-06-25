@@ -4,6 +4,7 @@
 # development environment.
 
 # The top level of the cross-compiler tree
+ORIG_PWD="${PWD}"
 TOP=$(cd "${0%/*}" && echo "${PWD}")
 cd "${TOP}"
 
@@ -286,6 +287,7 @@ if [ "${response}" != "n" ]; then
         ;;
     ${UPDATED_FILES_RETURNCODE})
         echo
+        cd "${ORIG_PWD}"
         exec "$0" --relaunch --host="${HOST_ARCH}" --target="${TARGET_ARCH}" --${RUNTIME_FLAVOR} "${ARGS[@]}"
         ;;
     esac
