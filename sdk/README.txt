@@ -19,7 +19,7 @@ see by running the script with the --help option.
 
 
 Updates
--------------
+-------
 
 You can run the setup script at any time to get the latest version of the SDK:
 	setup.sh --auto-update
@@ -28,36 +28,18 @@ If you need to get an old version, you can specify it with --version:
 	setup.sh --version=2013-02-22
 
 
-Simple Builds
--------------
+Builds
+-------
 
-Just add the bin directory to the beginning of your PATH.
-e.g.
-	export PATH=$PWD/bin:$PATH
-
-You can check to see if your path is set properly by doing:
-	which gcc
-and this should show the version of gcc included in the runtime SDK.
-
-The bin directory contains scripts which wrap the compiler with the
-appropriate flags for the runtime, so if your project is already set
-up with gcc or g++, all you have to do is add the bin directory to
-your path.
-
-
-Complex Builds
---------------
-
-If your build process uses cmake, configure scripts or pkg-config, you can
-use shell.sh to set up the environment for building with the runtime, or just
-look to see what environment variables it sets and use them directly in your
-build process.
+Use the appropriate shell script to set up the environment for building with
+the runtime, or just look to see what environment variables it sets and use
+them directly in your build process.
 
 For example to run a shell targeting 32-bit architecture:
-	shell.sh --arch=i386
+	shell-i386.sh
 
 For example to run a shell targeting 64-bit architecture:
-	shell.sh --arch=amd64
+	shell-amd64.sh
 
 
 Testing

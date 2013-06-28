@@ -12,9 +12,6 @@ exit_usage()
     exit 1
 }
 
-STEAM_RUNTIME_HOST_ARCH=$(dpkg --print-architecture)
-export STEAM_RUNTIME_HOST_ARCH
-
 while [ "$1" ]; do
     case "$1" in
     --arch=*)
@@ -34,8 +31,24 @@ while [ "$1" ]; do
 
     shift
 done
+
+if [ -z "${STEAM_RUNTIME_HOST_ARCH}" ]; then
+    STEAM_RUNTIME_HOST_ARCH=$(dpkg --print-architecture)
+fi
+export STEAM_RUNTIME_HOST_ARCH
+
 if [ -z "${STEAM_RUNTIME_TARGET_ARCH}" ]; then
-    STEAM_RUNTIME_TARGET_ARCH="${STEAM_RUNTIME_HOST_ARCH}"
+    case "$(basename "$0")" in
+    *i386*)
+        STEAM_RUNTIME_TARGET_ARCH=i386
+        ;;
+    *amd64*)
+        STEAM_RUNTIME_TARGET_ARCH=amd64
+        ;;
+    *)
+        STEAM_RUNTIME_TARGET_ARCH="${STEAM_RUNTIME_HOST_ARCH}"
+        ;;
+    esac
 fi
 export STEAM_RUNTIME_TARGET_ARCH
 
@@ -55,17 +68,19 @@ if [ -z "${STEAM_RUNTIME_ROOT}" ]; then
     fi
 fi
 if [ ! -d "${STEAM_RUNTIME_ROOT}" ]; then
-    echo "$0: ERROR: Couldn't find steam runtime directory, do you need to run the setup script?" >&2
-    realpath "${TOP}/setup.sh" >&2
+    echo "$0: ERROR: Couldn't find steam runtime directory"
+    if [ ! -d "${TOP}/runtime/${STEAM_RUNTIME_TARGET_ARCH}" ]; then
+        echo "Do you need to run setup.sh to download the ${STEAM_RUNTIME_TARGET_ARCH} target?" >&2
+    fi
     exit 2
 fi
 export STEAM_RUNTIME_ROOT
 
-# Set up environment variables for this build
 export PATH="${TOP}/bin:$PATH"
 
 # Run the shell!
 if [ "$*" = "" ]; then
+    echo "Setting up for build targeting ${STEAM_RUNTIME_TARGET_ARCH}"
     "${SHELL}" -i
 else
     "$@"
