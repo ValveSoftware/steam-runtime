@@ -13,8 +13,8 @@ Package-List:
  libsdl2-dbg deb debug extra
  libsdl2-dev deb libdevel optional
 Checksums-Sha1: 
- 9e7d1acce65dafff2d12cb2e11062226b1e5a8ca 4792675 libsdl2_2.0.0.tar.gz
+ bfad401f6c65395b60b8e057257f929611743212 3741495 libsdl2_2.0.0.tar.gz
 Checksums-Sha256: 
- 4f74cc49c951775c2fb4cd38702f64c05c00b29a506776b9e594005ccda98d99 4792675 libsdl2_2.0.0.tar.gz
+ 6b32f83d453e5eecb471ac559f699bb9f259f4b31c2c342f2975ca2d0d18ea10 3741495 libsdl2_2.0.0.tar.gz
 Files: 
- 6794642f6c70b4eeb11493f4876eee6d 4792675 libsdl2_2.0.0.tar.gz
+ 242852c8531505225399802bd47d681b 3741495 libsdl2_2.0.0.tar.gz

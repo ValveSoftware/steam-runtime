@@ -12,8 +12,8 @@ Package-List:
  libsdl2-mixer deb libs optional
  libsdl2-mixer-dev deb libdevel optional
 Checksums-Sha1: 
- 2461a0fdccdddd8b81bbaebef62827354266d006 3593301 libsdl2-mixer_2.0.0.tar.gz
+ b755e580fc795d515b1dea744fb77b459afafca5 10292455 libsdl2-mixer_2.0.0.tar.gz
 Checksums-Sha256: 
- 1a84aac8e165ffa7ff795e011ceb0f9ee4fa68a4c3dfd586690b85fcdb7ae74f 3593301 libsdl2-mixer_2.0.0.tar.gz
+ 5b79d79d2705421dd3f6eeeda431e38f8193dd14ab5f76268cd3f2af56c87777 10292455 libsdl2-mixer_2.0.0.tar.gz
 Files: 
- 6988f59fb67459d442d053c79bec252e 3593301 libsdl2-mixer_2.0.0.tar.gz
+ 6f44ba141c2949201980811f26378310 10292455 libsdl2-mixer_2.0.0.tar.gz
