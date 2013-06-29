@@ -162,6 +162,9 @@ function update_libraries()
         LINK_OPTION_PREFIX=""
     fi
 
+    # Make sure everything we build has a build id
+    append_arg "${LINK_OPTION_PREFIX}--build-id"
+
     if [ "${LIBRARY_PATHS["/lib"]}" = "" ]; then
         append_arg "-L${STEAM_RUNTIME_ROOT}/lib"
         append_arg "${LINK_OPTION_PREFIX}-rpath-link=${STEAM_RUNTIME_ROOT}/lib"
