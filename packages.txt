@@ -103,7 +103,7 @@ libsndfile	libsndfile1 libsndfile1-dev
 libtasn1-3	libtasn1-3 libtasn1-3-dev
 libtheora	libtheora0 libtheora-dev
 libtool		libltdl7 libltdl-dev
-libusb-1.0	libusb-1.0-0 libusb-1.0-dev
+libusb-1.0	libusb-1.0-0 libusb-1.0-0-dev
 libva		libva1 libva-dev
 libvorbis	libvorbis0a libvorbisfile3 libvorbisenc2 libvorbis-dev
 libvpx		libvpx1 libvpx-dev
