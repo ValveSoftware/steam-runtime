@@ -5,7 +5,7 @@
 
 # The top level of the cross-compiler tree
 ORIG_PWD="${PWD}"
-TOP=$(cd "${0%/*}" && echo "${PWD}")
+TOP=$(cd "${0%/*}" 2>/dev/null; echo "${PWD}")
 cd "${TOP}"
 
 CONFIG=.config
