@@ -7,7 +7,7 @@ Setup
 The first time you install the runtime SDK, you should run the setup
 script from the command line to download the set of packages you need
 for development:
-	setup.sh
+	bash setup.sh
 
 You can pick your target architecture(s) and either the release or debug
 version of the runtime.  The debug runtime is built without optimizations
