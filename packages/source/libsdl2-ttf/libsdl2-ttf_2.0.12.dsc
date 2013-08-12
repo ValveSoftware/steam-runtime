@@ -12,8 +12,8 @@ Package-List:
  libsdl2-ttf deb libs optional
  libsdl2-ttf-dev deb libdevel optional
 Checksums-Sha1: 
- 45ff059e707cc3f97980243949b9b7b0de56ec23 4016680 libsdl2-ttf_2.0.12.tar.gz
+ c539f3e94d7572a5404ade235890b595aba85e72 4023366 libsdl2-ttf_2.0.12.tar.gz
 Checksums-Sha256: 
- c7df26dc017fd58ee223c6f439e4cb85ed982ac579cbc27f332b2ed19d5efd55 4016680 libsdl2-ttf_2.0.12.tar.gz
+ a7359f857f564b161d92bc76d38a228c20b3daf5426f545dfcd4fdd2316abcc3 4023366 libsdl2-ttf_2.0.12.tar.gz
 Files: 
- a0c1c2edabc34041c204e62bdc6755b1 4016680 libsdl2-ttf_2.0.12.tar.gz
+ 077e299fe41378980b0ec143da49aa2c 4023366 libsdl2-ttf_2.0.12.tar.gz

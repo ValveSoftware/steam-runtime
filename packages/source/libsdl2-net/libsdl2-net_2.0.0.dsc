@@ -12,8 +12,8 @@ Package-List:
  libsdl2-net deb libs optional
  libsdl2-net-dev deb libdevel optional
 Checksums-Sha1: 
- 761316245c94f8968d3aa466b460f4b2e5972285 354537 libsdl2-net_2.0.0.tar.gz
+ b61d996b16a38f0be3a353691ca269933eb15c7b 362431 libsdl2-net_2.0.0.tar.gz
 Checksums-Sha256: 
- c409de21b54bcf82332c05bf4c43a012b3a768fb7b4f8381f11d028112068548 354537 libsdl2-net_2.0.0.tar.gz
+ e5dd6413bf4d0ea37113be3c850d19ccd82ed4ed0ed0c113a10529b906194466 362431 libsdl2-net_2.0.0.tar.gz
 Files: 
- 5139833fd82c589e1e2bfb5e0972b92b 354537 libsdl2-net_2.0.0.tar.gz
+ 30a1d351a46a68810603088819013295 362431 libsdl2-net_2.0.0.tar.gz
