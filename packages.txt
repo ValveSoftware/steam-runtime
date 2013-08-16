@@ -38,6 +38,7 @@ cairo		libcairo2 libcairo2-dev
 cups		libcups2 libcups2-dev
 curl		libcurl3 libcurl3-gnutls libcurl4-gnutls-dev
 cyrus-sasl2	libsasl2-2 libsasl2-dev
+d-conf		dconf-gsettings-backend
 dbus		libdbus-1-3 libdbus-1-dev
 dbus-glib	libdbus-glib-1-2 libdbus-glib-1-dev
 dummygl		dummygl-dev
