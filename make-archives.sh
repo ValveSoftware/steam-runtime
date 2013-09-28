@@ -38,11 +38,9 @@ if [ -z "${ARCHIVE_OUTPUT_DIR}" ]; then
 fi
 
 # Create all the runtime archives
-for ARCHITECTURE in i386 amd64; do
-    for DEVELOPER_MODE in false true; do
-        for DEBUG in false true; do
-            ./make-archive.sh --arch=${ARCHITECTURE} --debug=${DEBUG} --devmode=${DEVELOPER_MODE} --version="${VERSION}" "${ARCHIVE_OUTPUT_DIR}"
-        done
+for DEVELOPER_MODE in false true; do
+    for DEBUG in false true; do
+        ./make-archive.sh --debug=${DEBUG} --devmode=${DEVELOPER_MODE} --version="${VERSION}" "${ARCHIVE_OUTPUT_DIR}"
     done
 done
 
