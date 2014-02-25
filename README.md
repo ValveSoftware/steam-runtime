@@ -1,7 +1,22 @@
 steam-runtime
 =============
 
-An experimental runtime environment for Steam applications
+A runtime environment for Steam applications
+
+Developing against or shipping with the runtime
+-----------------------------------------------
+
+Grab the latest runtime SDK from there:
+
+http://media.steampowered.com/client/runtime/steam-runtime-sdk_latest.tar.xz
+
+Read this to get started:
+
+https://github.com/ValveSoftware/steam-runtime/blob/master/sdk/README.txt
+
+
+Modifying or contributing to the runtime
+----------------------------------------
 
 This directory contains scripts for building a Steam runtime environment
 and tools to target that environment.

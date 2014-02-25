@@ -2,7 +2,7 @@ Format: 3.0 (native)
 Source: libsdl2
 Binary: libsdl2, libsdl2-dev, libsdl2-dbg
 Architecture: any
-Version: 2.0.0
+Version: 2.0.1
 Maintainer: Debian SDL packages maintainers <pkg-sdl-maintainers@lists.alioth.debian.org>
 Uploaders: Barry deFreese <bdefreese@debian.org>, Sam Hocevar <sho@debian.org>, Manuel A. Fernandez Montecelo <manuel.montezelo@gmail.com>, Felix Geyer <fgeyer@debian.org>, Sam Lantinga <slouken@libsdl.org>
 Homepage: http://www.libsdl.org/
@@ -13,8 +13,8 @@ Package-List:
  libsdl2-dbg deb debug extra
  libsdl2-dev deb libdevel optional
 Checksums-Sha1: 
- ecb0ed421eec6ff03950d9bd20f3833be263ffdb 3758828 libsdl2_2.0.0.tar.gz
+ 73ddde1e79d5d94e1cbb1fa71da53c203f3e0452 3800098 libsdl2_2.0.1.tar.gz
 Checksums-Sha256: 
- a66cc88ff0ae407e35d4cd19bfc999f0669624f83abf8e4e015c3d51cb192005 3758828 libsdl2_2.0.0.tar.gz
+ 725729d666796d7356cfce105fba11e59a88423fabcd94993dacd36366345543 3800098 libsdl2_2.0.1.tar.gz
 Files: 
- 6153ac5d2e6b5b19262ece60c89ea964 3758828 libsdl2_2.0.0.tar.gz
+ 995465298841ef96803d7e3aa08804e3 3800098 libsdl2_2.0.1.tar.gz

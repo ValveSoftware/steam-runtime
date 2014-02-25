@@ -330,17 +330,15 @@ else
 fi
 if [ "${response}" != "n" ]; then
     AVAILABLE_UPDATES=false
-    for target_arch in ${TARGET_ARCH}; do
-        mkdir -p runtime-${RUNTIME_FLAVOR}
-        update_archive steam-runtime-dev-${RUNTIME_FLAVOR}-${target_arch} runtime-${RUNTIME_FLAVOR}
-        case $? in
-        0)
-            ;;
-        *)
-            AVAILABLE_UPDATES=true
-            ;;
-        esac
-    done
+    mkdir -p runtime-${RUNTIME_FLAVOR}
+    update_archive steam-runtime-dev-${RUNTIME_FLAVOR} runtime-${RUNTIME_FLAVOR}
+    case $? in
+    0)
+        ;;
+    *)
+        AVAILABLE_UPDATES=true
+        ;;
+    esac
     if [ "${AVAILABLE_UPDATES}" != "true" -a "${AUTO_UPGRADE}" != "true" ]; then
         echo "No updates available."
     fi

@@ -38,6 +38,7 @@ cairo		libcairo2 libcairo2-dev
 cups		libcups2 libcups2-dev
 curl		libcurl3 libcurl3-gnutls libcurl4-gnutls-dev
 cyrus-sasl2	libsasl2-2 libsasl2-dev
+d-conf		dconf-gsettings-backend
 dbus		libdbus-1-3 libdbus-1-dev
 dbus-glib	libdbus-glib-1-2 libdbus-glib-1-dev
 dummygl		dummygl-dev
@@ -49,6 +50,7 @@ fontconfig	libfontconfig1 libfontconfig1-dev
 freeglut	freeglut3 freeglut3-dev
 freetype	libfreetype6 libfreetype6-dev
 gcc-4.6		libgcc1 libstdc++6 libstdc++6-4.6-dev libstdc++6-4.6-pic libgomp1 gcc-4.6-base
+gconf		libgconf-2-4 libgconf2-dev
 gdk-pixbuf	libgdk-pixbuf2.0-0 libgdk-pixbuf2.0-dev
 glew		libglew1.6 libglew1.6-dev
 glib2.0		libglib2.0-0 libglib2.0-dev
@@ -62,7 +64,6 @@ gtk2-engines-murrine	gtk2-engines-murrine
 gtk2-engines-pixbuf	gtk2-engines-pixbuf
 heimdal		libasn1-8-heimdal libgssapi3-heimdal libhcrypto4-heimdal libheimbase1-heimdal libheimntlm0-heimdal libhx509-5-heimdal libkrb5-26-heimdal libroken18-heimdal libwind0-heimdal
 jack-audio-connection-kit	libjack0 libjack-dev
-jasper		libjasper1 libjasper-dev
 json-c		libjson0 libjson0-dev
 keyutils	libkeyutils1 libkeyutils-dev
 krb5		libkrb5-3 libkrb5-dev libk5crypto3 libkrb5support0 libgssapi-krb5-2 krb5-multidev
@@ -77,17 +78,14 @@ libexif		libexif12 libexif-dev
 libffi		libffi6 libffi-dev
 libgcrypt11	libgcrypt11 libgcrypt11-dev
 libgpg-error	libgpg-error0 libgpg-error-dev
-libgsm		libgsm1 libgsm1-dev
 libice		libice6 libice-dev
 libidn		libidn11 libidn11-dev
 libindicator	libindicator7 libindicator-dev
 libjpeg6b	libjpeg62 libjpeg62-dev
 libjpeg-turbo	libjpeg-turbo8
-libmad		libmad0 libmad0-dev
 libmikmod	libmikmod2 libmikmod2-dev
 libnotify	libnotify4 libnotify-dev
 libogg		libogg0 libogg-dev
-#libogre-1.7.4	libogre-1.7.4 libogre-dev
 libpng		libpng12-0 libpng12-dev
 libsamplerate	libsamplerate0 libsamplerate0-dev
 libsdl1.2	libsdl1.2debian libsdl1.2-dev
@@ -98,13 +96,13 @@ libsdl2-net	libsdl2-net libsdl2-net-dev
 libsdl2-ttf	libsdl2-ttf libsdl2-ttf-dev
 libselinux	libselinux1 libselinux1-dev
 libsm		libsm6 libsm-dev
-libsmpeg0	libsmpeg0 libsmpeg-dev
 libsndfile	libsndfile1 libsndfile1-dev
 libtasn1-3	libtasn1-3 libtasn1-3-dev
 libtheora	libtheora0 libtheora-dev
 libtool		libltdl7 libltdl-dev
 libusb-1.0	libusb-1.0-0 libusb-1.0-0-dev
 libva		libva1 libva-dev
+libvdpau	libvdpau1 libvdpau-dev
 libvorbis	libvorbis0a libvorbisfile3 libvorbisenc2 libvorbis-dev
 libvpx		libvpx1 libvpx-dev
 libx11		libx11-6 libx11-dev libx11-xcb1 libx11-xcb-dev libx11-data
@@ -144,7 +142,6 @@ pcre3		libpcre3 libpcrecpp0 libpcre3-dev
 pixman		libpixman-1-0 libpixman-1-dev
 pulseaudio	libpulse0 libpulse-dev
 rtmpdump	librtmp0 librtmp-dev
-schroedinger	libschroedinger-1.0-0 libschroedinger-dev
 sdl-image1.2	libsdl-image1.2	libsdl-image1.2-dev
 sdl-mixer1.2	libsdl-mixer1.2 libsdl-mixer1.2-dev
 sdl-ttf2.0	libsdl-ttf2.0-0 libsdl-ttf2.0-dev

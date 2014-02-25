@@ -1,0 +1,31 @@
+diff -ruN sdl-mixer1.2-1.2.11/debian/control sdl-mixer1.2-1.2.11.new/debian/control
+--- sdl-mixer1.2-1.2.11/debian/control	2011-12-21 11:06:00.000000000 -0800
++++ sdl-mixer1.2-1.2.11.new/debian/control	2013-12-18 11:40:26.577843936 -0800
+@@ -9,7 +9,6 @@
+                dh-autoreconf,
+                dpkg-dev (>= 1.16.1~),
+                libflac-dev (>= 1.2.1),
+-               libmad0-dev (>= 0.15.1b),
+                libmikmod2-dev (>= 3.1.11),
+                libogg-dev (>= 1.2.0),
+                libsdl1.2-dev (>= 1.2.14),
+@@ -39,7 +38,6 @@
+ Depends: ${misc:Depends},
+          libc6-dev,
+          libflac-dev (>= 1.2.1),
+-         libmad0-dev (>= 0.15.1b),
+          libmikmod2-dev (>= 3.1.11),
+          libogg-dev (>= 1.2.0),
+          libsdl-mixer1.2 (= ${binary:Version}),
+diff -ruN sdl-mixer1.2-1.2.11/debian/rules sdl-mixer1.2-1.2.11.new/debian/rules
+--- sdl-mixer1.2-1.2.11/debian/rules	2011-12-20 10:52:10.000000000 -0800
++++ sdl-mixer1.2-1.2.11.new/debian/rules	2013-12-18 11:37:04.228840542 -0800
+@@ -16,7 +16,7 @@
+ confflags += --enable-music-ogg
+ confflags += --enable-music-mod
+ confflags += --disable-music-mp3
+-confflags += --enable-music-mp3-mad-gpl
++confflags += --disable-music-mp3-mad-gpl
+ 
+ # MIDI: use GPL code for the native MIDI player, explicitly state that we use
+ # (an in-source copy of) timidity

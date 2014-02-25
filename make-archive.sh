@@ -12,25 +12,13 @@ ARCHIVE_EXT="tar.xz"
 
 function ExitUsage()
 {
-    echo "Usage: $0 --arch=<value> --debug=<true|false> --devmode=<true|false> --version=<value> <output-path>" >&2
+    echo "Usage: $0 --debug=<true|false> --devmode=<true|false> --version=<value> <output-path>" >&2
     exit 1
 }
 
 # Process command line options
 while [ "$1" != "" ]; do
     case "$1" in
-    --arch=*)
-        ARCHITECTURE=$(expr "$1" : '[^=]*=\(.*\)')
-        case "${ARCHITECTURE}" in
-        i386|amd64)
-            ;;
-        *)
-            echo "Unsupported architecture: ${ARCHITECTURE}" >&2
-            exit 2
-            ;;
-        esac
-        shift
-        ;;
     --debug=*)
         DEBUG=$(expr "$1" : '[^=]*=\(.*\)')
         case "${DEBUG}" in
@@ -69,7 +57,7 @@ while [ "$1" != "" ]; do
         break
     esac
 done
-if [ -z "${ARCHITECTURE}" -o -z "${DEVELOPER_MODE}" -o -z "${DEBUG}" -o -z "${VERSION}" ]; then
+if [ -z "${DEVELOPER_MODE}" -o -z "${DEBUG}" -o -z "${VERSION}" ]; then
     ExitUsage
 fi
 
@@ -83,7 +71,7 @@ if [ "${DEBUG}" = "true" ]; then
 else
     RUNTIME_NAME="${RUNTIME_NAME}-release"
 fi
-RUNTIME_NAME="${RUNTIME_NAME}-${ARCHITECTURE}_${VERSION}"
+RUNTIME_NAME="${RUNTIME_NAME}_${VERSION}"
 
 # Create the temporary output path
 make clean-runtime
@@ -99,12 +87,14 @@ sed "s,http://media.steampowered.com/client/runtime/.*,http://media.steampowered
 mv "${WORKDIR}/README.txt.new" "${WORKDIR}/README.txt"
 
 # Install the runtime packages
-make packages ARCH=${ARCHITECTURE} DEVELOPER_MODE=${DEVELOPER_MODE} DEBUG=${DEBUG} RUNTIME_PATH="tmp/${RUNTIME_NAME}" || exit 3
+for ARCHITECTURE in i386 amd64; do
+    make packages ARCH=${ARCHITECTURE} DEVELOPER_MODE=${DEVELOPER_MODE} DEBUG=${DEBUG} RUNTIME_PATH="tmp/${RUNTIME_NAME}" || exit 3
 
-# Publish the symbols if desired
-if [ "${DEVELOPER_MODE}" = "true" -a "${DEBUG}" = "false" -a -x publish_symbols.sh ]; then
-    ./publish_symbols.sh tmp/${RUNTIME_NAME}/${ARCHITECTURE} | tee /tmp/publish-symbols-${ARCHITECTURE}.log
-fi
+    # Publish the symbols if desired
+    if [ "${DEVELOPER_MODE}" = "true" -a "${DEBUG}" = "false" -a -x publish_symbols.sh ]; then
+        ./publish_symbols.sh tmp/${RUNTIME_NAME}/${ARCHITECTURE} | tee /tmp/publish-symbols-${ARCHITECTURE}.log
+    fi
+done
 
 # Pack it up!
 ARCHIVE_NAME="${RUNTIME_NAME}.${ARCHIVE_EXT}"

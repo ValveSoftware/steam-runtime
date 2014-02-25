@@ -1,0 +1,24 @@
+diff -ruN gdk-pixbuf-2.26.1/debian/control gdk-pixbuf-2.26.1.new/debian/control
+--- gdk-pixbuf-2.26.1/debian/control	2013-12-02 15:22:16.088890813 -0800
++++ gdk-pixbuf-2.26.1.new/debian/control	2013-12-02 15:24:12.125466207 -0800
+@@ -16,7 +16,6 @@
+                libx11-dev,
+                libpng-dev | libpng12-dev,
+                libjpeg-dev,
+-               libjasper-dev,
+                libtiff4-dev,
+                gobject-introspection (>= 0.9.12-4~),
+                libgirepository1.0-dev (>= 0.9.3),
+diff -ruN gdk-pixbuf-2.26.1/debian/rules gdk-pixbuf-2.26.1.new/debian/rules
+--- gdk-pixbuf-2.26.1/debian/rules	2013-12-02 15:22:16.088890813 -0800
++++ gdk-pixbuf-2.26.1.new/debian/rules	2013-12-02 15:23:59.005401148 -0800
+@@ -6,8 +6,7 @@
+ include /usr/share/gnome-pkg-tools/1/rules/gnome-get-source.mk
+ 
+ DEB_MAKE_CHECK_TARGET = check
+-DEB_CONFIGURE_EXTRA_FLAGS := --with-libjasper \
+-                             --with-x11 \
++DEB_CONFIGURE_EXTRA_FLAGS := --with-x11 \
+                              --with-included-loaders="icns,pcx,ras,tga,png,pnm,wbmp,xbm,xpm,qtif,bmp,ico,jpeg,tiff" \
+                              --enable-introspection \
+                              --libdir=\$${prefix}/lib/$(DEB_HOST_MULTIARCH)
