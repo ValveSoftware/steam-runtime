@@ -1,0 +1,69 @@
+diff -r a07aebef20e7 build/autoconf/toolchain.m4
+--- a/build/autoconf/toolchain.m4	Fri Nov 08 14:53:47 2013 -0500
++++ b/build/autoconf/toolchain.m4	Fri Nov 08 23:22:29 2013 +0000
+@@ -133,6 +133,7 @@
+ AC_CHECK_PROGS(LD, "${target_alias}-ld" "${target}-ld", :)
+ AC_CHECK_PROGS(STRIP, "${target_alias}-strip" "${target}-strip", :)
+ AC_CHECK_PROGS(WINDRES, "${target_alias}-windres" "${target}-windres", :)
++AC_CHECK_PROGS(OTOOL, "${target_alias}-otool" "${target}-otool", :)
+ AC_DEFINE(CROSS_COMPILE)
+ 
+ dnl If we cross compile for ppc on Mac OS X x86, cross_compiling will
+diff -r a07aebef20e7 configure.in
+--- a/configure.in	Fri Nov 08 14:53:47 2013 -0500
++++ b/configure.in	Fri Nov 08 23:22:29 2013 +0000
+@@ -326,6 +326,7 @@
+     AC_CHECK_PROGS(LD, ld, :)
+     AC_CHECK_PROGS(STRIP, strip, :)
+     AC_CHECK_PROGS(WINDRES, windres, :)
++    AC_CHECK_PROGS(OTOOL, otool, :)
+     if test -z "$HOST_CC"; then
+         HOST_CC="$CC"
+     fi
+@@ -6847,12 +6848,12 @@
+                  dnl - classic info only (for OSX < 10.6)
+                  dnl - dyld info only
+                  dnl - both
+-                 if otool -l conftest${DLL_SUFFIX} 2> /dev/null | grep "LC_DYLD_INFO_ONLY" > /dev/null; then
++                 if ${OTOOL-otool} -l conftest${DLL_SUFFIX} 2> /dev/null | grep "LC_DYLD_INFO_ONLY" > /dev/null; then
+                      _CLASSIC_INFO=
+                  else
+                      _CLASSIC_INFO=1
+                  fi
+-                 if otool -l conftest${DLL_SUFFIX} 2> /dev/null | grep "LC_DYLD_INFO" > /dev/null; then
++                 if ${OTOOL-otool} -l conftest${DLL_SUFFIX} 2> /dev/null | grep "LC_DYLD_INFO" > /dev/null; then
+                      _DYLD_INFO=1
+                  else
+                      _DYLD_INFO=
+@@ -8992,7 +8993,7 @@
+     ac_configure_args="$ac_configure_args --disable-tls"
+   fi
+   EXTRA_CFLAGS="$CFLAGS"
+-  for var in AS CC CXX CPP LD AR RANLIB STRIP CPPFLAGS EXTRA_CFLAGS LDFLAGS; do
++  for var in AS CC CXX CPP LD AR RANLIB STRIP CPPFLAGS OTOOL EXTRA_CFLAGS LDFLAGS; do
+     ac_configure_args="$ac_configure_args $var='`eval echo \\${${var}}`'"
+   done
+   if test "$CROSS_COMPILE"; then
+diff -r a07aebef20e7 js/src/build/autoconf/toolchain.m4
+--- a/js/src/build/autoconf/toolchain.m4	Fri Nov 08 14:53:47 2013 -0500
++++ b/js/src/build/autoconf/toolchain.m4	Fri Nov 08 23:22:29 2013 +0000
+@@ -133,6 +133,7 @@
+ AC_CHECK_PROGS(LD, "${target_alias}-ld" "${target}-ld", :)
+ AC_CHECK_PROGS(STRIP, "${target_alias}-strip" "${target}-strip", :)
+ AC_CHECK_PROGS(WINDRES, "${target_alias}-windres" "${target}-windres", :)
++AC_CHECK_PROGS(OTOOL, "${target_alias}-otool" "${target}-otool", :)
+ AC_DEFINE(CROSS_COMPILE)
+ 
+ dnl If we cross compile for ppc on Mac OS X x86, cross_compiling will
+diff -r a07aebef20e7 toolkit/library/dependentlibs.py
+--- a/toolkit/library/dependentlibs.py	Fri Nov 08 14:53:47 2013 -0500
++++ b/toolkit/library/dependentlibs.py	Fri Nov 08 23:22:29 2013 +0000
+@@ -71,7 +71,7 @@
+ 
+ def dependentlibs_otool(lib):
+     '''Returns the list of dependencies declared in the given MACH-O dylib'''
+-    proc = subprocess.Popen(['otool', '-l', lib], stdout = subprocess.PIPE)
++    proc = subprocess.Popen([TOOLCHAIN_PREFIX + 'otool', '-l', lib], stdout = subprocess.PIPE)
+     deps= []
+     cmd = None
+     for line in proc.stdout:

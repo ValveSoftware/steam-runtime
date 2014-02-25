@@ -1,0 +1,74 @@
+From 7d6797f7936a8b9bc33fe32914e033aa4d9d828d Mon Sep 17 00:00:00 2001
+From: Ray Donnelly <mingw.android@gmail.com>
+Date: Thu, 23 Jan 2014 20:31:22 +0000
+Subject: [PATCH 22/28] Add glibc 2.15 patch from Gentoo for cross compiling
+
+Url
+http://sources.gentoo.org/cgi-bin/viewvc.cgi/gentoo/src/patchsets/glibc/2.15/0095_all_glibc-2.15-ctors-dtors-test.patch
+
+Comment
+backport a fix from upstream for cross-compiling glibc w/out glibc already installed #413561 by Dmitry Derevyanko
+---
+ .../150-0095_all_glibc-2.15-ctors-dtors-test.patch | 50 ++++++++++++++++++++++
+ 1 file changed, 50 insertions(+)
+ create mode 100644 patches/glibc/2.15/150-0095_all_glibc-2.15-ctors-dtors-test.patch
+
+diff --git a/patches/glibc/2.15/150-0095_all_glibc-2.15-ctors-dtors-test.patch b/patches/glibc/2.15/150-0095_all_glibc-2.15-ctors-dtors-test.patch
+new file mode 100644
+index 0000000..02880ca
+--- /dev/null
++++ b/patches/glibc/2.15/150-0095_all_glibc-2.15-ctors-dtors-test.patch
+@@ -0,0 +1,50 @@
++this is a stripped down version of the upstream commit to work with glibc-2.15
++
++https://bugs.gentoo.org/413561
++
++From 07037eeb43ca1e0ac2802e3a1492cecf869c63c6 Mon Sep 17 00:00:00 2001
++From: Joseph Myers <joseph@codesourcery.com>
++Date: Thu, 8 Mar 2012 00:17:27 +0000
++Subject: [PATCH] Fix .ctors/.dtors header configure test for bootstrapping.
++
++2012-03-08  Joseph Myers  <joseph@codesourcery.com>
++
++	* aclocal.m4 (LIBC_TRY_LINK_STATIC): New macro.
++	* configure.in (libc_cv_preinit_array): Use LIBC_TRY_LINK_STATIC.
++	(libc_cv_ctors_header): Likewise.  Use asm ("") instead of calling
++	puts.
++	* configure: Regenerated.
++
++--- a/configure	2014-01-23 21:45:19.176281900 +0000
+++++ b/configure	2014-01-23 21:44:36.812858900 +0000
++@@ -6196,18 +6196,21 @@
++     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
++ /* end confdefs.h.  */
++ 
++-int
++-main ()
++-{
+++int _start (void) { return 0; }
+++int __start (void) { return 0; }
++ 
++-__attribute__ ((constructor)) void ctor (void) { puts("ctor"); }
++-__attribute__ ((destructor))  void dtor (void) { puts("dtor"); }
+++__attribute__ ((constructor)) void ctor (void) { asm(""); }
+++__attribute__ ((destructor))  void dtor (void) { asm(""); }
++ 
++-  ;
++-  return 0;
++-}
++ _ACEOF
++-if ac_fn_c_try_link "$LINENO"; then :
+++if { ac_try='${CC-cc} $CFLAGS $CPPFLAGS $LDFLAGS -o conftest
+++		       conftest.c -static -nostartfiles -nostdlib
+++		       1>&5'
+++  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+++  (eval $ac_try) 2>&5
+++  ac_status=$?
+++  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+++  test $ac_status = 0; }; }; then :
++         if $READELF -WS conftest$ac_exeext | $AWK '
++ 	{ gsub(/\[ */, "[") }
++ 	$2 == ".ctors" || $2 == ".dtors" {
+-- 
+1.8.5.3
+

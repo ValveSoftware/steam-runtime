@@ -1,0 +1,185 @@
+CT_LOCAL_TARBALLS_DIR="${HOME}/src"
+CT_SAVE_TARBALLS=y
+CT_ARCH="arm"
+CT_ARCH_SUPPORTS_BOTH_MMU=y
+CT_ARCH_SUPPORTS_BOTH_ENDIAN=y
+CT_ARCH_SUPPORTS_32=y
+CT_ARCH_SUPPORTS_WITH_ARCH=y
+CT_ARCH_SUPPORTS_WITH_CPU=y
+CT_ARCH_SUPPORTS_WITH_TUNE=y
+CT_ARCH_SUPPORTS_WITH_FLOAT=y
+CT_ARCH_SUPPORTS_WITH_FPU=y
+CT_ARCH_SUPPORTS_SOFTFP=y
+CT_ARCH_DEFAULT_HAS_MMU=y
+CT_ARCH_DEFAULT_LE=y
+CT_ARCH_DEFAULT_32=y
+CT_ARCH_ARCH="armv6"
+CT_ARCH_CPU=""
+CT_ARCH_TUNE="arm1176jzf-s"
+CT_ARCH_FPU="vfp"
+# CT_ARCH_BE is not set
+CT_ARCH_LE=y
+CT_ARCH_32=y
+CT_ARCH_BITNESS=32
+CT_ARCH_FLOAT_HW=y
+# CT_ARCH_FLOAT_SW is not set
+CT_TARGET_CFLAGS=""
+CT_TARGET_LDFLAGS=""
+CT_ARCH_arm=y
+# CT_ARCH_x86 is not set
+# CT_ARCH_sh is not set
+# CT_ARCH_avr32 is not set
+# CT_ARCH_mips is not set
+# CT_ARCH_sparc is not set
+# CT_ARCH_powerpc is not set
+# CT_ARCH_s390 is not set
+# CT_ARCH_m68k is not set
+# CT_ARCH_alpha is not set
+# CT_ARCH_blackfin is not set
+CT_ARCH_arm_AVAILABLE=y
+CT_ARCH_x86_AVAILABLE=y
+CT_ARCH_sh_AVAILABLE=y
+CT_ARCH_avr32_AVAILABLE=y
+CT_ARCH_mips_AVAILABLE=y
+CT_ARCH_sparc_AVAILABLE=y
+CT_ARCH_powerpc_AVAILABLE=y
+CT_ARCH_s390_AVAILABLE=y
+CT_ARCH_m68k_AVAILABLE=y
+CT_ARCH_alpha_AVAILABLE=y
+CT_ARCH_microblaze_AVAILABLE=y
+CT_ARCH_blackfin_AVAILABLE=y
+CT_ARCH_SUFFIX="v6hl"
+#
+# Generic target options
+#
+# CT_MULTILIB is not set
+CT_ARCH_USE_MMU=y
+CT_ARCH_ENDIAN="little"
+#
+# Target optimisations
+#
+# CT_ARCH_FLOAT_SOFTFP is not set
+CT_ARCH_FLOAT="hard"
+#
+# arm other options
+#
+CT_ARCH_ARM_MODE="arm"
+CT_ARCH_ARM_MODE_ARM=y
+# CT_ARCH_ARM_MODE_THUMB is not set
+# CT_ARCH_ARM_INTERWORKING is not set
+CT_ARCH_ARM_EABI_FORCE=y
+CT_ARCH_ARM_EABI=y
+#
+# Operating System
+#
+CT_KERNEL_SUPPORTS_SHARED_LIBS=y
+CT_KERNEL="linux"
+CT_KERNEL_VERSION="3.10.2"
+CT_KERNEL_linux=y
+CT_KERNEL_bare_metal_AVAILABLE=y
+CT_KERNEL_linux_AVAILABLE=y
+CT_KERNEL_V_3_10=y
+CT_KERNEL_windows_AVAILABLE=y
+#
+# Common kernel options
+#
+CT_SHARED_LIBS=y
+#
+# linux other options
+#
+#
+# Optimisation features
+#
+#
+# Settings for libraries running on target
+#
+CT_CC_GCC_ENABLE_TARGET_OPTSPACE=y
+#
+# Misc. obscure options.
+#
+CT_CC_CXA_ATEXIT=y
+CT_CC_GCC_SJLJ_EXCEPTIONS=m
+CT_CC_GCC_LDBL_128=m
+CT_CC_GCC_LNK_HASH_STYLE_DEFAULT=y
+CT_CC_GCC_LNK_HASH_STYLE=""
+#
+# C-library
+#
+CT_LIBC="eglibc"
+CT_LIBC_VERSION="2_17"
+CT_LIBC_eglibc=y
+CT_LIBC_none_AVAILABLE=y
+CT_LIBC_mingw_AVAILABLE=y
+CT_LIBC_eglibc_AVAILABLE=y
+CT_LIBC_EGLIBC_V_2_17=y
+CT_LIBC_EGLIBC_2_16_or_later=y
+CT_EGLIBC_REVISION="HEAD"
+CT_LIBC_newlib_AVAILABLE=y
+CT_LIBC_uClibc_AVAILABLE=y
+CT_LIBC_glibc_AVAILABLE=y
+CT_LIBC_SUPPORT_THREADS_ANY=y
+CT_LIBC_SUPPORT_NPTL=y
+CT_LIBC_SUPPORT_LINUXTHREADS=y
+CT_THREADS="nptl"
+#
+# Common C library options
+#
+CT_THREADS_NPTL=y
+CT_LIBC_XLDD=y
+#
+# eglibc other options
+#
+CT_LIBC_GLIBC_MAY_FORCE_PORTS=y
+CT_LIBC_glibc_familly=y
+CT_LIBC_GLIBC_EXTRA_CONFIG_ARRAY=""
+CT_LIBC_GLIBC_CONFIGPARMS=""
+CT_LIBC_GLIBC_EXTRA_CFLAGS=""
+CT_LIBC_EXTRA_CC_ARGS=""
+CT_LIBC_OLDEST_ABI=""
+CT_LIBC_GLIBC_FORCE_UNWIND=y
+CT_LIBC_GLIBC_USE_PORTS=y
+CT_LIBC_ADDONS_LIST=""
+#
+# WARNING !!!                                            
+#
+#
+#   For glibc >= 2.8, it can happen that the tarballs    
+#
+#
+#   for the addons are not available for download.       
+#
+#
+#   If that happens, bad luck... Try a previous version  
+#
+#
+#   or try again later... :-(                            
+#
+CT_LIBC_GLIBC_KERNEL_VERSION_AS_HEADERS=y
+CT_LIBC_GLIBC_MIN_KERNEL="3.10.2"
+#
+# Companion libraries
+#
+CT_COMPLIBS_NEEDED=y
+CT_GMP_NEEDED=y
+CT_MPFR_NEEDED=y
+CT_ISL_NEEDED=y
+CT_CLOOG_NEEDED=y
+CT_MPC_NEEDED=y
+CT_COMPLIBS=y
+CT_GMP=y
+CT_MPFR=y
+CT_ISL=y
+CT_CLOOG=y
+CT_MPC=y
+CT_GMP_V_5_1_1=y
+CT_GMP_VERSION="5.1.1"
+CT_MPFR_V_3_1_2=y
+CT_MPFR_VERSION="3.1.2"
+CT_ISL_V_0_11_1=y
+CT_ISL_VERSION="0.11.1"
+CT_CLOOG_V_0_18_0=y
+CT_CLOOG_VERSION="0.18.0"
+CT_CLOOG_0_18_or_later=y
+CT_MPC_V_1_0_1=y
+CT_MPC_VERSION="1.0.1"
+CT_LOG_EXTRA=y

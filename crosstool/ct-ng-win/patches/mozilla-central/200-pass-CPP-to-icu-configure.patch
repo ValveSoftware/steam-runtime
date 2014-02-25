@@ -1,0 +1,12 @@
+diff -urN a/js/src/configure.in b/js/src/configure.in
+--- a/js/src/configure.in	2013-11-11 10:53:36.647066891 +0000
++++ b/js/src/configure.in	2013-11-11 11:12:07.250908644 +0000
+@@ -4341,7 +4341,7 @@
+     mkdir -p $_objdir/intl/icu/source
+     (cd $_objdir/intl/icu/source
+      MOZ_SUBCONFIGURE_WRAP([.],[
+-       AR="$AR" CC="$CC" CXX="$CXX" LD="$LD" \
++       AR="$AR" CPP="$CPP" CC="$CC" CXX="$CXX" LD="$LD" \
+        ARFLAGS="$ARFLAGS" \
+        CPPFLAGS="$ICU_CPPFLAGS $CPPFLAGS" \
+        CFLAGS="$ICU_CFLAGS" \

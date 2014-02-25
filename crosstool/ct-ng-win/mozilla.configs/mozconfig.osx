@@ -1,0 +1,55 @@
+#Specify the cross compile
+CROSS_SYSROOT=$HOME/MacOSX10.6.sdk
+# Is x86_64 or i386
+TARGET_ARCH=x86_64
+# Is x86_64 or i686
+HOST_ARCH=x86_64
+VENDOR_OS=apple-darwin10
+CROSS_TCROOT=$HOME/x-tools/${HOST_ARCH}-${VENDOR_OS}
+FLAGS="-arch $TARGET_ARCH -isysroot $CROSS_SYSROOT"
+CC="$CROSS_TCROOT/bin/${HOST_ARCH}-${VENDOR_OS}-clang $FLAGS"
+CXX="$CROSS_TCROOT/bin/${HOST_ARCH}-${VENDOR_OS}-clang++ $FLAGS"
+CPP="$CC -E"
+CXXCPP="$CXX -E"
+export CROSS_COMPILE=1
+RANLIB="$CROSS_TCROOT/bin/${HOST_ARCH}-${VENDOR_OS}-ranlib"
+AR="$CROSS_TCROOT/bin/${HOST_ARCH}-${VENDOR_OS}-ar"
+OTOOL="$CROSS_TCROOT/bin/${HOST_ARCH}-${VENDOR_OS}-otool"
+AS="$CROSS_TCROOT/bin/${HOST_ARCH}-${VENDOR_OS}-as"
+LD="$CROSS_TCROOT/bin/${HOST_ARCH}-${VENDOR_OS}-ld"
+STRIP="$CROSS_TCROOT/bin/${HOST_ARCH}-${VENDOR_OS}-strip"
+#
+# We need them as configure is looking for i386-apple-darwin10-* which is not
+# existing <- does not help as we get a link error in JS when using that target
+TOOLCHAIN_PREFIX=${HOST_ARCH}-${VENDOR_OS}-
+#
+ac_add_options --enable-application=browser
+ac_add_options --target=${TARGET_ARCH}-${VENDOR_OS}
+#
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-macos
+mk_add_options MOZ_APP_DISPLAYNAME=TorBrowser
+mk_add_options MOZ_MAKE_FLAGS="-j8"
+#
+#Disabling the next two options does not help against mach-o failure...
+mk_add_options MOZILLA_OFFICIAL=1
+mk_add_options BUILD_OFFICIAL=1
+#
+# Not needed for ESR 17 either but ESR 24 complains if this is enabled
+#ac_add_options --enable-strip
+ac_add_options --enable-official-branding
+#
+ac_add_options --disable-updater
+ac_add_options --disable-crashreporter
+ac_add_options --disable-maintenance-service
+ac_add_options --disable-webrtc
+ac_add_options --disable-tests
+# There may be --with-macos-sdk too, but there's a comment "(Mac OS X only)"
+ac_add_options --with-macos-private-frameworks=$HOME/MacOSX10.6.sdk/System/Library/PrivateFrameworks
+#
+# We need a dsymutil program to build ICU ..
+# configure:2917: /home/ray/tbb-work/dx-HEAD/bin/x86_64-apple-darwin10-clang -arch x86_64 -isysroot /home/ray/MacOSX10.6.sdk -fPIC -Qunused-arguments -Wall -Wpointer-arith -Wdeclaration-after-statement -Werror=return-type -Wtype-limits -Wempty-body -Wsign-compare -Wno-unused -std=gnu99 -fno-common -fno-math-errno -pthread -pipe -g  -DU_USING_ICU_NAMESPACE=0 -DU_NO_DEFAULT_INCLUDE_UTF_HEADERS=1 -DUCONFIG_NO_LEGACY_CONVERSION -DUCONFIG_NO_TRANSLITERATION -DUCONFIG_NO_REGULAR_EXPRESSIONS -DUCONFIG_NO_BREAK_ITERATION -Qunused-arguments   -framework ExceptionHandling   -lobjc conftest.c  >&5
+# x86_64-apple-darwin10-clang: error: unable to execute command: Executable "dsymutil" doesn't exist!
+# x86_64-apple-darwin10-clang: error: dsymutil command failed with exit code 1 (use -v to see invocation)
+ac_add_options --without-intl-api
+ac_add_options --enable-default-toolkit=cairo-cocoa
+# Debugging options

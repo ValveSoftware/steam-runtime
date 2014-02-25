@@ -1,0 +1,241 @@
+From fb38b4ada477869a8b4fd75c462037384bebca46 Mon Sep 17 00:00:00 2001
+From: Ray Donnelly <mingw.android@gmail.com>
+Date: Sat, 28 Dec 2013 18:30:54 +0000
+Subject: [PATCH 19/28] Add eglibc 2.18 patch for non case-sensitive file
+ systems
+
+Rename .oS to .oSTATIC so that builds can be done on file
+systems that are not both case sensitive and case preserving.
+---
+ ...ame-oS-to-oSTATIC-for-case-insensitive-fs.patch | 219 +++++++++++++++++++++
+ 1 file changed, 219 insertions(+)
+ create mode 100644 patches/eglibc/2_18/130-Rename-oS-to-oSTATIC-for-case-insensitive-fs.patch
+
+diff --git a/patches/eglibc/2_18/130-Rename-oS-to-oSTATIC-for-case-insensitive-fs.patch b/patches/eglibc/2_18/130-Rename-oS-to-oSTATIC-for-case-insensitive-fs.patch
+new file mode 100644
+index 0000000..a9b3245
+--- /dev/null
++++ b/patches/eglibc/2_18/130-Rename-oS-to-oSTATIC-for-case-insensitive-fs.patch
+@@ -0,0 +1,219 @@
++diff -urN eglibc-2_18.orig/extra-lib.mk eglibc-2_18/extra-lib.mk
++--- eglibc-2_18.orig/extra-lib.mk	2013-03-18 16:44:23.000000000 +0000
+++++ eglibc-2_18/extra-lib.mk	2013-12-28 18:20:23.373054900 +0000
++@@ -13,7 +13,7 @@
++ 
++ ifneq (,$($(lib)-static-only-routines))
++ ifneq (,$(filter yes%,$(build-shared)$($(lib).so-version)))
++-object-suffixes-$(lib) += $(filter-out $($(lib)-inhibit-o),.oS)
+++object-suffixes-$(lib) += $(filter-out $($(lib)-inhibit-o),.oSTATIC)
++ endif
++ endif
++ 
++@@ -31,7 +31,7 @@
++ 
++ # Add each flavor of library to the lists of things to build and install.
++ install-lib += $(foreach o,$(object-suffixes-$(lib)),$(lib:lib%=$(libtype$o)))
++-extra-objs += $(foreach o,$(filter-out .os .oS,$(object-suffixes-$(lib))),\
+++extra-objs += $(foreach o,$(filter-out .os .oSTATIC,$(object-suffixes-$(lib))),\
++ 			$(patsubst %,%$o,$(filter-out \
++ 					   $($(lib)-shared-only-routines),\
++ 					   $(all-$(lib)-routines))))
++@@ -39,8 +39,8 @@
++ extra-objs += $(patsubst %,%.os,$(filter-out $($(lib)-static-only-routines),\
++ 					     $(all-$(lib)-routines)))
++ endif
++-ifneq (,$(filter .oS,$(object-suffixes-$(lib))))
++-extra-objs += $(patsubst %,%.oS,$(filter $($(lib)-static-only-routines),\
+++ifneq (,$(filter .oSTATIC,$(object-suffixes-$(lib))))
+++extra-objs += $(patsubst %,%.oSTATIC,$(filter $($(lib)-static-only-routines),\
++ 					 $(all-$(lib)-routines)))
++ endif
++ alltypes-$(lib) := $(foreach o,$(object-suffixes-$(lib)),\
++@@ -64,7 +64,7 @@
++ 
++ 
++ # Use o-iterator.mk to generate a rule for each flavor of library.
++-ifneq (,$(filter-out .os .oS,$(object-suffixes-$(lib))))
+++ifneq (,$(filter-out .os .oSTATIC,$(object-suffixes-$(lib))))
++ define o-iterator-doit
++ $(objpfx)$(patsubst %,$(libtype$o),$(lib:lib%=%)): \
++   $(patsubst %,$(objpfx)%$o,\
++@@ -72,7 +72,7 @@
++ 			  $(all-$(lib)-routines))); \
++ 	$$(build-extra-lib)
++ endef
++-object-suffixes-left = $(filter-out .os .oS,$(object-suffixes-$(lib)))
+++object-suffixes-left = $(filter-out .os .oSTATIC,$(object-suffixes-$(lib)))
++ include $(patsubst %,$(..)o-iterator.mk,$(object-suffixes-left))
++ endif
++ 
++@@ -84,9 +84,9 @@
++ 	$(build-extra-lib)
++ endif
++ 
++-ifneq (,$(filter .oS,$(object-suffixes-$(lib))))
++-$(objpfx)$(patsubst %,$(libtype.oS),$(lib:lib%=%)): \
++-  $(patsubst %,$(objpfx)%.oS,\
+++ifneq (,$(filter .oSTATIC,$(object-suffixes-$(lib))))
+++$(objpfx)$(patsubst %,$(libtype.oSTATIC),$(lib:lib%=%)): \
+++  $(patsubst %,$(objpfx)%.oSTATIC,\
++ 	     $(filter $($(lib)-static-only-routines),\
++ 		      $(all-$(lib)-routines)))
++ 	$(build-extra-lib)
++diff -urN eglibc-2_18.orig/Makeconfig eglibc-2_18/Makeconfig
++--- eglibc-2_18.orig/Makeconfig	2013-04-28 16:21:50.000000000 +0100
+++++ eglibc-2_18/Makeconfig	2013-12-28 18:27:03.810027100 +0000
++@@ -469,7 +469,7 @@
++ link-libc-tests-rpath-link = $(link-libc-rpath-link)
++ endif
++ link-libc-before-gnulib = $(common-objpfx)libc.so$(libc.so-version) \
++-			  $(common-objpfx)$(patsubst %,$(libtype.oS),c) \
+++			  $(common-objpfx)$(patsubst %,$(libtype.oSTATIC),c) \
++ 			  $(as-needed) $(common-objpfx)elf/ld.so \
++ 			  $(no-as-needed)
++ link-libc = $(link-libc-rpath-link) $(link-libc-before-gnulib) $(gnulib)
++@@ -813,7 +813,7 @@
++ # The compilation rules use $(CPPFLAGS-${SUFFIX}) and $(CFLAGS-${SUFFIX})
++ # to pass different flags for each flavor.
++ libtypes = $(foreach o,$(object-suffixes-for-libc),$(libtype$o))
++-all-object-suffixes := .o .os .op .og .oS
+++all-object-suffixes := .o .os .op .og .oSTATIC
++ object-suffixes :=
++ CPPFLAGS-.o = $(pic-default)
++ CFLAGS-.o = $(filter %frame-pointer,$(+cflags))
++@@ -852,14 +852,14 @@
++ 
++ ifeq (yes,$(build-shared))
++ # Build special library that contains the static-only routines for libc.
++-object-suffixes-for-libc += .oS
+++object-suffixes-for-libc += .oSTATIC
++ 
++ # Must build the routines as PIC, though, because they can end up in (users')
++ # shared objects.  We don't want to use CFLAGS-os because users may, for
++ # example, make that processor-specific.
++-CFLAGS-.oS = $(CFLAGS-.o) $(PIC-ccflag)
++-CPPFLAGS-.oS = $(CPPFLAGS-.o) -DPIC -DLIBC_NONSHARED=1
++-libtype.oS = lib%_nonshared.a
+++CFLAGS-.oSTATIC = $(CFLAGS-.o) $(PIC-ccflag)
+++CPPFLAGS-.oSTATIC = $(CPPFLAGS-.o) -DPIC -DLIBC_NONSHARED=1
+++libtype.oSTATIC = lib%_nonshared.a
++ endif
++ 
++ # The assembler can generate debug information too.
++diff -urN eglibc-2_18.orig/Makerules eglibc-2_18/Makerules
++--- eglibc-2_18.orig/Makerules	2013-06-24 23:42:26.000000000 +0100
+++++ eglibc-2_18/Makerules	2013-12-28 18:27:03.821027700 +0000
++@@ -409,7 +409,7 @@
++ endif
++ endif
++ 
++-elide-routines.oS += $(filter-out $(static-only-routines),\
+++elide-routines.oSTATIC += $(filter-out $(static-only-routines),\
++ 				  $(routines) $(aux) $(sysdep_routines))
++ elide-routines.os += $(static-only-routines)
++ 
++@@ -662,7 +662,7 @@
++ 
++ +depfiles := $(sources:.c=.d) \
++ 	     $(patsubst %.o,%.d,$(filter %.o,$(extra-objs:.os=.o))) \
++-	     $(patsubst %.oS,%.d,$(filter %.oS,$(extra-objs))) \
+++	     $(patsubst %.oSTATIC,%.d,$(filter %.oSTATIC,$(extra-objs))) \
++ 	     $(patsubst %.o,%.d,$(filter %.o,$(extra-test-objs:.os=.o))) \
++ 	     $(addsuffix .d,$(tests) $(xtests) $(test-srcs))
++ ifeq ($(build-programs),yes)
++@@ -970,7 +970,7 @@
++ install: $(inst_libdir)/libc.so
++ $(inst_libdir)/libc.so: $(common-objpfx)format.lds \
++ 			$(common-objpfx)libc.so$(libc.so-version) \
++-			$(inst_libdir)/$(patsubst %,$(libtype.oS),\
+++			$(inst_libdir)/$(patsubst %,$(libtype.oSTATIC),\
++ 						  $(libprefix)$(libc-name)) \
++ 			$(+force)
++ 	(echo '/* GNU ld script';\
++@@ -978,7 +978,7 @@
++ 	 echo '   the static library, so try that secondarily.  */';\
++ 	 cat $<; \
++ 	 echo 'GROUP ( $(slibdir)/libc.so$(libc.so-version)' \
++-	      '$(libdir)/$(patsubst %,$(libtype.oS),$(libprefix)$(libc-name))'\
+++	      '$(libdir)/$(patsubst %,$(libtype.oSTATIC),$(libprefix)$(libc-name))'\
++ 	      ' AS_NEEDED (' $(rtlddir)/$(rtld-installed-name) ') )' \
++ 	) > $@.new
++ 	mv -f $@.new $@
++diff -urN eglibc-2_18.orig/nptl/Makefile eglibc-2_18/nptl/Makefile
++--- eglibc-2_18.orig/nptl/Makefile	2013-06-24 23:42:26.000000000 +0100
+++++ eglibc-2_18/nptl/Makefile	2013-12-28 18:27:03.833028400 +0000
++@@ -399,7 +399,7 @@
++ 
++ $(inst_libdir)/libpthread.so: $(common-objpfx)format.lds \
++ 			      $(objpfx)libpthread.so$(libpthread.so-version) \
++-			      $(inst_libdir)/$(patsubst %,$(libtype.oS),\
+++			      $(inst_libdir)/$(patsubst %,$(libtype.oSTATIC),\
++ 							$(libprefix)pthread) \
++ 			      $(+force)
++ 	(echo '/* GNU ld script';\
++@@ -407,7 +407,7 @@
++ 	 echo '   the static library, so try that secondarily.  */';\
++ 	 cat $<; \
++ 	 echo 'GROUP ( $(slibdir)/libpthread.so$(libpthread.so-version)' \
++-	      '$(libdir)/$(patsubst %,$(libtype.oS),$(libprefix)pthread)'\
+++	      '$(libdir)/$(patsubst %,$(libtype.oSTATIC),$(libprefix)pthread)'\
++ 	      ')' \
++ 	) > $@.new
++ 	mv -f $@.new $@
++diff -urN eglibc-2_18.orig/sysdeps/i386/i686/Makefile eglibc-2_18/sysdeps/i386/i686/Makefile
++--- eglibc-2_18.orig/sysdeps/i386/i686/Makefile	2013-03-03 17:10:55.000000000 +0000
+++++ eglibc-2_18/sysdeps/i386/i686/Makefile	2013-12-28 18:27:03.828028100 +0000
++@@ -15,11 +15,11 @@
++ CFLAGS-.os += -Wa,-mtune=i686
++ CFLAGS-.op += -Wa,-mtune=i686
++ CFLAGS-.og += -Wa,-mtune=i686
++-CFLAGS-.oS += -Wa,-mtune=i686
+++CFLAGS-.oSTATIC += -Wa,-mtune=i686
++ 
++ ASFLAGS-.o += -Wa,-mtune=i686
++ ASFLAGS-.os += -Wa,-mtune=i686
++ ASFLAGS-.op += -Wa,-mtune=i686
++ ASFLAGS-.og += -Wa,-mtune=i686
++-ASFLAGS-.oS += -Wa,-mtune=i686
+++ASFLAGS-.oSTATIC += -Wa,-mtune=i686
++ endif
++diff -urN eglibc-2_18.orig/sysdeps/ieee754/ldbl-opt/Makefile eglibc-2_18/sysdeps/ieee754/ldbl-opt/Makefile
++--- eglibc-2_18.orig/sysdeps/ieee754/ldbl-opt/Makefile	2012-12-25 10:39:27.000000000 +0000
+++++ eglibc-2_18/sysdeps/ieee754/ldbl-opt/Makefile	2013-12-28 18:23:21.392948300 +0000
++@@ -49,7 +49,7 @@
++ libnldbl-routines = $(libnldbl-calls:%=nldbl-%)
++ libnldbl-inhibit-o = $(object-suffixes)
++ libnldbl-static-only-routines = $(libnldbl-routines)
++-extra-objs += $(addsuffix .oS, $(libnldbl-routines))
+++extra-objs += $(addsuffix .oSTATIC, $(libnldbl-routines))
++ 
++ CFLAGS-nldbl-acos.c = -fno-builtin-acosl
++ CFLAGS-nldbl-acosh.c = -fno-builtin-acoshl
++diff -urN eglibc-2_18.orig/sysdeps/sparc/sparc32/sparcv9/Makefile eglibc-2_18/sysdeps/sparc/sparc32/sparcv9/Makefile
++--- eglibc-2_18.orig/sysdeps/sparc/sparc32/sparcv9/Makefile	2013-03-03 17:10:55.000000000 +0000
+++++ eglibc-2_18/sysdeps/sparc/sparc32/sparcv9/Makefile	2013-12-28 18:27:03.839028800 +0000
++@@ -10,11 +10,11 @@
++ ASFLAGS-.os += -Wa,-Av9d
++ ASFLAGS-.op += -Wa,-Av9d
++ ASFLAGS-.og += -Wa,-Av9d
++-ASFLAGS-.oS += -Wa,-Av9d
+++ASFLAGS-.oSTATIC += -Wa,-Av9d
++ else
++ ASFLAGS-.o += -Wa,-Av9a
++ ASFLAGS-.os += -Wa,-Av9a
++ ASFLAGS-.op += -Wa,-Av9a
++ ASFLAGS-.og += -Wa,-Av9a
++-ASFLAGS-.oS += -Wa,-Av9a
+++ASFLAGS-.oSTATIC += -Wa,-Av9a
++ endif
++diff -urN eglibc-2_18.orig/sysdeps/sparc/sparc64/Makefile eglibc-2_18/sysdeps/sparc/sparc64/Makefile
++--- eglibc-2_18.orig/sysdeps/sparc/sparc64/Makefile	2013-03-03 17:10:55.000000000 +0000
+++++ eglibc-2_18/sysdeps/sparc/sparc64/Makefile	2013-12-28 18:22:29.150678900 +0000
++@@ -12,5 +12,5 @@
++ ASFLAGS-.os += -Wa,-Av9d
++ ASFLAGS-.op += -Wa,-Av9d
++ ASFLAGS-.og += -Wa,-Av9d
++-ASFLAGS-.oS += -Wa,-Av9d
+++ASFLAGS-.oSTATIC += -Wa,-Av9d
++ endif
+-- 
+1.8.5.3
+

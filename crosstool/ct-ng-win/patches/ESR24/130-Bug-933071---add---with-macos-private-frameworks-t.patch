@@ -1,0 +1,75 @@
+# HG changeset patch
+# User Nathan Froyd <froydnj@gmail.com>
+# Backported to ESR24 by Ray Donnelly <mingw.android@gmail.com>
+
+Bug 933071 - add --with-macos-private-frameworks to support cross-compiling
+
+Actually, let's fix the WebRTC case, too, since that's definitely under our control.
+
+diff -urN a/configure.in b/configure.in
+--- a/configure.in	2013-11-07 22:55:15.497956498 +0000
++++ b/configure.in	2013-11-07 23:00:04.294325836 +0000
+@@ -873,9 +873,26 @@
+ [  --with-macos-sdk=dir    Location of platform SDK to use (Mac OS X only)],
+     MACOS_SDK_DIR=$withval)
+ 
++MACOS_PRIVATE_FRAMEWORKS_DIR_DEFAULTED=
++MOZ_ARG_WITH_STRING(macos-private-frameworks,
++[  --with-macos-private-frameworks=dir    Location of private frameworks to use (Mac OS X only)],
++    MACOS_PRIVATE_FRAMEWORKS_DIR=$withval,
++    MACOS_PRIVATE_FRAMEWORKS_DIR=/System/Library/PrivateFrameworks
++    MACOS_PRIVATE_FRAMEWORKS_DEFAULTED=1)
++
++if test -z "${MACOS_PRIVATE_FRAMEWORKS_DEFAULTED}"; then
++  if test -z "$CROSS_COMPILE"; then
++    AC_MSG_WARN([You should only be using --with-macos-private-frameworks when cross-compiling.])
++  fi
++  if test ! -d "$MACOS_PRIVATE_FRAMEWORKS_DIR"; then
++    AC_MSG_ERROR([PrivateFrameworks directory not found.])
++  fi
++fi
++
+ dnl MACOS_SDK_DIR will be set to the SDK location whenever one is in use.
+ dnl NEXT_ROOT will be set and exported only if it's needed.
+ AC_SUBST(MACOS_SDK_DIR)
++AC_SUBST(MACOS_PRIVATE_FRAMEWORKS_DIR)
+ AC_SUBST(NEXT_ROOT)
+ 
+ if test "$MACOS_SDK_DIR"; then
+diff -urN a/media/webrtc/signaling/test/Makefile.in b/media/webrtc/signaling/test/Makefile.in
+--- a/media/webrtc/signaling/test/Makefile.in	2013-10-22 07:19:14.000000000 +0100
++++ b/media/webrtc/signaling/test/Makefile.in	2013-11-07 23:00:04.294325836 +0000
+@@ -101,7 +101,7 @@
+   -framework Security \
+   -framework SystemConfiguration \
+   -framework IOKit \
+-  -F/System/Library/PrivateFrameworks -framework CoreUI \
++  -F$(MACOS_PRIVATE_FRAMEWORKS_DIR) -framework CoreUI \
+   $(TK_LIBS) \
+   $(NULL)
+ endif
+diff -urN a/toolkit/library/Makefile.in b/toolkit/library/Makefile.in
+--- a/toolkit/library/Makefile.in	2013-10-22 07:19:22.000000000 +0100
++++ b/toolkit/library/Makefile.in	2013-11-07 23:00:04.294325836 +0000
+@@ -503,7 +503,7 @@
+   -framework SystemConfiguration \
+   -framework QTKit \
+   -framework IOKit \
+-  -F/System/Library/PrivateFrameworks -framework CoreUI \
++  -F$(MACOS_PRIVATE_FRAMEWORKS_DIR) -framework CoreUI \
+   $(TK_LIBS) \
+   $(NULL)
+ endif
+diff -urN a/widget/cocoa/Makefile.in b/widget/cocoa/Makefile.in
+--- a/widget/cocoa/Makefile.in	2013-10-22 07:19:23.000000000 +0100
++++ b/widget/cocoa/Makefile.in	2013-11-07 23:00:04.294325836 +0000
+@@ -97,9 +97,3 @@
+ 	-I$(topsrcdir)/layout/generic \
+ 	-I$(topsrcdir)/layout/xul/base/src \
+ 	$(NULL)
+-
+-LDFLAGS	+= \
+-	-framework QuickTime \
+-	-framework IOKit \
+-	-F/System/Library/PrivateFrameworks -framework CoreUI \
+-	$(NULL)

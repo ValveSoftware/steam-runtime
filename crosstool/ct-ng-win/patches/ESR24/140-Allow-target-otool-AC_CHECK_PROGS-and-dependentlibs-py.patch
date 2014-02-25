@@ -1,0 +1,46 @@
+diff -urN a/configure.in b/configure.in
+--- a/configure.in	2013-11-08 10:37:32.716154636 +0000
++++ b/configure.in	2013-11-08 10:37:54.989832706 +0000
+@@ -350,6 +350,7 @@
+     AC_CHECK_PROGS(LD, $LD "${target_alias}-ld" "${target}-ld", :)
+     AC_CHECK_PROGS(STRIP, $STRIP "${target_alias}-strip" "${target}-strip", :)
+     AC_CHECK_PROGS(WINDRES, $WINDRES "${target_alias}-windres" "${target}-windres", :)
++    AC_CHECK_PROGS(OTOOL, $OTOOL "${target_alias}-otool" "${target}-otool", :)
+     AC_DEFINE(CROSS_COMPILE)
+ else
+     AC_PROG_CC
+@@ -365,6 +366,7 @@
+     AC_CHECK_PROGS(LD, ld, :)
+     AC_CHECK_PROGS(STRIP, strip, :)
+     AC_CHECK_PROGS(WINDRES, windres, :)
++    AC_CHECK_PROGS(OTOOL, otool, :)
+     if test -z "$HOST_CC"; then
+         HOST_CC="$CC"
+     fi
+@@ -7202,12 +7204,12 @@
+                  dnl - classic info only (for OSX < 10.6)
+                  dnl - dyld info only
+                  dnl - both
+-                 if otool -l conftest${DLL_SUFFIX} 2> /dev/null | grep "LC_DYLD_INFO_ONLY" > /dev/null; then
++                 if ${OTOOL-otool} -l conftest${DLL_SUFFIX} 2> /dev/null | grep "LC_DYLD_INFO_ONLY" > /dev/null; then
+                      _CLASSIC_INFO=
+                  else
+                      _CLASSIC_INFO=1
+                  fi
+-                 if otool -l conftest${DLL_SUFFIX} 2> /dev/null | grep "LC_DYLD_INFO" > /dev/null; then
++                 if ${OTOOL-otool} -l conftest${DLL_SUFFIX} 2> /dev/null | grep "LC_DYLD_INFO" > /dev/null; then
+                      _DYLD_INFO=1
+                  else
+                      _DYLD_INFO=
+diff -urN a/toolkit/library/dependentlibs.py b/toolkit/library/dependentlibs.py
+--- a/toolkit/library/dependentlibs.py	2013-10-22 07:19:22.000000000 +0100
++++ b/toolkit/library/dependentlibs.py	2013-11-08 10:59:30.633202941 +0000
+@@ -71,7 +71,7 @@
+ 
+ def dependentlibs_otool(lib):
+     '''Returns the list of dependencies declared in the given MACH-O dylib'''
+-    proc = subprocess.Popen(['otool', '-l', lib], stdout = subprocess.PIPE)
++    proc = subprocess.Popen([TOOLCHAIN_PREFIX + 'otool', '-l', lib], stdout = subprocess.PIPE)
+     deps= []
+     cmd = None
+     for line in proc.stdout:

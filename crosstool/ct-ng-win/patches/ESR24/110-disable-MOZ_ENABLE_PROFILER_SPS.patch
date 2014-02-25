@@ -1,0 +1,12 @@
+diff -urN a/configure.in b/configure.in
+--- a/configure.in	2013-11-05 16:23:44.098447644 +0000
++++ b/configure.in	2013-11-05 16:24:03.214207326 +0000
+@@ -1644,7 +1644,7 @@
+ dnl ========================================================
+ dnl SPS Profiler
+ dnl ========================================================
+-MOZ_ENABLE_PROFILER_SPS=1
++MOZ_ENABLE_PROFILER_SPS=
+ 
+ case "${OS_TARGET}" in
+ Android)

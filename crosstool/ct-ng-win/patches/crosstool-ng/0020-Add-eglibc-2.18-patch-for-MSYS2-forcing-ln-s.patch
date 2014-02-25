@@ -1,0 +1,60 @@
+From 1ac1ff37e374464ee5123741a26b206f10d5fbdb Mon Sep 17 00:00:00 2001
+From: Ray Donnelly <mingw.android@gmail.com>
+Date: Sun, 29 Dec 2013 04:52:41 +0000
+Subject: [PATCH 20/28] Add eglibc 2.18 patch for MSYS2 forcing ln -s
+
+.. although MSYS2 ln -s usually doesn't work right, it still works
+better than cp -p which would otherwise be used as a substitute.
+---
+ patches/eglibc/2_18/140-MSYS-Hack-force-ln-s.patch | 39 ++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
+ create mode 100644 patches/eglibc/2_18/140-MSYS-Hack-force-ln-s.patch
+
+diff --git a/patches/eglibc/2_18/140-MSYS-Hack-force-ln-s.patch b/patches/eglibc/2_18/140-MSYS-Hack-force-ln-s.patch
+new file mode 100644
+index 0000000..162fc96
+--- /dev/null
++++ b/patches/eglibc/2_18/140-MSYS-Hack-force-ln-s.patch
+@@ -0,0 +1,39 @@
++diff -urN eglibc-2_18.orig/configure eglibc-2_18/configure
++--- eglibc-2_18.orig/configure	2013-12-29 04:41:49.956790250 +0000
+++++ eglibc-2_18/configure	2013-12-29 04:49:01.706800479 +0000
++@@ -4473,6 +4473,16 @@
++ $as_echo "no, using $LN_S" >&6; }
++ fi
++ 
+++# Even though 'ln -s' doesn't work right in MSYS2, it works enough for
+++# eglibc, whereas cp -r doesn't.
+++case "$build_os" in
+++*mingw*)
+++  as_ln_s='ln -s'
+++  LN_S=$as_ln_s
+++  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Hacked as_ln_s and LN_S to 'ln -s' for MSYS2" >&5
+++$as_echo "$as_me: WARNING: Hacked as_ln_s and LN_S to 'ln -s' for MSYS2" >&2;}
+++  ;;
+++esac
++ 
++ # Was a --with-binutils option given?
++ if test -n "$path_binutils"; then
++diff -urN eglibc-2_18.orig/configure.in eglibc-2_18/configure.in
++--- eglibc-2_18.orig/configure.in	2013-12-29 04:41:49.956790250 +0000
+++++ eglibc-2_18/configure.in	2013-12-29 04:48:51.569977047 +0000
++@@ -971,6 +971,15 @@
++   INSTALL='\$(..)./scripts/install-sh -c'
++ fi
++ AC_PROG_LN_S
+++# Even though 'ln -s' doesn't work right in MSYS2, it works enough for
+++# eglibc, whereas cp -r doesn't.
+++case "$build_os" in
+++*mingw*)
+++  as_ln_s='ln -s'
+++  LN_S=$as_ln_s
+++  AC_MSG_WARN(Hacked as_ln_s and LN_S to 'ln -s' for MSYS2)
+++  ;;
+++esac
++ 
++ LIBC_PROG_BINUTILS
++ 
+-- 
+1.8.5.3
+

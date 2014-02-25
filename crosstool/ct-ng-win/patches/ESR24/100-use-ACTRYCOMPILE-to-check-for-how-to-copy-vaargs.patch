@@ -1,0 +1,212 @@
+# HG changeset patch
+# User Nathan Froyd <froydnj@gmail.com>
+# Backported to ESR24 by Ray Donnelly <mingw.android@gmail.com>
+
+use AC_TRY_COMPILE to check for how to copy va_args
+
+We shouldn't need to run these programs; compiling them should be enough.
+
+While we're at it, we can remove support for __va_copy, which, AFAICS, is an
+old GNU extension and has been superseded by va_copy by anyplace that cares.
+
+diff -urN a/configure.in b/configure.in
+--- a/configure.in	2013-10-22 07:18:51.000000000 +0100
++++ b/configure.in	2013-11-05 15:53:04.641572748 +0000
+@@ -3416,13 +3416,10 @@
+ 
+ dnl **********************
+ dnl *** va_copy checks ***
+-dnl **********************
+-dnl we currently check for all three va_copy possibilities, so we get
+-dnl all results in config.log for bug reports.
+-AC_MSG_CHECKING(for an implementation of va_copy())
+-AC_CACHE_VAL(ac_cv_va_copy,[
+-    AC_TRY_RUN([
+-        #include <stdarg.h>
++AC_CACHE_CHECK([for an implementation of va_copy()],
++               ac_cv_va_copy,
++    [AC_TRY_COMPILE([#include <stdarg.h>
++                     #include <stdlib.h>
+         void f (int i, ...) {
+             va_list args1, args2;
+             va_start (args1, i);
+@@ -3430,37 +3427,16 @@
+             if (va_arg (args2, int) != 42 || va_arg (args1, int) != 42)
+                 exit (1);
+             va_end (args1); va_end (args2);
+-        }
+-        int main() { f (0, 42); return 0; }],
+-        ac_cv_va_copy=yes,
+-        ac_cv_va_copy=no,
+-        ac_cv_va_copy=no
+-    )
+-])
+-AC_MSG_RESULT($ac_cv_va_copy)
+-AC_MSG_CHECKING(for an implementation of __va_copy())
+-AC_CACHE_VAL(ac_cv___va_copy,[
+-    AC_TRY_RUN([
+-        #include <stdarg.h>
+-        void f (int i, ...) {
+-            va_list args1, args2;
+-            va_start (args1, i);
+-            __va_copy (args2, args1);
+-            if (va_arg (args2, int) != 42 || va_arg (args1, int) != 42)
+-                exit (1);
+-            va_end (args1); va_end (args2);
+-        }
+-        int main() { f (0, 42); return 0; }],
+-        ac_cv___va_copy=yes,
+-        ac_cv___va_copy=no,
+-        ac_cv___va_copy=no
+-    )
+-])
+-AC_MSG_RESULT($ac_cv___va_copy)
+-AC_MSG_CHECKING(whether va_lists can be copied by value)
+-AC_CACHE_VAL(ac_cv_va_val_copy,[
+-    AC_TRY_RUN([
+-        #include <stdarg.h>
++        }],
++        [f(0, 42); return 0],
++        [ac_cv_va_copy=yes],
++        [ac_cv_va_copy=no]
++    )]
++)
++AC_CACHE_CHECK([whether va_list can be copied by value],
++               ac_cv_va_val_copy,
++    [AC_TRY_COMPILE([#include <stdarg.h>
++                     #include <stdlib.h>
+         void f (int i, ...) {
+             va_list args1, args2;
+             va_start (args1, i);
+@@ -3468,25 +3444,20 @@
+             if (va_arg (args2, int) != 42 || va_arg (args1, int) != 42)
+                 exit (1);
+             va_end (args1); va_end (args2);
+-        }
+-        int main() { f (0, 42); return 0; }],
+-        ac_cv_va_val_copy=yes,
+-        ac_cv_va_val_copy=no,
+-        ac_cv_va_val_copy=yes
+-    )
+-])
++        }],
++        [f(0, 42); return 0],
++        [ac_cv_va_val_copy=yes],
++        [ac_cv_va_val_copy=no],
++    )]
++)
+ if test "x$ac_cv_va_copy" = "xyes"; then
+     AC_DEFINE(VA_COPY, va_copy)
+     AC_DEFINE(HAVE_VA_COPY)
+-elif test "x$ac_cv___va_copy" = "xyes"; then
+-    AC_DEFINE(VA_COPY, __va_copy)
+-    AC_DEFINE(HAVE_VA_COPY)
+ fi
+ 
+ if test "x$ac_cv_va_val_copy" = "xno"; then
+    AC_DEFINE(HAVE_VA_LIST_AS_ARRAY)
+ fi
+-AC_MSG_RESULT($ac_cv_va_val_copy)
+ 
+ dnl ===================================================================
+ dnl ========================================================
+diff -urN a/js/src/configure.in b/js/src/configure.in
+--- a/js/src/configure.in	2013-10-22 07:19:02.000000000 +0100
++++ b/js/src/configure.in	2013-11-05 16:17:25.355209091 +0000
+@@ -2778,12 +2778,10 @@
+ dnl **********************
+ dnl *** va_copy checks ***
+ dnl **********************
+-dnl we currently check for all three va_copy possibilities, so we get
+-dnl all results in config.log for bug reports.
+-AC_MSG_CHECKING(for an implementation of va_copy())
+-AC_CACHE_VAL(ac_cv_va_copy,[
+-    AC_TRY_RUN([
+-        #include <stdarg.h>
++AC_CACHE_CHECK([for an implementation of va_copy()],
++               ac_cv_va_copy,
++    [AC_TRY_COMPILE([#include <stdarg.h>
++                     #include <stdlib.h>
+         void f (int i, ...) {
+             va_list args1, args2;
+             va_start (args1, i);
+@@ -2791,37 +2789,16 @@
+             if (va_arg (args2, int) != 42 || va_arg (args1, int) != 42)
+                 exit (1);
+             va_end (args1); va_end (args2);
+-        }
+-        int main() { f (0, 42); return 0; }],
+-        ac_cv_va_copy=yes,
+-        ac_cv_va_copy=no,
+-        ac_cv_va_copy=no
+-    )
+-])
+-AC_MSG_RESULT($ac_cv_va_copy)
+-AC_MSG_CHECKING(for an implementation of __va_copy())
+-AC_CACHE_VAL(ac_cv___va_copy,[
+-    AC_TRY_RUN([
+-        #include <stdarg.h>
+-        void f (int i, ...) {
+-            va_list args1, args2;
+-            va_start (args1, i);
+-            __va_copy (args2, args1);
+-            if (va_arg (args2, int) != 42 || va_arg (args1, int) != 42)
+-                exit (1);
+-            va_end (args1); va_end (args2);
+-        }
+-        int main() { f (0, 42); return 0; }],
+-        ac_cv___va_copy=yes,
+-        ac_cv___va_copy=no,
+-        ac_cv___va_copy=no
+-    )
+-])
+-AC_MSG_RESULT($ac_cv___va_copy)
+-AC_MSG_CHECKING(whether va_lists can be copied by value)
+-AC_CACHE_VAL(ac_cv_va_val_copy,[
+-    AC_TRY_RUN([
+-        #include <stdarg.h>
++        }],
++        [f(0, 42); return 0],
++        [ac_cv_va_copy=yes],
++        [ac_cv_va_copy=no]
++    )]
++)
++AC_CACHE_CHECK([whether va_list can be copied by value],
++               ac_cv_va_val_copy,
++    [AC_TRY_COMPILE([#include <stdarg.h>
++                     #include <stdlib.h>
+         void f (int i, ...) {
+             va_list args1, args2;
+             va_start (args1, i);
+@@ -2829,25 +2806,20 @@
+             if (va_arg (args2, int) != 42 || va_arg (args1, int) != 42)
+                 exit (1);
+             va_end (args1); va_end (args2);
+-        }
+-        int main() { f (0, 42); return 0; }],
+-        ac_cv_va_val_copy=yes,
+-        ac_cv_va_val_copy=no,
+-        ac_cv_va_val_copy=yes
+-    )
+-])
++        }],
++        [f(0, 42); return 0],
++        [ac_cv_va_val_copy=yes],
++        [ac_cv_va_val_copy=no],
++    )]
++)
+ if test "x$ac_cv_va_copy" = "xyes"; then
+     AC_DEFINE(VA_COPY, va_copy)
+     AC_DEFINE(HAVE_VA_COPY)
+-elif test "x$ac_cv___va_copy" = "xyes"; then
+-    AC_DEFINE(VA_COPY, __va_copy)
+-    AC_DEFINE(HAVE_VA_COPY)
+ fi
+ 
+ if test "x$ac_cv_va_val_copy" = "xno"; then
+    AC_DEFINE(HAVE_VA_LIST_AS_ARRAY)
+ fi
+-AC_MSG_RESULT($ac_cv_va_val_copy)
+ 
+ dnl ===================================================================
+ dnl ========================================================

@@ -1,0 +1,122 @@
+From 9c84df9b05d539838e7f355dd3ae41c5de505da1 Mon Sep 17 00:00:00 2001
+From: Ray Donnelly <mingw.android@gmail.com>
+Date: Fri, 20 Dec 2013 18:48:25 +0000
+Subject: [PATCH 12/28] Add CT_FindRelativePath and use for GCC configure
+
+---
+ scripts/build/cc/100-gcc.sh |  7 +++--
+ scripts/functions           | 62 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 67 insertions(+), 2 deletions(-)
+
+diff --git a/scripts/build/cc/100-gcc.sh b/scripts/build/cc/100-gcc.sh
+index 6d273cb..37ff545 100644
+--- a/scripts/build/cc/100-gcc.sh
++++ b/scripts/build/cc/100-gcc.sh
+@@ -407,6 +407,7 @@ do_gcc_core_backend() {
+ 
+     CT_DoLog DEBUG "Extra config passed: '${extra_config[*]}'"
+ 
++    local relpath="$(CT_FindRelativePath "${PWD}" "${CT_SRC_DIR}/gcc-${CT_CC_GCC_VERSION}")"
+     # Use --with-local-prefix so older gccs don't look in /usr/local (http://gcc.gnu.org/PR10532)
+     CT_DoExecLog CFG                                \
+     CC_FOR_BUILD="${CT_BUILD}-gcc"                  \
+@@ -414,7 +415,7 @@ do_gcc_core_backend() {
+     CFLAGS="${cflags}"                              \
+     CXXFLAGS="${cflags}"                            \
+     LDFLAGS="${core_LDFLAGS[*]}"                    \
+-    "${CT_SRC_DIR}/gcc-${CT_CC_GCC_VERSION}/configure"  \
++    "${relpath}/configure"                          \
+         --build=${CT_BUILD}                         \
+         --host=${host}                              \
+         --target=${CT_TARGET}                       \
+@@ -870,6 +871,8 @@ do_gcc_backend() {
+ 
+     CT_DoLog DEBUG "Extra config passed: '${extra_config[*]}'"
+ 
++    local relpath="$(CT_FindRelativePath "${PWD}" "${CT_SRC_DIR}/gcc-${CT_CC_GCC_VERSION}")"
++
+     CT_DoExecLog CFG                                \
+     CC_FOR_BUILD="${CT_BUILD}-gcc"                  \
+     CFLAGS_FOR_BUILD="${CT_EXTRA_CFLAGS_FOR_BUILD-${cflags}}" \
+@@ -879,7 +882,7 @@ do_gcc_backend() {
+     CFLAGS_FOR_TARGET="${CT_TARGET_CFLAGS}"         \
+     CXXFLAGS_FOR_TARGET="${CT_TARGET_CFLAGS}"       \
+     LDFLAGS_FOR_TARGET="${CT_TARGET_LDFLAGS}"       \
+-    "${CT_SRC_DIR}/gcc-${CT_CC_GCC_VERSION}/configure"  \
++    "${relpath}/configure"                          \
+         --build=${CT_BUILD}                         \
+         --host=${host}                              \
+         --target=${CT_TARGET}                       \
+diff --git a/scripts/functions b/scripts/functions
+index c376a4f..529ebcc 100644
+--- a/scripts/functions
++++ b/scripts/functions
+@@ -1395,3 +1395,65 @@ CT_DoLoadState(){
+     exec >>"${tmp_log_file}"
+     rm -f "${state_dir}/tail.log"
+ }
++
++# Based on https://github.com/Offirmo/offirmo-shell-lib/blob/master/bin/osl_lib_file.sh
++# .. modified to work with Dash.
++
++# both $1 and $2 are absolute paths beginning with /
++# returns relative path to $2/$target from $1/$source
++CT_FindRelativePath()
++{
++    local source=$1
++    local target=$2
++
++    #echo "source : \"$source\""
++    #echo "target : \"$target\""
++    return_value="OSL_FILE_compute_relative_path ERROR"
++
++    local common_part=$source # for now
++
++    local result=""
++
++    #echo "common_part is now : \"$common_part\""
++    #echo "result is now      : \"$result\""
++    #echo "target#common_part : \"${target#$common_part}\""
++    while [ "${target#$common_part}" = "${target}" ]; do
++        # no match, means that candidate common part is not correct
++        # go up one level (reduce common part)
++        common_part="$(dirname $common_part)"
++        # and record that we went back
++        if [ -z "${result}" ]; then
++            result=".."
++        else
++            result="../$result"
++        fi
++        #echo "common_part is now : \"$common_part\""
++        #echo "result is now      : \"$result\""
++        #echo "target#common_part : \"${target#$common_part}\""
++    done
++
++    #echo "common_part is     : \"$common_part\""
++
++    if [ "${common_part}" = "/" ]; then
++        # special case for root (no common path)
++        result="$result/"
++    fi
++
++    # since we now have identified the common part,
++    # compute the non-common part
++    forward_part="${target#$common_part}"
++    #echo "forward_part = \"$forward_part\""
++
++    if [ -n "${result}" -a -n "${forward_part}" ]; then
++        #echo "(simple concat)"
++        result="$result$forward_part"
++    elif [ -n "${forward_part}" ]; then
++        #echo "(concat with slash removal)"
++        result=$(echo $forward_part | awk '{ string=substr($0, 2, length($0)); print string; }' )
++    fi
++    #echo "result = \"$result\""
++    #return_value=$result
++    echo $result
++
++    return 0
++}
+-- 
+1.8.5.3
+

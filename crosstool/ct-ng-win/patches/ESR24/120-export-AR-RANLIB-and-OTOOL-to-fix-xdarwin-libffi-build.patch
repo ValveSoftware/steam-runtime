@@ -1,0 +1,15 @@
+diff -urN a/js/src/configure.in b/js/src/configure.in
+--- a/js/src/configure.in	2013-11-06 21:14:33.989684137 +0000
++++ b/js/src/configure.in	2013-11-06 21:15:35.314234798 +0000
+@@ -4523,6 +4523,11 @@
+ 
+       ac_configure_args="$ac_configure_args --build=$build --host=$target HOST_CC=\"$HOST_CC\""
+       ;;
++    *-darwin*)
++      export AR RANLIB OTOOL
++
++      ac_configure_args="$ac_configure_args --build=$build --host=$target HOST_CC=\"$HOST_CC\" CC=\"$CC\""
++      ;;
+     *)
+       ac_configure_args="$ac_configure_args --build=$build --host=$target HOST_CC=\"$HOST_CC\" CC=\"$CC\""
+       ;;

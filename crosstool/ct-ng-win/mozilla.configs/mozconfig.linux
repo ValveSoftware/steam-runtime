@@ -1,0 +1,32 @@
+export CROSS_COMPILE=1
+TARGET_ARCH=
+HOST_ARCH=
+VENDOR_OS=
+TC_STUB=
+FLAGS=""
+CCOMPILER=
+CXXCOMPILER=
+CC="${TC_STUB}-${CCOMPILER} $FLAGS"
+CXX="${TC_STUB}-${CXXCOMPILER} $FLAGS"
+CPP="$CC -E"
+CXXCPP="$CXX -E"
+RANLIB="${TC_STUB}-ranlib"
+AR="${TC_STUB}-ar"
+OTOOL="${TC_STUB}-otool"
+AS="${TC_STUB}-as"
+LD="${TC_STUB}-ld"
+STRIP="${TC_STUB}-strip"
+OBJDIR=
+ac_add_options --enable-application=browser
+ac_add_options --target=${TARGET_ARCH}-${VENDOR_OS}
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/${OBJDIR}
+mk_add_options MOZ_APP_DISPLAYNAME=TorBrowser
+mk_add_options MOZ_MAKE_FLAGS="-j8"
+mk_add_options MOZILLA_OFFICIAL=1
+mk_add_options BUILD_OFFICIAL=1
+ac_add_options --enable-official-branding
+ac_add_options --disable-updater
+ac_add_options --disable-crashreporter
+ac_add_options --disable-maintenance-service
+ac_add_options --disable-webrtc
+ac_add_options --disable-tests

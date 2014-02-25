@@ -1,0 +1,10 @@
+This fork of crosstool-ng has been updated to better support cross-compiles
+between Windows and Linux.  Additionally, build.sh encapsulates retrieving
+a base crosstool-ng and tool sources, building a crosstool-ng configuration
+file and so on such that you can simply invoke build.sh with your desired
+target (provided the default versions are acceptable) and it does everything.
+The defaults here have been customized for Valve (eglibc 2.15, for example)
+and valve.sh does a cleanup step and launches build.sh to do the work.
+
+The fork is stored in https://github.com/diorcety/crosstool-ng.  A contact
+person for it is Ray Donnelly [mingw.android@gmail.com] but Yann Diorcet started the fork.

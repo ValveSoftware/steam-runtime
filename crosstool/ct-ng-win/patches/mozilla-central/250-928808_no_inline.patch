@@ -1,0 +1,237 @@
+# HG changeset patch
+# User EKR <ekr@rtfm.com>
+# Date 1382476667 25200
+# Node ID 4d01da0c33724187c4b913772c4b08cd38eb659b
+# Parent  1ae5d58532ad1ed31995d40c27a48e6c6be313c3
+Bug 928808. Move operator new etc. from .h to .cpp and make not-inline
+
+diff --git a/memory/mozalloc/mozalloc.cpp b/memory/mozalloc/mozalloc.cpp
+--- a/memory/mozalloc/mozalloc.cpp
++++ b/memory/mozalloc/mozalloc.cpp
+@@ -222,8 +222,80 @@ size_t moz_malloc_size_of(const void *pt
+     return moz_malloc_usable_size((void *)ptr);
+ }
+ 
+ namespace mozilla {
+ 
+ const fallible_t fallible = fallible_t();
+ 
+ } // namespace mozilla
++
++
++MOZALLOC_EXPORT_NEW
++void* operator new(size_t size) MOZALLOC_THROW_BAD_ALLOC
++{
++    return moz_xmalloc(size);
++}
++
++MOZALLOC_EXPORT_NEW
++void* operator new(size_t size, const std::nothrow_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
++{
++    return moz_malloc(size);
++}
++
++MOZALLOC_EXPORT_NEW
++void* operator new[](size_t size) MOZALLOC_THROW_BAD_ALLOC
++{
++    return moz_xmalloc(size);
++}
++
++MOZALLOC_EXPORT_NEW
++void* operator new[](size_t size, const std::nothrow_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
++{
++    return moz_malloc(size);
++}
++
++MOZALLOC_EXPORT_NEW
++void operator delete(void* ptr) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
++{
++    return moz_free(ptr);
++}
++
++MOZALLOC_EXPORT_NEW
++void operator delete(void* ptr, const std::nothrow_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
++{
++    return moz_free(ptr);
++}
++
++MOZALLOC_EXPORT_NEW
++void operator delete[](void* ptr) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
++{
++    return moz_free(ptr);
++}
++
++MOZALLOC_EXPORT_NEW
++void operator delete[](void* ptr, const std::nothrow_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
++{
++    return moz_free(ptr);
++}
++
++void* operator new(size_t size, const mozilla::fallible_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
++{
++    return moz_malloc(size);
++}
++
++
++void* operator new[](size_t size, const mozilla::fallible_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
++{
++    return moz_malloc(size);
++}
++
++
++void operator delete(void* ptr, const mozilla::fallible_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
++{
++    moz_free(ptr);
++}
++
++
++void operator delete[](void* ptr, const mozilla::fallible_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
++{
++    moz_free(ptr);
++}
+diff --git a/memory/mozalloc/mozalloc.h b/memory/mozalloc/mozalloc.h
+--- a/memory/mozalloc/mozalloc.h
++++ b/memory/mozalloc/mozalloc.h
+@@ -42,16 +42,17 @@
+ 
+ #if defined(MOZ_ALWAYS_INLINE_EVEN_DEBUG)
+ #  define MOZALLOC_INLINE MOZ_ALWAYS_INLINE_EVEN_DEBUG
+ #elif defined(HAVE_FORCEINLINE)
+ #  define MOZALLOC_INLINE __forceinline
+ #else
+ #  define MOZALLOC_INLINE inline
+ #endif
++#define MOZALLOC_INLINE
+ 
+ /* Workaround build problem with Sun Studio 12 */
+ #if defined(__SUNPRO_C) || defined(__SUNPRO_CC)
+ #  undef NS_WARN_UNUSED_RESULT
+ #  define NS_WARN_UNUSED_RESULT
+ #  undef NS_ATTR_MALLOC
+ #  define NS_ATTR_MALLOC
+ #endif
+@@ -190,63 +191,39 @@ MOZALLOC_EXPORT void* moz_valloc(size_t 
+ #define MOZALLOC_THROW_BAD_ALLOC_IF_HAS_EXCEPTIONS
+ #else
+ #define MOZALLOC_THROW_IF_HAS_EXCEPTIONS throw()
+ #define MOZALLOC_THROW_BAD_ALLOC_IF_HAS_EXCEPTIONS throw(std::bad_alloc)
+ #endif
+ 
+ #define MOZALLOC_THROW_BAD_ALLOC MOZALLOC_THROW_BAD_ALLOC_IF_HAS_EXCEPTIONS
+ 
+-MOZALLOC_EXPORT_NEW MOZALLOC_INLINE
+-void* operator new(size_t size) MOZALLOC_THROW_BAD_ALLOC
+-{
+-    return moz_xmalloc(size);
+-}
++MOZALLOC_EXPORT_NEW
++void* operator new(size_t size) MOZALLOC_THROW_BAD_ALLOC;
+ 
+-MOZALLOC_EXPORT_NEW MOZALLOC_INLINE
+-void* operator new(size_t size, const std::nothrow_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
+-{
+-    return moz_malloc(size);
+-}
++MOZALLOC_EXPORT_NEW
++void* operator new(size_t size, const std::nothrow_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS;
+ 
+-MOZALLOC_EXPORT_NEW MOZALLOC_INLINE
+-void* operator new[](size_t size) MOZALLOC_THROW_BAD_ALLOC
+-{
+-    return moz_xmalloc(size);
+-}
++MOZALLOC_EXPORT_NEW
++void* operator new[](size_t size) MOZALLOC_THROW_BAD_ALLOC;
+ 
+-MOZALLOC_EXPORT_NEW MOZALLOC_INLINE
+-void* operator new[](size_t size, const std::nothrow_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
+-{
+-    return moz_malloc(size);
+-}
++MOZALLOC_EXPORT_NEW
++void* operator new[](size_t size, const std::nothrow_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS;
+ 
+-MOZALLOC_EXPORT_NEW MOZALLOC_INLINE
+-void operator delete(void* ptr) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
+-{
+-    return moz_free(ptr);
+-}
++MOZALLOC_EXPORT_NEW
++void operator delete(void* ptr) MOZALLOC_THROW_IF_HAS_EXCEPTIONS;
+ 
+-MOZALLOC_EXPORT_NEW MOZALLOC_INLINE
+-void operator delete(void* ptr, const std::nothrow_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
+-{
+-    return moz_free(ptr);
+-}
++MOZALLOC_EXPORT_NEW
++void operator delete(void* ptr, const std::nothrow_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS;
+ 
+-MOZALLOC_EXPORT_NEW MOZALLOC_INLINE
+-void operator delete[](void* ptr) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
+-{
+-    return moz_free(ptr);
+-}
++MOZALLOC_EXPORT_NEW
++void operator delete[](void* ptr) MOZALLOC_THROW_IF_HAS_EXCEPTIONS;
+ 
+-MOZALLOC_EXPORT_NEW MOZALLOC_INLINE
+-void operator delete[](void* ptr, const std::nothrow_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
+-{
+-    return moz_free(ptr);
+-}
++MOZALLOC_EXPORT_NEW
++void operator delete[](void* ptr, const std::nothrow_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS;
+ 
+ 
+ /*
+  * We also add a new allocator variant: "fallible operator new."
+  * Unlike libmozalloc's implementations of the standard nofail
+  * allocators, this allocator is allowed to return NULL.  It can be used
+  * as follows
+  *
+@@ -258,36 +235,24 @@ void operator delete[](void* ptr, const 
+  * delete'd by any of
+  *
+  *   (1) the matching "fallible" operator delete below
+  *   (2) the matching infallible operator delete above
+  *   (3) the matching system |operator delete(void*, std::nothrow)|
+  *   (4) the matching system |operator delete(void*) throw(std::bad_alloc)|
+  */
+ 
+-MOZALLOC_INLINE
+-void* operator new(size_t size, const mozilla::fallible_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
+-{
+-    return moz_malloc(size);
+-}
+ 
+-MOZALLOC_INLINE
+-void* operator new[](size_t size, const mozilla::fallible_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
+-{
+-    return moz_malloc(size);
+-}
++void* operator new(size_t size, const mozilla::fallible_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS;
+ 
+-MOZALLOC_INLINE
+-void operator delete(void* ptr, const mozilla::fallible_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
+-{
+-    moz_free(ptr);
+-}
+ 
+-MOZALLOC_INLINE
+-void operator delete[](void* ptr, const mozilla::fallible_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS
+-{
+-    moz_free(ptr);
+-}
++void* operator new[](size_t size, const mozilla::fallible_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS;
++
++
++void operator delete(void* ptr, const mozilla::fallible_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS;
++
++
++void operator delete[](void* ptr, const mozilla::fallible_t&) MOZALLOC_THROW_IF_HAS_EXCEPTIONS;
+ 
+ #endif  /* ifdef __cplusplus */
+ 
+ 
+ #endif /* ifndef mozilla_mozalloc_h */
