@@ -1,0 +1,12 @@
+diff -ruN network-manager-0.9.4.0/debian/rules network-manager-0.9.4.0.new/debian/rules
+--- network-manager-0.9.4.0/debian/rules	2012-10-10 14:32:05.000000000 -0700
++++ network-manager-0.9.4.0.new/debian/rules	2014-03-17 17:25:58.346690871 -0700
+@@ -60,7 +60,7 @@
+ 	dh_girepository -plibnm-glib4
+ 
+ override_dh_auto_test:
+-	dbus-test-runner -t dh_auto_test
++	@echo "not running dbus-test-runner -t dh_auto_test"
+ 
+ override_dh_clean:
+ 	dh_clean

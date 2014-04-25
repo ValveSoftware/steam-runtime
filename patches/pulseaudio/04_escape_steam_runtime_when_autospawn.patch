@@ -1,0 +1,22 @@
+--- pulseaudio-1.1.orig/src/pulse/context.c	2014-03-07 16:03:55.983641155 -0800
++++ pulseaudio-1.1/src/pulse/context.c	2014-03-07 16:22:00.603656695 -0800
+@@ -711,6 +711,19 @@
+         argv[n++] = NULL;
+         pa_assert(n <= PA_ELEMENTSOF(argv));
+ 
++		// Get out of the Steam runtime environment before execing the pulse server
++		// As it's part of the host system and should load dependencies from there
++		char *SYSTEM_LD_LIBRARY_PATH = getenv("SYSTEM_LD_LIBRARY_PATH");
++		char *SYSTEM_PATH = getenv("SYSTEM_PATH");
++		if (SYSTEM_LD_LIBRARY_PATH)
++		{
++			setenv ("LD_LIBRARY_PATH", SYSTEM_LD_LIBRARY_PATH, 1);
++		}
++		if (SYSTEM_PATH)
++		{
++			setenv ("PATH", SYSTEM_PATH, 1);
++		}
++		
+         execv(argv[0], (char * const *) argv);
+         _exit(1);
+     }
