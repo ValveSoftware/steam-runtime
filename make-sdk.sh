@@ -9,6 +9,8 @@ cd "${TOP}"
 # We'll compress with xz
 # If this changes you need to update sdk/setup.sh
 ARCHIVE_EXT="tar.xz"
+# exported so it's noticed by tar
+export XZ_OPT="-v"
 
 function ExitUsage()
 {

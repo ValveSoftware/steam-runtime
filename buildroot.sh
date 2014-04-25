@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Create a chroot build environment and run commands in it
 
@@ -20,46 +20,19 @@ exit_usage()
     exit 1
 }
 
-while [ "$1" ]; do
-    case "$1" in
-    --create|--update|--unmount|--archive|--clean)
-        actions="$actions $1"
-        ;;
-    --arch=*)
-        arch=$(expr "$1" : '[^=]*=\(.*\)')
-        case "$arch" in
-        i386|amd64)
-            ;;
-        *)
-            echo "Unsupported architecture: $arch, valid values are i386, amd64" >&2
-            exit 1
-            ;;
-        esac
-        ;;
-    -h|--help)
-        exit_usage
-        ;;
-    -*)
-        echo "Unknown command line parameter: $1" >&2
-        exit_usage
-        ;;
-    *)
-        break
-        ;;
-    esac
-
-    shift
-done
-if [ -z "$arch" ]; then
-    arch=$host_arch
-fi
-if [ -z "$actions" ]; then
-    actions="--shell"
-fi
-
-# Set our root directory (but don't create it yet)
-root=$arch
-
+acquire_chroot_lock()
+{
+    local lockfile=${root}.buildroot_${arch}.lock
+    if [ -f $lockfile ]; then
+        PID=$(cat $lockfile)
+        if kill -0 $PID > /dev/null 2>&1; then
+            echo "error: can't run multiple instances of $0. Another instance is running with PID $PID"
+            return 1
+        fi
+    fi
+    echo $$ > $lockfile || return ""
+    return 0
+}
 
 check_create()
 {
@@ -88,7 +61,7 @@ check_create()
 action_create()
 {
     # Make sure we have the software we need to create the bootstrap
-    sudo apt-get install ubuntu-dev-tools
+    sudo apt-get install ubuntu-dev-tools || return $?
 
     # Create the initial bootstrap
     bootstrap_archive=pbuilder/$distribution-$arch-base.tgz
@@ -101,20 +74,21 @@ action_create()
         if [ ! -f $HOME/pbuilder/$pbuilder_archive ]; then
             pbuilder-dist $distribution $arch create --updates-only
         fi
-        mkdir -p pbuilder
-        cp $HOME/pbuilder/$pbuilder_archive $bootstrap_archive || exit 2
+        mkdir -p pbuilder || return $?
+        cp $HOME/pbuilder/$pbuilder_archive $bootstrap_archive || return $?
 
         # We need to update the new chroot
         actions="$actions --update"
     fi
 
     # Create our chroot directory
-    rm -rf "$root"
-    mkdir -p "$root"
+    rm -rf --one-file-system "$root" || return $?
+    mkdir -p "$root" || return $?
 
     # Unpack it into our chroot directory
-    tar xf $bootstrap_archive --exclude=dev -C "$root"
-    mkdir "$root/dev"
+    tar xf $bootstrap_archive --exclude=dev -C "$root" || return $?
+    mkdir "$root/dev" || return $?
+    return 0
 }
 
 extra_mounts()
@@ -123,7 +97,8 @@ extra_mounts()
     echo "/dev/pts"
     echo "/sys"
     echo "/proc"
-    echo "/home"
+    # if you need access to files in /home in the chroot, uncomment the next line
+    #echo "/home"
     echo "$CWD"
     if [ -f mounts ]; then
         grep '^/' mounts
@@ -132,27 +107,48 @@ extra_mounts()
 
 mount_chroot()
 {
-    extra_mounts | sort | uniq | while read dir; do
-        mkdir -p "$root/$dir"
-        sudo mount -o bind "$dir" "$root/$dir"
-    done
+    trap unmount_exit INT TERM
+    while read dir; do
+        mkdir -p "${root}${dir}"
+        sudo mount -o bind "$dir" "${root}${dir}" || return $?
+    done < <(extra_mounts | sort | uniq)
 }
 
 unmount_chroot()
 {
+    local root=$1
+
     SUDO_ASKPASS=/bin/false sudo -v -A 2>/dev/null
     if [ $? -ne 0 ]; then
         echo "Please enter your password to unmount chroot environment"
     fi
 
-    extra_mounts | sort -r | uniq | while read dir; do
-        sudo umount "$root/$dir"
-    done
+    local rc=0
+    local tries=1
+    while read dir; do
+        while [ ! -z "$(mount | awk '{print $3}' | grep ${PWD}/${root}${dir})" -a $tries -lt 5 ]; do
+            sudo umount "${root}${dir}" ; let "rc|=$?"
+            if [ $rc -eq 0 ]; then
+                break
+            fi
+            let tries=tries+1
+            sleep 1
+        done
+    done < <(extra_mounts | sort -r | uniq)
+    trap '' INT TERM
+    if [ $rc -ne 0 ]; then
+        echo "Unable to unmount chroot environment.  Try running"
+        echo "$0 --unmount"
+        echo ""
+        echo -n "Press return to continue..."
+        read k
+    fi
+    return $rc
 }
 
 unmount_exit()
 {
-    unmount_chroot
+    unmount_chroot ${root}
     exit 2
 }
 
@@ -170,12 +166,12 @@ action_update()
 {
     # Copy in initial content
     for file in /etc/passwd /etc/group; do
-        cp -afv "$file" "$root/$file"
+        cp -afv "$file" "$root/$file" || return $?
     done
-    cp -afv content/* "$root/"
+    cp -afv content/* "$root/" || return $?
 
     # Add sources for apt-get
-    APT_SOURCES="${root}/etc/apt/sources.list"
+    APT_SOURCES="${root}etc/apt/sources.list"
     if ! grep '^deb-src ' "${APT_SOURCES}"; then
         grep '^deb ' "${APT_SOURCES}" | sed 's,^deb ,deb-src ,' >>"${APT_SOURCES}"
     fi
@@ -188,11 +184,11 @@ action_update()
     fi
 
     # Run the update script in the chroot environment
-    trap unmount_exit INT TERM
-    mount_chroot
-    sudo chroot --userspec="$(id -u):$(id -g)" "$root" /packages/update.sh
-    unmount_chroot
-    trap '' INT TERM
+    mount_chroot || return $?
+    local rc=0
+    sudo chroot --userspec="$(id -u):$(id -g)" "$root" /packages/update.sh ; let "rc|=$?"
+    unmount_chroot ${root}
+    return $rc
 }
 
 check_unmount()
@@ -207,7 +203,11 @@ check_unmount()
 
 action_unmount()
 {
-    unmount_chroot
+    rc=0
+    for arch in ${ARCHITECTURES}; do
+        unmount_chroot ${arch} || let "rc|=$?"
+    done
+    return $rc
 }
 
 check_shell()
@@ -253,8 +253,9 @@ __EOF__
 
     # Run a shell in the chroot environment
     mount_chroot
-    sudo chroot --userspec="$(id -u):$(id -g)" "$root" /shell.sh
-    unmount_chroot
+    sudo chroot --userspec="$(id -u):$(id -g)" "$root" /shell.sh ; local rc=$?
+    unmount_chroot ${root}
+    return $rc
 }
 
 check_archive()
@@ -276,15 +277,15 @@ action_archive()
 
             if [ -e "${arch}/dev/null" ]; then
                 echo "${arch} dev is still mounted - aborting"
-                exit 2
+                return 2
             fi
             if [ -e "${arch}/proc/kcore" ]; then
                 echo "${arch} proc is still mounted - aborting"
-                exit 2
+                return 2
             fi
 
             # Remove cached data to save space
-            rm -rf ${arch}/tmp/*
+            rm -rf --one-file-system ${arch}/tmp/* || return $?
 
             # Leave the cached packages because some of the source packages
             # have conflicting build dependencies and we want to be able to
@@ -292,7 +293,7 @@ action_archive()
             #rm -f ${arch}/var/cache/apt/archives/*.deb
 
             # Create the archive!
-            (cd ${arch} && tar zcf "../pbuilder/${archive}" *) || exit 3
+            (cd ${arch} && tar zcf "../pbuilder/${archive}" *) || return 3
             ls -l "pbuilder/${archive}"
         fi
     done
@@ -310,27 +311,77 @@ check_clean()
 
 action_clean()
 {
+    for arch in ${ARCHITECTURES}; do
+        unmount_chroot ${arch} || return $?
+    done
     echo "Removing build root directories for ${ARCHITECTURES}"
-    rm -rf ${ARCHITECTURES}
+    rm -rf --one-file-system ${ARCHITECTURES}
+    return $?
 }
 
+while [ "$1" ]; do
+    case "$1" in
+    --create|--update|--unmount|--archive|--clean)
+        actions="$actions $1"
+        ;;
+    --arch=*)
+        arch=$(expr "$1" : '[^=]*=\(.*\)')
+        case "$arch" in
+        i386|amd64)
+            ;;
+        *)
+            echo "Unsupported architecture: $arch, valid values are i386, amd64" >&2
+            exit 1
+            ;;
+        esac
+        ;;
+    -h|--help)
+        exit_usage
+        ;;
+    -*)
+        echo "Unknown command line parameter: $1" >&2
+        exit_usage
+        ;;
+    *)
+        break
+        ;;
+    esac
+
+    shift
+done
+
+if [ -z "$arch" ]; then
+    arch=$host_arch
+fi
+
+if [ -z "$actions" ]; then
+    actions="--shell"
+fi
+
+# Set our root directory (but don't create it yet)
+root=$arch
+
+acquire_chroot_lock || exit $?
+
+rc=0
 if check_create; then
-    action_create
+    action_create ; let "rc|=$?"
 fi
 if check_update; then
-    action_update
+    action_update ; let "rc|=$?"
 fi
 if check_unmount; then
-    action_unmount
+    action_unmount ; let "rc|=$?"
 fi
 if check_shell; then
-    action_shell $*
+    action_shell $* ; let "rc|=$?"
 fi
 if check_archive; then
-    action_archive
+    action_archive ; let "rc|=$?"
 fi
 if check_clean; then
-    action_clean
+    action_clean ; let "rc|=$?"
 fi
+exit $rc
 
 # vi: ts=4 sw=4 expandtab

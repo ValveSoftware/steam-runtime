@@ -1,3 +1,4 @@
+p4.ignore
 build.log
 buildroot/amd64/
 buildroot/i386/
@@ -13,5 +14,7 @@ runtime/amd64/
 runtime/i386/
 runtime/source/
 publish_symbols.sh
+do-buildbot-build.sh
+merge_hg_to_runtime.sh
 x-tools
 tmp/

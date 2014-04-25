@@ -261,6 +261,24 @@ install_deb()
     fi
 }
 
+update_package_index()
+{
+    # run apt-get update if don't know when we last ran, or haven't run it in the last hour
+    NEED_APT_UPDATE=1
+    if [ -f /var/lib/apt/periodic/update-success-stamp ]; then
+        if [ $(stat -c "%Y" /var/lib/apt/periodic/update-success-stamp ) -gt $(date -d "1 hour ago" +%s) ]; then
+            NEED_APT_UPDATE=0
+        fi
+    else
+        sudo apt-get install -qq -y update-notifier-common
+    fi
+    
+    if [ $NEED_APT_UPDATE -ne 0 ]; then
+        echo updating apt package indexes...
+        sudo apt-get -qq update || exit 4
+    fi
+}
+
 process_package()
 {
     local INSTALL_PATH="${RUNTIME_PATH}/${ARCHITECTURE}"
@@ -332,6 +350,8 @@ if [ "${DEBUG}" = "true" ]; then
 else
     BINARY_PACKAGE_DIR="${TOP}/packages/binary/${ARCHITECTURE}"
 fi
+
+update_package_index
 
 # Build and install the packages
 if [ "$1" != "" ]; then

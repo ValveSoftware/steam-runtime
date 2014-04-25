@@ -2,24 +2,19 @@
 # Makefile to automate the build process for the Steam runtime
 
 PACKAGES := $(shell sed -e '/^\#/d' -e 's/\s.*//' <packages.txt)
+ARCH ?= i386 amd64
 
 all: clean-log packages
 
+SHELL := /bin/bash -e -o pipefail
+
 packages:
-	if [ "$(ARCH)" = "" ]; then \
-		make $@ ARCH=i386; \
-		make $@ ARCH=amd64; \
-	else \
-		./buildroot.sh --arch="$(ARCH)" ./build-runtime.sh --runtime="$(RUNTIME_PATH)" --debug="$(DEBUG)" --devmode="$(DEVELOPER_MODE)" | tee -a build.log; \
-	fi
+	$(foreach arch,$(ARCH), \
+		./buildroot.sh --arch=$(arch) ./build-runtime.sh --runtime=$(RUNTIME_PATH) --debug=$(DEBUG) --devmode=$(DEVELOPER_MODE) | tee -a build.log;)
 
 $(PACKAGES):
-	if [ "$(ARCH)" = "" ]; then \
-		make $@ ARCH=i386; \
-		make $@ ARCH=amd64; \
-	else \
-		./buildroot.sh --arch="$(ARCH)" ./build-runtime.sh --runtime="$(RUNTIME_PATH)" --debug="$(DEBUG)" --devmode="$(DEVELOPER_MODE)" $@ | tee -a build.log; \
-	fi
+	$(foreach arch,$(ARCH), \
+		./buildroot.sh --arch=$(arch) ./build-runtime.sh --runtime=$(RUNTIME_PATH) --debug=$(DEBUG) --devmode=$(DEVELOPER_MODE) $@ | tee -a build.log;)
 
 update:
 	./buildroot.sh --arch=i386 --update
