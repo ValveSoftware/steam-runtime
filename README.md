@@ -1,106 +1,68 @@
 steam-runtime
 =============
 
-A runtime environment for Steam applications
+A binary compatibile runtime environment for Steam applications on Linux.
+
+All the software that makes up the Steam Runtime is available in both source and binary form in the Steam Runtime repository [http://repo.steampowered.com/steamrt](http://repo.steampowered.com/steamrt "")
+
+Included in this repository are scripts for building local copies of the Steam Runtime for testing and scripts for building Linux chroot environments suitable for building applications.
 
 Developing against or shipping with the runtime
 -----------------------------------------------
 
-Grab the latest runtime SDK from there:
+Steam ships with a copy of the Steam Runtime and all Steam Applications are launched within the runtime environment. For some scenarios, you may want to test an application with a different build of the runtime. You can use the **build-runtime.py** script to download various flavors of the runtime.
 
-http://media.steampowered.com/client/runtime/steam-runtime-sdk_latest.tar.xz
+    usage: build-runtime.py [-h] [-r RUNTIME] [-b] [-d] [--source] [--symbols]
+                            [--repo REPO] [-v]
+    
+    optional arguments:
+      -h, --help            show this help message and exit
+      -r RUNTIME, --runtime RUNTIME
+                            specify runtime path
+      -b, --beta            build beta runtime
+      -d, --debug           build debug runtime
+      --source              include sources
+      --symbols             include debugging symbols
+      --repo REPO           source repository
+      -v, --verbose         verbose
+    
+Once the runtime is downloaded, you can use the **run.sh** script to launch any program within that runtime environment. 
 
-Read this to get started:
+To launch Steam itself (and any Steam applications) within your runtime, set the STEAM_RUNTIME environment variable to point to your runtime directory;
 
-https://github.com/ValveSoftware/steam-runtime/blob/master/sdk/README.txt
+    ~/.local/share/Steam$ STEAM_RUNTIME=~/rttest ./steam.sh
+    Running Steam on ubuntu 14.04 64-bit
+    STEAM_RUNTIME has been set by the user to: /home/username/rttest
+    
 
+Building in the runtime
+-----------------------
 
-Modifying or contributing to the runtime
-----------------------------------------
+To prevent libraries from development and build machines 'leaking' into your applications, you should build within a Steam Runtime chroot environment. **setup_chroot.sh** will create a Steam Runtime chroot on your machine. This chroot environment contains development libraries and tools that match the Steam Runtime.
 
-This directory contains scripts for building a Steam runtime environment
-and tools to target that environment.
+You will need the 'schroot' tool installed as well as root access through sudo. Run either "setup-chroot.sh --i386" or "setup-chroot.sh --amd64" depending on whether you want to build a 32-bit or 64-bit application.
 
-The typical flow would be to just type 'make' in this directory to build
-the runtime environment.
+Once setup-chroot.sh completes, you can use the **schroot** command to execute any build operations within the Steam Runtime environment.
 
+    ~/src/mygame$ schroot --chroot steamrt_scout_i386 make -f mygame.mak
 
-Makefile
---------
+The chroot contains three different C++ compilers, gcc-4.6, gcc-4.8, and clang-3.4. The default compiler is gcc-4.8. If you want to change that default, simply enter the chroot and use **update-alternatives**
 
-The Makefile is included to make it easy to do common tasks.
-
-To build amd64 and i386 packages:
-> make 
-
-To update the source packages from the distribution repository:
-> make update
-
-To wipe the runtime environment and archive the build environment:
-> make clean
-
-To completely clean so you have to rebuild everything:
-> make distclean
-
-
-buildroot.sh
-------------
-
-buildroot.sh is automatically run by the Makefile.
-
-buildroot.sh is a script to build and use a chroot environment for creating
-the runtime packages and other software.
-
-When run with no arguments, it will run a login shell in the chroot.
-
-Usage: ./buildroot.sh [--create|--update|--unmount|--clean] [--arch=arch] [command] [arguments...]
-
-buildroot/content is a directory containing files that go into the chroot environment.
-
-buildroot/content/packages/packages.txt is a file containing a list of packages that are installed when the chroot environment is first created.
-
-buildroot/mounts is a file containing a list of directories that are automatically mounted inside the chroot environment.
-
-buildroot/[arch] is a directory containing the actual chroot environment for the specified architecture.
-
-
-build-runtime.sh
-----------------
-
-build-runtime.sh is automatically run by the Makefile.
-
-build-runtime.sh is a script to download source, patch, build and install
-the runtime packages.
-
-Usage: ./build-runtime.sh [package...]
-
-If run with no arguments the script will build and install all the packages
-listed in packages.txt.
-
-This script is typically run within the chroot environment for consistent
-build output.
-
-packages/source is a directory containing the downloaded source packages.
-
-packages/binary/[arch] is a directory containing built binary packages.
-
-runtime/[arch] is the final install location for the runtime packages.
-
-
-clean-runtime.sh
-----------------
-
-clean-runtime.sh is automatically run by the Makefile.
-
-clean-runtime.sh wipes clean the runtime environment.
-
-
-build-crosstool.sh
-------------------
-
-build-crosstool.sh builds a cross-compiler targeting the Steam runtime
-and puts it in x-tools.
-
-The file README.txt in the x-tools directory has more information about
-how to use the Steam runtime development environment.
-
+    ~$ schroot --chroot steamrt_scout_i386
+    (steamrt_scout_i386)johnv@johnvub64:~$ # change to gcc-4.6
+    (steamrt_scout_i386)johnv@johnvub64:~$ sudo update-alternatives --set gcc /usr/bin/gcc-4.6
+    update-alternatives: using /usr/bin/gcc-4.6 to provide /usr/bin/gcc (gcc) in manual mode.
+    (steamrt_scout_i386)johnv@johnvub64:~$ sudo update-alternatives --set g++ /usr/bin/g++-4.6
+    update-alternatives: using /usr/bin/g++-4.6 to provide /usr/bin/g++ (g++) in manual mode.
+    (steamrt_scout_i386)johnv@johnvub64:~$ sudo update-alternatives --set cpp-bin /usr/bin/cpp-4.6
+    update-alternatives: using /usr/bin/cpp-4.6 to provide /usr/bin/cpp (cpp-bin) in manual mode.
+    (steamrt_scout_i386)johnv@johnvub64:~$ 
+    (steamrt_scout_i386)johnv@johnvub64:~$ 
+    (steamrt_scout_i386)johnv@johnvub64:~$ # change to clang-3.4
+    (steamrt_scout_i386)johnv@johnvub64:~$ sudo update-alternatives --set gcc /usr/bin/clang  
+    update-alternatives: using /usr/bin/clang to provide /usr/bin/gcc (gcc) in manual mode.
+    (steamrt_scout_i386)johnv@johnvub64:~$ sudo update-alternatives --set g++ /usr/bin/clang++
+    update-alternatives: using /usr/bin/clang++ to provide /usr/bin/g++ (g++) in manual mode.
+    (steamrt_scout_i386)johnv@johnvub64:~$ sudo update-alternatives --set cpp-bin /usr/bin/cpp-4.8
+    update-alternatives: using /usr/bin/cpp-4.8 to provide /usr/bin/cpp (cpp-bin) in manual mode.
+    (steamrt_scout_i386)johnv@johnvub64:~$ 
