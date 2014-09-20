@@ -1,7 +1,7 @@
 steam-runtime
 =============
 
-A binary compatibile runtime environment for Steam applications on Linux.
+A binary compatible runtime environment for Steam applications on Linux.
 
 Introduction
 ------------
@@ -10,12 +10,13 @@ This release of the steam-runtime SDK marks a change to a chroot environment use
 
 [http://en.wikipedia.org/wiki/Chroot](http://en.wikipedia.org/wiki/Chroot "")
 
-All processes that run within the root run relative to that rooted environment. It is possible to install a differently versioned distribution within a root, than the native distribution. For example, it is possible to install an Ubuntu 12.04 chroot environment on an Ubuntu 14.04 system. Tools and utilities for building apps can be installed in the root using standard package management tools, as as far as the tool is concerned, it is running in a native Linux environment. This makes it well suited for an SDK environment.
+All processes that run within the root run relative to that rooted environment. It is possible to install a differently versioned distribution within a root, than the native distribution. For example, it is possible to install an Ubuntu 12.04 chroot environment on an Ubuntu 14.04 system. Tools and utilities for building apps can be installed in the root using standard package management tools, since from the tool's perspective it is running in a native Linux environment. This makes it well suited for an SDK environment.
 
 Steam-runtime Repository
 ------------------------
 
-The Steam-runtime SDK relies on an APT repository that Valve has created that holds the packages contained within the steam-runtime. A single package, steamrt-dev, lists all the steam-runtime -dev packages as dependencies. Conceptually, a base chroot environment is created in the traditional way using debootstrap, steamrt-dev is then installed into this, and then a set of commonly used compilers and build tools is installed. It is expected that after this script sets the environment up, developers may want to install other packages / tools they may need into the chroot environment.
+The Steam-runtime SDK relies on an APT repository that Valve has created that holds the packages contained within the steam-runtime. A single package, steamrt-dev, lists all the steam-runtime development packages (i.e. packages that contain headers and files required to build software with those libraries, and whose names end in -dev) as dependencies. Conceptually, a base chroot environment is created in the traditional way using debootstrap, steamrt-dev is then installed into this, and then a set of commonly used compilers and build tools are installed. It is expected that after this script sets the environment up, developers may want to install other packages / tools they may need into the chroot environment.
+If any of these packages contain runtime dependencies, then you will have to make sure to satisfy these yourself, as only the runtime dependencies of the steamrt-dev packages are included in the steam-runtime. 
 
 Installation
 ------------
@@ -62,11 +63,9 @@ Both roots can co-exist side by side. 32 bit steam-runtime libraries are install
 
 Once setup-chroot.sh completes, you can use the **schroot** command to execute any build operations within the Steam Runtime environment.
 
-    ~/src/mygame$ schroot --chroot steamrt_scout_i386 make -f mygame.mak
+    ~/src/mygame$ schroot --chroot steamrt_scout_i386 -- make -f mygame.mak
 
-The root should be set up so that the path containing the build tree is the same inside as outside the root. If this path is not within the current user's home directory tree, it should be added to:
-
-/etc/schroot/default/fstab
+The root should be set up so that the path containing the build tree is the same inside as outside the root. If this path is not within the current user's home directory tree, it should be added to `/etc/schroot/default/fstab`
 
 Then the next time the root is entered, this path will be available inside the root.
 
