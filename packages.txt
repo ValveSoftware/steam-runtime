@@ -58,14 +58,16 @@ glew1.10	libglew1.10 libglew-dev
 glib2.0		libglib2.0-0 libglib2.0-dev
 gmp		libgmp10 libgmp-dev
 gnutls26	libgnutls26 libgnutls-dev
-gst-plugins-base0.10	libgstreamer-plugins-base0.10-0 libgstreamer-plugins-base0.10-0-dev
-gstreamer0.10	libgstreamer0.10-0 libgstreamer0.10-0-dev
+gst-plugins-base0.10	libgstreamer-plugins-base0.10-0 libgstreamer-plugins-base0.10-dev
+gstreamer0.10	libgstreamer0.10-0 libgstreamer0.10-dev
 gtk+2.0		libgtk2.0-common libgtk2.0-0 libgtk2.0-dev
 gtk2-engines	gtk2-engines
 gtk2-engines-murrine	gtk2-engines-murrine
 gtk2-engines-pixbuf	gtk2-engines-pixbuf
 heimdal		libasn1-8-heimdal libgssapi3-heimdal libhcrypto4-heimdal libheimbase1-heimdal libheimntlm0-heimdal libhx509-5-heimdal libkrb5-26-heimdal libroken18-heimdal libwind0-heimdal
-jack-audio-connection-kit	libjack0 libjack-dev
+# Replace jack-audio-connection-kit with jackd2
+# jack-audio-connection-kit     libjack0 libjack-dev
+jackd2		libjack-jackd2-0 libjack-jackd2-dev
 json-c		libjson0 libjson0-dev
 keyutils	libkeyutils1 libkeyutils-dev
 krb5		libkrb5-3 libkrb5-dev libk5crypto3 libkrb5support0 libgssapi-krb5-2 krb5-multidev
@@ -83,8 +85,11 @@ libgpg-error	libgpg-error0 libgpg-error-dev
 libice		libice6 libice-dev
 libidn		libidn11 libidn11-dev
 libindicator	libindicator7 libindicator-dev
-libjpeg-turbo	libjpeg-turbo8
-libjpeg6b	libjpeg62 libjpeg62-dev
+# Keep the order of libjpeg62 / libjpeg-turbo this way, and keep the  -dev
+# on turbo8. Ubuntu installs libjpeg-turbo8 when depends is libjpeg, so these
+# packages conflict. However some apps have compiled dependencies on libjpeg62.
+libjpeg6b	libjpeg62
+libjpeg-turbo	libjpeg-turbo8 libjpeg-turbo8-dev
 libmikmod	libmikmod2 libmikmod2-dev
 libnotify	libnotify4 libnotify-dev
 libogg		libogg0 libogg-dev
@@ -103,7 +108,7 @@ libtasn1-3	libtasn1-3 libtasn1-3-dev
 libtheora	libtheora0 libtheora-dev
 libtool		libltdl7 libltdl-dev
 libusb-1.0	libusb-1.0-0 libusb-1.0-0-dev
-libva		libva1 libva-dev
+libva		libva1 libva-x11-1 libva-glx1 libva-dev
 libvdpau	libvdpau1 libvdpau-dev
 libvorbis	libvorbis0a libvorbisfile3 libvorbisenc2 libvorbis-dev
 libvpx		libvpx1 libvpx-dev
