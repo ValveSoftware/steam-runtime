@@ -343,7 +343,7 @@ main()
 		shift
 	fi
 
-	if [[ "$1" == "--outputdir" ]]; then
+	if [[ "$1" == "--output-dir" ]]; then
 		CHROOT_DIR=$2
 		shift;shift
 	fi
