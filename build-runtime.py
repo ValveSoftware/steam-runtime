@@ -1,4 +1,4 @@
-#! env python
+#!/usr/bin/env python
 #
 # Script to build and install packages into the Steam runtime
 
