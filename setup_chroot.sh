@@ -16,32 +16,6 @@ set -o nounset
 
 prebuild_chroot()
 {
-	# Warn about the pre-Ubuntu 14.04 chroot bug that causes upstart to launch a
-	# dbus-daemon instance inside the root which never exits
-	if [ "$(lsb_release --id --short)" == "Ubuntu" ]; then
-		LSB_VERSION=$(lsb_release --release --short)
-		if [ $(echo ${LSB_VERSION} | tr "." "\n" | head -1) -lt 14 ]; then
-			echo ""
-			echo "Valve recommends installing this SDK on Ubuntu 14.04 and above."
-			echo "Ubuntu 12.x and 13.x have a bug that causes upstart to spawn"
-			echo "dbus-daemon inside the chroot which can't be killed. If you see"
-			echo "any \"E: 10mount:\" errors when this script exits, it is likely"
-			echo "due to this problem. The chroot is still usable in this state"
-			echo "but if you'd like to clean these up, you will need to reboot"
-			echo "and run:"
-			echo ""
-			echo "  schroot --end-session --all-sessions"
-			echo ""
-			echo "https://bugs.launchpad.net/ubuntu/+source/sbuild/+bug/917339"
-			echo ""
-			read -p "Are you sure you want to continue (y/n)? "
-			if [[ "$REPLY" != [Yy] ]]; then
-				echo -e "Cancelled...\n"
-				exit 1
-			fi
-		fi
-	fi
-
 	# install some packages
 	echo -e "\n${COLOR_ON}Installing debootstrap schroot...${COLOR_OFF}"
 	sudo -E apt-get install -y debootstrap schroot
@@ -265,6 +239,13 @@ QpBI5Fwn13V3OM4=
 heredoc
 ) | apt-key add -
 
+    # Before installing any additional packages, neuter upstart.
+    # Otherwise on Ubuntu 12.04, when dbus is installed it starts
+    # a new dbus-daemon outside the chroot which locks files 
+    # inside the chroot, preventing those directories from
+    # getting unmounted when the chroot exits.
+    dpkg-divert --local --rename --add /sbin/initctl
+    ln -s /bin/true /sbin/initctl
 
 	# All repos and keys added; update
 	apt-get -y update

@@ -100,17 +100,4 @@ Switching default compilers can be done be entering the chroot environment:
     (steamrt_scout_i386):~$ update-alternatives --set g++ /usr/bin/clang++
     (steamrt_scout_i386):~$ update-alternatives --set cpp-bin /usr/bin/cpp-4.8
     
-Running a chroot environment on Ubuntu 12.x and 13.x
-----------------------------------------------------
 
-Ubuntu 12.x and 13.x have a bug which causes upstart (the init program) to
-spawn dbus-daemon inside the root. It opens files inside the root, then when
-you exit the root you get a "E: 10mount:" error because schroot can't umount a
-mount with an open file. Unfortunately if you try to kill this dbus-daemon
-instance, upstart respawns it right away. This is annoying but the chroot can
-still be used in this state. If you'd like to clean these up, you will need to
-reboot and run:
-
-schroot --end-session --all-sessions
-
-This bug is fixed in Ubuntu 14.04.
