@@ -13,6 +13,8 @@ COLOR_ON="\033[1;93m"
 set -o errexit
 # bail on any unitialized variable reads
 set -o nounset
+# bail on failing commands before last pipe
+set -o pipefail
 
 prebuild_chroot()
 {
