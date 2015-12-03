@@ -79,6 +79,7 @@ By default, a build environment is created that contains:
 * gcc-4.6 
 * gcc-4.8 (default)
 * clang-3.4
+* clang-3.6
 
 Switching default compilers can be done by entering the chroot environment:
 
