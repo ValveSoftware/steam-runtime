@@ -80,7 +80,7 @@ By default, a build environment is created that contains:
 * gcc-4.8 (default)
 * clang-3.4
 
-Switching default compilers can be done be entering the chroot environment:
+Switching default compilers can be done by entering the chroot environment:
 
     ~$ schroot --chroot steamrt_scout_i386
     
