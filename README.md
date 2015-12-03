@@ -94,9 +94,14 @@ Switching default compilers can be done by entering the chroot environment:
     (steamrt_scout_i386):~$ update-alternatives --set g++ /usr/bin/g++-4.8
     (steamrt_scout_i386):~$ update-alternatives --set cpp-bin /usr/bin/cpp-4.8
     
-    (steamrt_scout_i386):~$ # clang
-    (steamrt_scout_i386):~$ update-alternatives --set gcc /usr/bin/clang
-    (steamrt_scout_i386):~$ update-alternatives --set g++ /usr/bin/clang++
+    (steamrt_scout_i386):~$ # for clang-3.4
+    (steamrt_scout_i386):~$ update-alternatives --set gcc /usr/bin/clang-3.4
+    (steamrt_scout_i386):~$ update-alternatives --set g++ /usr/bin/clang++-3.4
+    (steamrt_scout_i386):~$ update-alternatives --set cpp-bin /usr/bin/cpp-4.8
+    
+    (steamrt_scout_i386):~$ # for clang-3.6
+    (steamrt_scout_i386):~$ update-alternatives --set gcc /usr/bin/clang-3.6
+    (steamrt_scout_i386):~$ update-alternatives --set g++ /usr/bin/clang++-3.6
     (steamrt_scout_i386):~$ update-alternatives --set cpp-bin /usr/bin/cpp-4.8
     
 
