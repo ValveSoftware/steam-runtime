@@ -161,7 +161,7 @@ tdb		libtdb1 libtdb-dev
 tiff		libtiff4 libtiff4-dev
 udev		libudev0 libudev-dev libgudev-1.0-0 libgudev-1.0-dev
 util-linux	libuuid1 uuid-dev
-vulkan-loader	libvulkan1
+vulkan		libvulkan1 libvulkan-dev
 x11proto-composite	x11proto-composite-dev
 x11proto-core	x11proto-core-dev
 x11proto-damage	x11proto-damage-dev
