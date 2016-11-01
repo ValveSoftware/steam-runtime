@@ -35,6 +35,8 @@ def parse_args():
 	parser.add_argument("--symbols", help="include debugging symbols", action="store_true")
 	parser.add_argument("--repo", help="source repository", default=REPO)
 	parser.add_argument("-v", "--verbose", help="verbose", action="store_true")
+	parser.add_argument("--amd64", help="build amd64 runtime", action="append_const", const="amd64", dest="arches")
+	parser.add_argument("--i386", help="build i386 runtime", action="append_const", const="i386", dest="arches")
 	return parser.parse_args()
 
 def download_file(file_url, file_path):
@@ -268,6 +270,8 @@ if args.verbose:
 	for property, value in vars(args).iteritems():
 		print "\t", property, ": ", value
 
+if args.arches:
+	arches = args.arches
 
 REPO=args.repo
 
