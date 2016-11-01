@@ -2,6 +2,7 @@
 #
 # Script to build and install packages into the Steam runtime
 
+from __future__ import print_function
 import os
 import re
 import sys
@@ -98,7 +99,7 @@ def install_sources (sourcelist):
 			p = subprocess.Popen(["dpkg-source", "-x", "--no-copy", dsc_file, os.path.join(dest_dir,ver)], stdout=subprocess.PIPE)
 			for line in iter(p.stdout.readline, ""):
 				if args.verbose or re.match('dpkg-source: warning: ',line):
-					print line,
+					print(line)
 
 	if skipped > 0:
 		print("Skipped downloading %i deb source file(s) that were already present." % skipped)
@@ -257,7 +258,7 @@ def fix_debuglinks ():
 							os.makedirs(linkdir)
 						link = os.path.join(linkdir,m.group(2))
 						if args.verbose:
-							print "SYMLINKING symbol file %s to %s" % (link, os.path.relpath(os.path.join(dir,file),linkdir))
+							print("SYMLINKING symbol file %s to %s" % (link, os.path.relpath(os.path.join(dir,file),linkdir)))
 						if os.path.lexists(link):
 							os.unlink(link)
 						os.symlink(os.path.relpath(os.path.join(dir,file), linkdir),link)
@@ -266,7 +267,7 @@ def fix_debuglinks ():
 args = parse_args()
 if args.verbose:
 	for property, value in vars(args).iteritems():
-		print "\t", property, ": ", value
+		print("\t", property, ": ", value)
 
 
 REPO=args.repo
@@ -281,7 +282,7 @@ if args.debug:
 source_pkgs = set()
 binary_pkgs = set()
 
-print ("Creating Steam Runtime in %s" % args.runtime)
+print("Creating Steam Runtime in %s" % args.runtime)
 
 with open("packages.txt") as f:
 	for line in f:
