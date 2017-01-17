@@ -322,7 +322,7 @@ main()
 {
 	# Check if we have any arguments.
 	if [[ $# == 0 ]]; then
-		echo "Usage: $0 [--force] [--beta] [--output-dir <DIRNAME>] --i386 | --amd64"
+		echo "Usage: $0 [--force] [--beta] [--output-dir <DIRNAME>] [--prefix <PREFIX>] --i386 | --amd64"
 		exit 1
 	fi
 
@@ -340,6 +340,11 @@ main()
 
 	if [[ "$1" == "--output-dir" ]]; then
 		CHROOT_DIR=$2
+		shift;shift
+	fi
+
+	if [[ "$1" == "--prefix" ]]; then
+		CHROOT_PREFIX=$2
 		shift;shift
 	fi
 
