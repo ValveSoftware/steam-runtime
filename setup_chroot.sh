@@ -5,9 +5,11 @@ SCRIPTNAME=$(basename "$SCRIPT")
 LOGFILE=/tmp/${SCRIPTNAME%.*}-$(uname -i).log
 CHROOT_PREFIX="steamrt_scout_"
 CHROOT_DIR="/var/chroots"
+INSTALL_FORCE=false
 BETA_ARG=""
 COLOR_OFF="\033[0m"
 COLOR_ON="\033[1;93m"
+COLOR_ERROR_ON="\033[0;31m"
 
 # exit on any script line that fails
 set -o errexit
@@ -23,14 +25,17 @@ prebuild_chroot()
 	# Check if there are any active schroot sessions right now and warn if so...
 	schroot_list=$(schroot --list --all-sessions | head -n 1)
 	if [ $schroot_list ]; then
-		tput setaf 3
-		echo -e "\nWARNING: Schroot says you have a currently active session!\n"
-		tput sgr0
+		echo -e "\n${COLOR_ERROR_ON}WARNING: Schroot says you have a currently active session!${COLOR_OFF}\n"
 		echo "  ${schroot_list}"
 		echo ""
-		read -p "Are you sure you want to continue (y/n)? "
-		if [[ "$REPLY" != [Yy] ]]; then
-			echo -e "Cancelled...\n"
+		if [[ $- == *i* ]]; then
+			read -p "Are you sure you want to continue (y/n)? "
+			if [[ "$REPLY" != [Yy] ]]; then
+				echo -e "Cancelled...\n"
+				exit 1
+			fi
+		else
+			>&2 echo -e "${COLOR_ERROR_ON}ERROR: Cannot continue...${COLOR_OFF}"
 			exit 1
 		fi
 	fi
@@ -39,17 +44,20 @@ prebuild_chroot()
 	for var in "$@"; do
 		dirname="${CHROOT_DIR}/${CHROOT_PREFIX}${var/--/}"
 		if [ -d "${dirname}" ]; then
-			tput setaf 3
 			STEAM_RUNTIME_SPEW_WARNING=1
-			echo -e "About to remove ${dirname} and re-install..."
-			tput sgr0
+			echo -e "${COLOR_ERROR_ON}About to remove ${dirname} and re-install...${COLOR_OFF}"
 		fi
 	done
 
 	if [[ "$STEAM_RUNTIME_SPEW_WARNING" == "1" ]]; then
-		read -p "  This ok (y/n)? "
-		if [[ "$REPLY" != [Yy] ]]; then
-			echo -e "Cancelled...\n"
+		if [[ $- == *i* ]]; then
+			read -p "  This ok (y/n)? "
+			if [[ "$REPLY" != [Yy] ]]; then
+				echo -e "Cancelled...\n"
+				exit 1
+			fi
+		elif [[ "$INSTALL_FORCE" == false ]]; then
+			>&2 echo -e "${COLOR_ERROR_ON}ERROR: Please use --force if this is intentional${COLOR_OFF}"
 			exit 1
 		fi
 	fi
@@ -307,17 +315,20 @@ function cleanup()
 	echo "  PATH is \"$PATH\""
 	echo ""
 
-	tput setaf 3
-	echo "A command returned error. See the logfile: ${LOGFILE}"
-	tput sgr0
+	echo -e "${COLOR_ERROR_ON}A command returned error. See the logfile: ${LOGFILE}${COLOR_OFF}"
 }
 
 main()
 {
 	# Check if we have any arguments.
 	if [[ $# == 0 ]]; then
-		echo "Usage: $0 [--beta] [--output-dir <DIRNAME>] --i386 | --amd64"
+		echo "Usage: $0 [--force] [--beta] [--output-dir <DIRNAME>] --i386 | --amd64"
 		exit 1
+	fi
+
+	if [[ "$1" == "--force" ]]; then
+		INSTALL_FORCE=true
+		shift
 	fi
 
 	# Beta repo or regular repo?
