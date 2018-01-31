@@ -138,11 +138,10 @@ configure_chroot()
 		exit $?
 	fi
 
-	# Allow members of sudo group sudo to run in chroot without password prompt
-	echo -e "\n${COLOR_ON}Allow members of sudo group to run sudo in chroot without prompting for password...${COLOR_OFF}" 
-	echo -e "# Allow members of group sudo to execute any command\n%sudo   ALL= NOPASSWD: ALL\n" > /etc/sudoers.d/nopassword
-
 	if [[ "${SUDO_ARG}" != "--no-sudoers" ]]; then
+		# Allow members of sudo group sudo to run in chroot without password prompt
+		echo -e "\n${COLOR_ON}Allow members of sudo group to run sudo in chroot without prompting for password...${COLOR_OFF}" 
+		echo -e "# Allow members of group sudo to execute any command\n%sudo   ALL= NOPASSWD: ALL\n" > /etc/sudoers.d/nopassword
 		chmod 440 /etc/sudoers.d/nopassword
 	fi
 
