@@ -6,6 +6,7 @@ LOGFILE=/tmp/${SCRIPTNAME%.*}-$(uname -i).log
 CHROOT_PREFIX="steamrt_scout_"
 CHROOT_DIR="/var/chroots"
 BETA_ARG=""
+SUDO_ARG=""
 FOREIGN_ARG=""
 COLOR_OFF="\033[0m"
 COLOR_ON="\033[1;93m"
@@ -87,7 +88,7 @@ build_chroot()
 	# Create our chroot
 	echo -e "\n${COLOR_ON}Bootstrap the chroot...${COLOR_OFF}" 
 
-    echo -e "\nUsing foreign argument: ${FOREIGN_ARG}"
+	echo -e "\nUsing foreign argument: ${FOREIGN_ARG}"
 	sudo -E debootstrap --arch=${pkg} ${FOREIGN_ARG}--include=wget precise ${CHROOT_DIR}/${CHROOT_NAME} http://archive.ubuntu.com/ubuntu/
 
 	# Copy over proxy settings from host machine
@@ -140,7 +141,10 @@ configure_chroot()
 	# Allow members of sudo group sudo to run in chroot without password prompt
 	echo -e "\n${COLOR_ON}Allow members of sudo group to run sudo in chroot without prompting for password...${COLOR_OFF}" 
 	echo -e "# Allow members of group sudo to execute any command\n%sudo   ALL= NOPASSWD: ALL\n" > /etc/sudoers.d/nopassword
-	chmod 440 /etc/sudoers.d/nopassword
+
+	if [[ "${SUDO_ARG}" != "--no-sudoers" ]]; then
+		chmod 440 /etc/sudoers.d/nopassword
+	fi
 
 	# Load proxy settings, if any
 	if [ -f /etc/profile.d/steamrtproj.sh ]; then
@@ -319,12 +323,17 @@ main()
 {
 	# Check if we have any arguments.
 	if [[ $# == 0 ]]; then
-		echo "Usage: $0 [--beta] [--foreign] [--output-dir <DIRNAME>] --i386 | --amd64"
+		echo "Usage: $0 [--beta] [--foreign] [--no-sudoers] [--output-dir <DIRNAME>] --i386 | --amd64"
 		exit 1
 	fi
 
 	if [[ "$1" == "--foreign" ]]; then
 		FOREIGN_ARG="--verbose --foreign "
+		shift
+	fi
+
+	if [[ "$1" == "--no-sudoers" ]]; then
+		SUDO_ARG="--no-sudoers"
 		shift
 	fi
 
