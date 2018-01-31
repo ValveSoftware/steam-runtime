@@ -323,7 +323,7 @@ main()
 {
 	# Check if we have any arguments.
 	if [[ $# == 0 ]]; then
-		echo "Usage: $0 [--beta] [--foreign] [--no-sudoers] [--output-dir <DIRNAME>] --i386 | --amd64"
+		echo "Usage: $0 [--foreign] [--no-sudoers] [--beta] [--output-dir <DIRNAME>] --i386 | --amd64"
 		exit 1
 	fi
 
