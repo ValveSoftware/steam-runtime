@@ -98,7 +98,7 @@ build_chroot()
 	sudo rm -rf "${CHROOT_DIR}/${CHROOT_NAME}/etc/apt/apt.conf"
 	if [ -f /etc/apt/apt.conf ]; then sudo cp "/etc/apt/apt.conf" "${CHROOT_DIR}/${CHROOT_NAME}/etc/apt"; fi  
 
-	echo -e "\n${COLOR_ON}Running ${SCRIPTNAME} ${BETA_ARG} --configure...${COLOR_OFF}" 
+	echo -e "\n${COLOR_ON}Running ${SCRIPTNAME} ${SUDO_ARG} ${BETA_ARG} --configure...${COLOR_OFF}" 
 
 	# Touch the logfile first so it has the proper permissions
 	rm -f "${LOGFILE}"
@@ -108,7 +108,7 @@ build_chroot()
 	TMPNAME="${SCRIPTNAME%.*}-$$.sh"
 	cp -f "$0" "/tmp/${TMPNAME}"
 	chmod +x "/tmp/${TMPNAME}"
-	schroot --chroot ${CHROOT_NAME} -d /tmp --user root -- "/tmp/${TMPNAME}" ${BETA_ARG} --configure
+	schroot --chroot ${CHROOT_NAME} -d /tmp --user root -- "/tmp/${TMPNAME}" ${SUDO_ARG} ${BETA_ARG} --configure
 	rm -f "/tmp/${TMPNAME}"
 }
 
@@ -134,7 +134,7 @@ configure_chroot()
 	if [[ ! -v IN_CHROOT_CONFIGURE ]]; then
 		export IN_CHROOT_CONFIGURE=1
         export SHELL=/bin/bash
-		script --return --command "time $SCRIPT ${BETA_ARG} --configure" "${LOGFILE}"
+		script --return --command "time $SCRIPT ${SUDO_ARG} ${BETA_ARG} --configure" "${LOGFILE}"
 		exit $?
 	fi
 
