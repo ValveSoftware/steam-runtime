@@ -11,6 +11,8 @@ FOREIGN_ARG=""
 COLOR_OFF="\033[0m"
 COLOR_ON="\033[1;93m"
 
+gpg --import "`dirname $0`/ubuntu-debootstrap-key.asc"
+
 # exit on any script line that fails
 set -o errexit
 # bail on any unitialized variable reads
@@ -89,7 +91,7 @@ build_chroot()
 	echo -e "\n${COLOR_ON}Bootstrap the chroot...${COLOR_OFF}" 
 
 	echo -e "\nUsing foreign argument: ${FOREIGN_ARG}"
-	sudo -E debootstrap --arch=${pkg} ${FOREIGN_ARG}--include=wget precise ${CHROOT_DIR}/${CHROOT_NAME} http://archive.ubuntu.com/ubuntu/
+	sudo -E debootstrap --keyring=~/.gnupg/pubring.kbx --arch=${pkg} ${FOREIGN_ARG}--include=wget precise ${CHROOT_DIR}/${CHROOT_NAME} http://archive.ubuntu.com/ubuntu/
 
 	# Copy over proxy settings from host machine
 	echo -e "\n${COLOR_ON}Adding proxy info to chroot (if set)...${COLOR_OFF}" 
