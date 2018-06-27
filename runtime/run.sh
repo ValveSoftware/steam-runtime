@@ -3,7 +3,7 @@
 # This is a script which runs programs in the Steam runtime
 
 # The top level of the runtime tree
-TOP=$(cd "${0%/*}" && echo ${PWD})
+TOP="$(cd "${0%/*}" && echo "${PWD}")"
 
 # Make sure we have something to run
 if [ "$1" = "" ]; then
@@ -23,9 +23,9 @@ if [ "${STEAM_RUNTIME_PREFER_HOST_LIBRARIES-}" != "0" ]; then
 		# If line starts with a leading / and contains :, it's a new path prefix
 		if [[ "$line" =~ ^/.*: ]]
 		then
-			library_path_prefix=`echo $line | cut -d: -f1`
+			library_path_prefix="$(echo "$line" | cut -d: -f1)"
 	
-			host_library_paths=$host_library_paths$library_path_prefix:
+			host_library_paths="$host_library_paths$library_path_prefix:"
 		fi
 	done <<< "$(/sbin/ldconfig -XNv 2> /dev/null)"
 	
