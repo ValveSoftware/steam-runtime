@@ -101,7 +101,7 @@ verify . || die "Failed to verify signature on download image, see above"
 # Looks good, move back to source directory
 stat "Image downloaded & verified, moving to destination"
 (
-  # mv -n still exists with success if target exists, so check that it moved the thing.
+  # mv -n still exits with success if target exists, so check that it moved the thing.
   mv -nv ./"$IMAGE_NAME" "$OWD"/"$IMAGE_NAME" && [[ ! -f ./$IMAGE_NAME ]]
   mv -nv ./"$SHA_FILE" "$OWD"/"$SHA_FILE"     && [[ ! -f ./$SHA_FILE ]]
   mv -nv ./"$SIG_FILE" "$OWD"/"$SIG_FILE"     && [[ ! -f ./$SIG_FILE ]]
