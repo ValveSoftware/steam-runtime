@@ -5,23 +5,21 @@ COLOR_ON="\033[1;93m"
 
 set -eu
 
-# bootstrap_container [beta]
+# bootstrap_container <docker | chroot> [beta]
 bootstrap_container()
 {
-  local beta_arg="$1"
+  local container_type="$1"
+  local beta_arg="$2"
 
   #  Need to be inside a chroot
-  if [ "$(stat -c %d:%i /)" != "$(stat -c %d:%i /proc/1/root/.)" ]; then
+  if [[ $container_type = chroot && $(stat -c %d:%i /) != $(stat -c %d:%i /proc/1/root/.) ]]; then
     echo "Running in chroot environment. Continuing..."
+  elif [[ $container_type = docker && -f /.dockerenv ]]; then
+    echo "Running in docker environment. Continuing..."
   else
     echo "Script must be running in a chroot environment. Exiting..."
-    exit
+    exit 1
   fi
-
-  # Allow members of sudo group sudo to run in runtime without password prompt
-  echo -e "\n${COLOR_ON}Allow members of sudo group to run sudo in runtime without prompting for password...${COLOR_OFF}"
-  echo -e "# Allow members of group sudo to execute any command\n%sudo   ALL= NOPASSWD: ALL\n" > /etc/sudoers.d/nopassword
-  chmod 440 /etc/sudoers.d/nopassword
 
   # Load proxy settings, if any
   if [ -f /etc/profile.d/steamrtproj.sh ]; then
@@ -33,15 +31,17 @@ bootstrap_container()
   export DEBIAN_FRONTEND=noninteractive
 
   #
-  # Ubuntu repos
+  # Ubuntu repos if coming from a chroot
   #
-  (cat << heredoc
+  if [[ $container_type = chroot ]]; then
+    (cat << heredoc
 deb http://us.archive.ubuntu.com/ubuntu precise main
 deb-src http://us.archive.ubuntu.com/ubuntu precise main
 deb http://us.archive.ubuntu.com/ubuntu precise universe
 deb-src http://us.archive.ubuntu.com/ubuntu precise universe
 heredoc
 ) > /etc/apt/sources.list
+  fi
 
   #
   # steamrt - beta or non-beta repo?
@@ -123,22 +123,26 @@ QpBI5Fwn13V3OM4=
 heredoc
 ) | apt-key add -
 
-  # Before installing any additional packages, neuter upstart.
-  # Otherwise on Ubuntu 12.04, when dbus is installed it starts
-  # a new dbus-daemon outside the chroot which locks files
-  # inside the chroot, preventing those directories from
-  # getting unmounted when the chroot exits.
-  dpkg-divert --local --rename --add /sbin/initctl
-  ln -s /bin/true /sbin/initctl
+  if [[ $container_type = chroot ]]; then
+    # Before installing any additional packages, neuter upstart.
+    # this is done at the docker level for non-chroot setups.
+    echo '#!/bin/sh' > /usr/sbin/policy-rc.d
+    echo 'exit 101' >> /usr/sbin/policy-rc.d
+    chmod +x /usr/sbin/policy-rc.d
+    dpkg-divert --local --rename --add /sbin/initctl
+    cp -a /usr/sbin/policy-rc.d /sbin/initctl
+    sed -i 's/^exit.*/exit 0/' /sbin/initctl
+  fi
 
   # All repos and keys added; update
   apt-get -y update
+  apt-get dist-upgrade --force-yes -y
 
   #
   #  Install compilers and libraries
   #
 
-  apt-get install --force-yes -y ubuntu-minimal pkg-config time
+  apt-get install --force-yes -y ubuntu-minimal pkg-config time wget
   apt-get install --force-yes -y build-essential cmake gdb
 
   apt-get install --force-yes -y steamrt-dev
@@ -174,6 +178,11 @@ heredoc
   update-alternatives --set g++ /usr/bin/g++-4.8
   update-alternatives --set cpp-bin /usr/bin/cpp-4.8
 
+  # Allow members of sudo group sudo to run in runtime without password prompt
+  echo -e "\n${COLOR_ON}Allow members of sudo group to run sudo in runtime without prompting for password...${COLOR_OFF}"
+  echo -e "# Allow members of group sudo to execute any command\n%sudo   ALL= NOPASSWD: ALL\n" > /etc/sudoers.d/nopassword
+  chmod 440 /etc/sudoers.d/nopassword
+
   echo ""
   echo "#####"
   echo "##### Runtime setup is done!"
@@ -184,10 +193,19 @@ heredoc
 #
 # Parse arguments & run
 #
+mode_arg=""
 beta_arg=""
 invalid_arg=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    "--docker" )
+      [[ -z $mode_arg ]] || invalid_arg=1
+      mode_arg=docker
+      ;;
+    "--chroot" )
+      [[ -z $mode_arg ]] || invalid_arg=1
+      mode_arg=chroot
+      ;;
     "--beta" )
       beta_arg=beta
       ;;
@@ -199,10 +217,10 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-if [[ -z $invalid_arg && $EUID = 0 ]]; then
-  bootstrap_container "$beta_arg"
+if [[ -z $invalid_arg && -n $mode_arg && $EUID = 0 ]]; then
+  bootstrap_container "$mode_arg" "$beta_arg"
 else
-  echo >&2 "!! Usage: ./bootstrap-runtime.sh [ --beta ]"
+  echo >&2 "!! Usage: ./bootstrap-runtime.sh { --docker | --chroot } [ --beta ]"
   echo >&2 "!!"
   echo >&2 "!! This script to be run in a base container/chroot to finish Steam runtime setup"
   exit 1
