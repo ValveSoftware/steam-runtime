@@ -1,7 +1,17 @@
 #!/bin/bash
 
 # Helper to fetch the given ubuntu cloud image, and verify its signatures against the key file in
-# the repository.  Requires mktemp, gpg2/gpgv, wget
+# the repository.  Requires mktemp, gpg2/gpgv2, wget
+#
+# The ultimate effect of this script is roughly:
+#   wget https://partner-images.canonical.com/core/unsupported/precise/current/ubuntu-precise-core-cloudimg-${ARCH}-root.tar.gz
+#   wget https://partner-images.canonical.com/core/unsupported/precise/current/SHA256SUMS
+#   wget https://partner-images.canonical.com/core/unsupported/precise/current/SHA256SUMS.gpg
+#
+# ... Followed by the necessary gpg and sha256sum commands to ensure the image checksum & signature
+# matches ./ubuntu-cloud-key.txt (see verify() below)
+#
+# See README.md for more information
 set -eu
 
 # Output helpers
