@@ -18,7 +18,7 @@ set -eu
 COLOR_ERR=""
 COLOR_STAT=""
 COLOR_CLEAR=""
-if [[ $(tput colors || echo 0) -gt 0 ]]; then
+if [[ $(tput colors 2>/dev/null || echo 0) -gt 0 ]]; then
   COLOR_ERR=$'\e[31;1m'
   COLOR_STAT=$'\e[32;1m'
   COLOR_CLEAR=$'\e[0m'
