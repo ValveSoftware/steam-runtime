@@ -30,7 +30,7 @@ die() { err "$@"; exit 1; }
 finish() { stat "$@"; exit 0; }
 
 # Argument
-[[ $# -eq 1 && -n $1 ]] || die "Usage: $0 { amd64 | i386 }"
+[[ $# -eq 1 && ( $1 = amd64 || $1 = i386 ) ]] || die "Usage: $0 { amd64 | i386 }"
 ARCH="$1"
 BASE_URL=https://partner-images.canonical.com/core/unsupported/precise/current
 OWD="$(readlink -f "$(dirname "$0")")"
