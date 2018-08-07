@@ -10,6 +10,11 @@
 #   sudo docker build -f steam-runtime.docker .
 set -eu
 
+# Cloud image script should lvie next to us
+SCRIPT_RELDIR="$(dirname "$0")"
+CLOUDIMAGE_SCRIPT="$SCRIPT_RELDIR/docker_fetch_base_cloudimg.sh"
+DOCKERFILE="$SCRIPT_RELDIR/steam-runtime.docker"
+
 # Output helpers
 COLOR_ERR=""
 COLOR_STAT=""
@@ -45,6 +50,8 @@ docker_haveimage() {
   [[ $ret = y ]] || return 1
 }
 
+docker_run() { cmd sudo docker "$@"; }
+
 #
 # Build the docker image
 #
@@ -54,11 +61,25 @@ build_docker() # build_docker <imagename> <arch> [beta]
   local arch="$2"
   local beta="$3"
 
+  # Cloud image script is here?
+  if [[ -z $CLOUDIMAGE_SCRIPT || ! -x $CLOUDIMAGE_SCRIPT ]]; then
+    die "Required cloud image fetching script not found ($CLOUDIMAGE_SCRIPT)"
+  fi
+
+  # Image already exists?
   if docker_haveimage "$image"; then
     die "Image \"$image\" already exists." \
         "Remove existing image first or specify an alternative name."
   fi
-  # FIXME WIP
+
+  # Run cloud image fetch
+  cmd "$CLOUDIMAGE_SCRIPT" "$arch" || die "Cloud image fetch failed, see above"
+
+  # Run build
+  docker_run build -t "$image" -f "$DOCKERFILE" "$SCRIPT_RELDIR"
+
+  stat "Successfully built docker image: $image"
+  stat "  See README.md for usage"
 }
 
 # Argument
@@ -94,7 +115,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Valid arguments?
-[[ -n $arch_arg && -z $invalid_args ]] || die "Usage: $0 [ --beta ] { amd64 | i386 } [ [--] image-name ]"
+[[ ( $arch_arg = i386 || $arch_arg = amd64 ) && -z $invalid_args ]] || die "Usage: $0 [ --beta ] { amd64 | i386 } [ [--] image-name ]"
 
 # Default image name steam-runtime-{arch}-{beta}
 [[ -n $name_arg ]] || name_arg="steam-runtime-${arch_arg}${beta_arg:+-beta}"
