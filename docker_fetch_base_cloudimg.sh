@@ -47,10 +47,10 @@ verify() {
   local targetdir="$1"
   # Import plaintext key
   gpg2 --no-default-keyring --keyring ./ubuntu-cloud-key.gpg --import --armor --skip-verify < "$KEYFILE"
-  if gpgv --keyring ./ubuntu-cloud-key.gpg "$targetdir"/"$SIG_FILE" "$targetdir"/"$SHA_FILE"; then
+  if gpgv2 --keyring ./ubuntu-cloud-key.gpg "$targetdir"/"$SIG_FILE" "$targetdir"/"$SHA_FILE"; then
     stat "SHA256SUMS file signature matches, checking checksum"
   else
-    err "gpgv: Signature verification failed"
+    err "gpgv2: Signature verification failed"
     return 1
   fi
 
