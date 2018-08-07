@@ -76,7 +76,8 @@ build_docker() # build_docker <imagename> <arch> [beta]
   cmd "$CLOUDIMAGE_SCRIPT" "$arch" || die "Cloud image fetch failed, see above"
 
   # Run build
-  docker_run build -t "$image" -f "$DOCKERFILE" "$SCRIPT_RELDIR"
+  docker_run build --build-arg=arch="$arch" ${beta:+--build-arg=beta=1} \
+                   -t "$image" -f "$DOCKERFILE" "$SCRIPT_RELDIR"
 
   stat "Successfully built docker image: $image"
   stat "  See README.md for usage"
