@@ -8,13 +8,21 @@ LOGFILE=/tmp/${SCRIPTNAME%.*}-$(uname -i).log
 CHROOT_PREFIX="steamrt_scout_"
 CHROOT_DIR="/var/chroots"
 BETA_ARG=""
-COLOR_OFF="\033[0m"
-COLOR_ON="\033[1;93m"
 
 # exit on any script line that fails
 set -o errexit
 # bail on any unitialized variable reads
 set -o nounset
+
+# Output helpers
+COLOR_OFF=""
+COLOR_ON=""
+if [[ $(tput colors 2>/dev/null || echo 0) -gt 0 ]]; then
+  COLOR_ON=$'\e[93;1m'
+  COLOR_OFF=$'\e[0m'
+fi
+
+sh_quote() { local quoted="$(printf '%q ' "$@")"; [[ $# -eq 0 ]] || echo "${quoted:0:-1}"; }
 
 prebuild_chroot()
 {
@@ -168,11 +176,16 @@ main()
 }
 
 # Launch ourselves with script so we can time this and get a log file
-if [[ ! -v IN_CHROOT_CONFIGURE ]]; then
-	export IN_CHROOT_CONFIGURE=1
-	export SHELL=/bin/bash
-	script --return --command "time $SCRIPTNAME ${BETA_ARG} --configure" "${LOGFILE}"
-	exit $?
+if [[ ! -v SETUP_CHROOT_LOGGING_STARTED ]]; then
+	if which script &>/dev/null; then
+		export SETUP_CHROOT_LOGGING_STARTED=1
+		export SHELL=/bin/bash
+		script --return --command "time $SCRIPT $(sh_quote "$@")" "${LOGFILE}"
+		exit $?
+	else
+		echo >&2 "!! 'script' command not found, will not auto-generate a log file"
+		# Continue to main
+	fi
 fi
 
 main $@
