@@ -1,11 +1,14 @@
 # Arguments:
-# beta - set to select beta runtime (docker build --build-arg=beta=1 ...)
-# arch - set to select runtime architecture (docker build --build-arg=arch=i386 ...)
-#        Must have associated cloud iamge in build directory, default amd64
+# beta             - set to select beta runtime (docker build --build-arg=beta=1 ...)
+# arch             - set to select runtime architecture (docker build --build-arg=arch=i386 ...)
+#                    Must have associated cloud iamge in build directory, default amd64
+# extra_bootstrap  - Extra script file to include out of scripts/ and execute to bootstrap the container (out of /root).
+#                    e.g. --build-arg=extra_bootstrap=scripts/bootstrap-custom.sh
 ARG arch=amd64
 FROM scratch
 ARG beta
 ARG arch
+ARG extra_bootstrap
 
 ##
 ## Docker setup, based on upsteam docker image's precise tweaks,
@@ -57,7 +60,11 @@ RUN echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-
 ## Steam Runtime specific setup
 ##
 
-COPY scripts/bootstrap-runtime.sh /root
+# The default-value expansion means we'll copy bootstrap-runtime.sh over twice if extra_bootstrap isn't set, which is a
+# silly way to conditionally copy a second file.
+COPY scripts/bootstrap-runtime.sh scripts/${extra_bootstrap:-bootstrap-runtime.sh} /root/
+
 RUN /root/bootstrap-runtime.sh --docker ${beta:+--beta}
+RUN [ "x${extra_bootstrap}" = 'x' ] || "/root/${extra_bootstrap}"
 
 CMD ["/bin/bash"]
