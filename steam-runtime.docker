@@ -3,7 +3,7 @@
 # arch             - set to select runtime architecture (docker build --build-arg=arch=i386 ...)
 #                    Must have associated cloud iamge in build directory, default amd64
 # extra_bootstrap  - Extra script file to include out of scripts/ and execute to bootstrap the container (out of /root).
-#                    e.g. --build-arg=extra_bootstrap=scripts/bootstrap-custom.sh
+#                    e.g. --build-arg=extra_bootstrap=bootstrap-custom.sh
 ARG arch=amd64
 FROM scratch
 ARG beta
