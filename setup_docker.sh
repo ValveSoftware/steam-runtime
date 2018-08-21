@@ -42,6 +42,7 @@ cmd()      { showcmd "$@"; "$@"; }
 # Check if an image exists
 docker_haveimage() {
   local image="$1"
+  stat "Checking for existing docker image"
   showcmd sudo docker inspect "$1"
   # Echo y/n based on docker return, so we don't interpret the sudo command failing as the
   # docker-inspect returning negatively
@@ -60,6 +61,12 @@ build_docker() # build_docker <imagename> <arch> [beta]
   local image="$1"
   local arch="$2"
   local beta="$3"
+  local extra_bootstrap="$4"
+
+  # Specified extra_bootstrap exists?
+  if [[ -n $extra_bootstrap && ! -f $extra_bootstrap ]]; then
+    die "Extra bootstrap file does not exist ($extra_bootstrap)"
+  fi
 
   # Cloud image script is here?
   if [[ -z $CLOUDIMAGE_SCRIPT || ! -x $CLOUDIMAGE_SCRIPT ]]; then
@@ -73,11 +80,25 @@ build_docker() # build_docker <imagename> <arch> [beta]
   fi
 
   # Run cloud image fetch
+  stat "Fetching cloud image"
   cmd "$CLOUDIMAGE_SCRIPT" "$arch" || die "Cloud image fetch failed, see above"
 
+  # Copy external extra bootstrap script in.  If you put your own file named
+  # scripts/bootstrap-extra.sh in there this will fail, and don't do that.
+  if [[ -n $extra_bootstrap ]]; then
+    stat "Copying extra bootstrap script to scripts/bootstrap-extra.sh"
+    bootstrap_temp="$(readlink -f scripts/bootstrap-extra.sh)"
+    [[ ! -e $bootstrap_temp ]] || die "Stale scripts/bootstrap-extra.sh exists, not clobbering"
+    cleanup_bootstrap() { [[ -z $bootstrap_temp || ! -f $bootstrap_temp ]] || rm "$bootstrap_temp"; }
+    trap cleanup_bootstrap EXIT
+    cmd cp "$extra_bootstrap" "$bootstrap_temp"
+  fi
+
   # Run build
+  stat "Building docker image"
   docker_run build --build-arg=arch="$arch" ${beta:+--build-arg=beta=1} \
-                   -t "$image" -f "$DOCKERFILE" "$SCRIPT_RELDIR"
+             ${extra_bootstrap:+"--build-arg=extra_bootstrap=scripts/bootstrap-extra.sh"} \
+             -t "$image" -f "$DOCKERFILE" "."
 
   stat "Successfully built docker image: $image"
   stat "  See README.md for usage"
@@ -90,6 +111,7 @@ build_docker() # build_docker <imagename> <arch> [beta]
 beta_arg="" # --beta?
 arch_arg="" # arch argument
 name_arg="" # name argument
+extra_bootstrap_arg="" # extra-bootstrap argument
 end_of_opts="" # Saw end of options [--]
 invalid_args="" # Invalid arguments?
 while [[ $# -gt 0 ]]; do
@@ -98,6 +120,19 @@ while [[ $# -gt 0 ]]; do
     invalid_args=1
   elif [[ $1 = '--beta' ]]; then # Known optional argument
     beta_arg=1
+  elif [[ ${1%=*} = '--extra-bootstrap' ]]; then # Known optional argument
+    if [[ ${1%=*} != $1 ]]; then
+      # Specified as --extra-bootstrap=foo
+      extra_bootstrap_arg="${1#*=}"
+    else
+      # Specified as --extra-bootstrap foo
+      extra_bootstrap_arg="$2"
+      shift
+    fi
+    if [[ -z $extra_bootstrap_arg ]]; then
+      err "--extra-bootstrap cannot be empty"
+      invalid_args=1
+    fi
   elif [[ -z $end_of_opts && $1 = '--' ]]; then # -- as end of options
     end_of_opts=1
   elif [[ -z $end_of_opts && ${1:0:1} = '-' ]]; then # Some other option-looking-thing
@@ -116,10 +151,10 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Valid arguments?
-[[ ( $arch_arg = i386 || $arch_arg = amd64 ) && -z $invalid_args ]] || die "Usage: $0 [ --beta ] { amd64 | i386 } [ [--] image-name ]"
+[[ ( $arch_arg = i386 || $arch_arg = amd64 ) && -z $invalid_args ]] || die "Usage: $0 [ --beta ] [ --extra-bootstrap <extra bootstrap file> ] { amd64 | i386 } [ [--] image-name ]"
 
 # Default image name steam-runtime-{arch}-{beta}
 [[ -n $name_arg ]] || name_arg="steam-runtime-${arch_arg}${beta_arg:+-beta}"
 
 # Looks good, proceed
-build_docker "$name_arg" "$arch_arg" "$beta_arg"
+build_docker "$name_arg" "$arch_arg" "$beta_arg" "$extra_bootstrap_arg"

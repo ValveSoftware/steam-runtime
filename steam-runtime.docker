@@ -60,11 +60,12 @@ RUN echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-
 ## Steam Runtime specific setup
 ##
 
+COPY scripts/bootstrap-runtime.sh /root/
+RUN /root/bootstrap-runtime.sh --docker ${beta:+--beta}
+
 # The default-value expansion means we'll copy bootstrap-runtime.sh over twice if extra_bootstrap isn't set, which is a
 # silly way to conditionally copy a second file.
-COPY scripts/bootstrap-runtime.sh scripts/${extra_bootstrap:-bootstrap-runtime.sh} /root/
-
-RUN /root/bootstrap-runtime.sh --docker ${beta:+--beta}
-RUN [ "x${extra_bootstrap}" = 'x' ] || "/root/${extra_bootstrap}"
+COPY ${extra_bootstrap:-scripts/bootstrap-runtime.sh} /root/bootstrap-extra.sh
+RUN [ "x${extra_bootstrap}" = 'x' ] || "/root/bootstrap-extra.sh"
 
 CMD ["/bin/bash"]
