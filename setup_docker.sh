@@ -27,7 +27,7 @@ if [[ $(tput colors 2>/dev/null || echo 0) -gt 0 ]]; then
   COLOR_CLEAR=$'\e[0m'
 fi
 
-sh_quote() { local quoted="$(printf '%q ' "$@")"; [[ $# -eq 0 ]] || echo "${quoted:0:-1}"; }
+sh_quote() { local quoted="$(printf '%q ' "$@")"; [[ $# -eq 0 ]] || echo $quoted; }
 err()      { echo >&2 "${COLOR_ERR}!!${COLOR_CLEAR} $*"; }
 stat()     { echo >&2 "${COLOR_STAT}::${COLOR_CLEAR} $*"; }
 showcmd()  { echo >&2 "+ ${COLOR_CMD}$(sh_quote "$@")${COLOR_CLEAR}"; }
