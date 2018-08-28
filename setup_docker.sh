@@ -87,7 +87,7 @@ build_docker() # build_docker <imagename> <arch> [beta]
   # scripts/bootstrap-extra.sh in there this will fail, and don't do that.
   if [[ -n $extra_bootstrap ]]; then
     stat "Copying extra bootstrap script to scripts/bootstrap-extra.sh"
-    bootstrap_temp="$(readlink -f scripts/bootstrap-extra.sh)"
+    bootstrap_temp="$(readlink -f "$SCRIPT_RELDIR"/scripts)/bootstrap-extra.sh"
     [[ ! -e $bootstrap_temp ]] || die "Stale scripts/bootstrap-extra.sh exists, not clobbering"
     cleanup_bootstrap() { [[ -z $bootstrap_temp || ! -f $bootstrap_temp ]] || rm "$bootstrap_temp"; }
     trap cleanup_bootstrap EXIT
@@ -97,8 +97,8 @@ build_docker() # build_docker <imagename> <arch> [beta]
   # Run build
   stat "Building docker image"
   docker_run build --build-arg=arch="$arch" ${beta:+--build-arg=beta=1} \
-             ${extra_bootstrap:+"--build-arg=extra_bootstrap=scripts/bootstrap-extra.sh"} \
-             -t "$image" -f "$DOCKERFILE" "."
+             ${extra_bootstrap:+"--build-arg=extra_bootstrap=$SCRIPT_RELDIR/scripts/bootstrap-extra.sh"} \
+             -t "$image" -f "$DOCKERFILE" "$SCRIPT_RELDIR"
 
   stat "Successfully built docker image: $image"
   stat "  See README.md for usage"
