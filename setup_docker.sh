@@ -97,7 +97,7 @@ build_docker() # build_docker <imagename> <arch> [beta]
   # Run build
   stat "Building docker image"
   docker_run build --build-arg=arch="$arch" ${beta:+--build-arg=beta=1} \
-             ${extra_bootstrap:+"--build-arg=extra_bootstrap=$SCRIPT_RELDIR/scripts/bootstrap-extra.sh"} \
+             ${extra_bootstrap:+"--build-arg=extra_bootstrap=scripts/bootstrap-extra.sh"} \
              -t "$image" -f "$DOCKERFILE" "$SCRIPT_RELDIR"
 
   stat "Successfully built docker image: $image"
