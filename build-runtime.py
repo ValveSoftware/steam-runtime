@@ -82,7 +82,7 @@ def install_sources (sourcelist):
 				file_url = "%s/%s/%s" % (REPO, stanza['directory'], file['name'])
 				if not download_file(file_url, file_path):
 					if args.verbose:
-						print("Skipping download of existing deb source file(s): %s", file_path)
+						print("Skipping download of existing deb source file(s): %s" % file_path)
 					else:
 						skipped += 1
 
