@@ -104,8 +104,23 @@ def install_sources (sourcelist):
 		print("Skipped downloading %i deb source file(s) that were already present." % skipped)
 
 
+class Binary:
+	def __init__(self, stanza):
+		self.stanza = stanza
+		self.name = stanza['Package']
+		self.arch = stanza['Architecture']
+		self.version = stanza['Version']
+		source = stanza.get('Source', self.name)
 
-def install_binaries (binarylist):
+		if ' (' in source:
+			self.source, tmp = source.split(' (', 1)
+			self.source_version = tmp.rstrip(')')
+		else:
+			self.source = source
+			self.source_version = self.version
+
+
+def install_binaries (binarylist, manifest):
 	skipped = 0
 	for arch in arches:
 		installset = binarylist.copy()
@@ -123,7 +138,9 @@ def install_binaries (binarylist):
 		print("Downloading %s binaries from %s" % (arch, packages_url))
 		for stanza in deb822.Packages.iter_paragraphs(urllib.urlopen(packages_url)):
 			p = stanza['Package']
+
 			if p in installset:
+				manifest.append(Binary(stanza))
 				if args.verbose:
 					print("DOWNLOADING BINARY: %s" % p)
 
@@ -193,6 +210,7 @@ def install_symbols (binarylist):
 			p = stanza['Package']
 			m = re.match('([\w\-\.]+)\-dbgsym', p)
 			if m and m.group(1) in binarylist:
+				manifest.append(Binary(stanza))
 				if args.verbose:
 					print("DOWNLOADING SYMBOLS: %s" % p)
 				#
@@ -263,6 +281,65 @@ def fix_debuglinks ():
 						os.symlink(os.path.relpath(os.path.join(dir,file), linkdir),link)
 
 
+def write_manifests(manifest):
+	done = set()
+
+	# manifest.deb822: The full Packages stanza for each installed package,
+	# suitable for later analysis.
+	with open(os.path.join(args.runtime, 'manifest.deb822.gz'), 'wb') as out:
+		with gzip.GzipFile(filename='', fileobj=out, mtime=0) as writer:
+			for binary in sorted(manifest, key=lambda b: b.name + ':' + b.arch):
+				key = (binary.name, binary.arch)
+
+				if key in done:
+					continue
+
+				if done:
+					writer.write('\n')
+
+				binary.stanza.dump(writer)
+				done.add(key)
+
+	# manifest.txt: A summary of installed binary packages, as
+	# a table of tab-separated values.
+	lines = set()
+
+	for binary in manifest:
+		lines.add('%s:%s\t%s\t%s\t%s\n' % (binary.name, binary.arch, binary.version, binary.stanza.get('Source', binary.name), binary.stanza.get('Installed-Size', '')))
+
+	with open(os.path.join(args.runtime, 'manifest.txt'), 'w') as writer:
+		writer.write('#Package[:Architecture]\t#Version\t#Source\t#Installed-Size\n')
+
+		for line in sorted(lines):
+			writer.write(line)
+
+	# built-using.txt: A summary of source packages that were embedded in
+	# installed binary packages, as a table of tab-separated values.
+	lines = set()
+
+	for binary in manifest:
+		built_using = binary.stanza.get('Built-Using', '')
+
+		if not built_using:
+			continue
+
+		relations = built_using.split(',')
+
+		for relation in relations:
+			relation = relation.replace(' ', '')
+			assert '(=' in relation, relation
+			p, v = relation.split('(=', 1)
+			assert v[-1] == ')', relation
+			v = v[:-1]
+			lines.add('%s\t%s\t%s\n' % (binary.name, p, v))
+
+	with open(os.path.join(args.runtime, 'built-using.txt'), 'w') as writer:
+		writer.write('#Built-Binary\t#Built-Using-Source\t#Built-Using-Version\n')
+
+		for line in sorted(lines):
+			writer.write(line)
+
+
 args = parse_args()
 if args.verbose:
 	for property, value in vars(args).iteritems():
@@ -298,12 +375,15 @@ if not args.debug:
 if args.source:
 	install_sources(source_pkgs)
 
-install_binaries(binary_pkgs)
+manifest = []
+install_binaries(binary_pkgs, manifest)
 
 if args.symbols:
-	install_symbols(binary_pkgs)
+	install_symbols(binary_pkgs, manifest)
 	fix_debuglinks()
 
 fix_symlinks()
+
+write_manifests(manifest)
 
 # vi: set noexpandtab:
