@@ -405,6 +405,10 @@ EOF
 	chmod +x "/tmp/${TMPNAME}"
 	schroot --chroot ${CHROOT_NAME} -d /tmp --user root -- "/tmp/${TMPNAME}" --chroot ${BETA_ARG}
 	rm -f "/tmp/${TMPNAME}"
+	cp -f "$SCRIPT_DIR/write-manifest" "/tmp/${TMPNAME}"
+	chmod +x "/tmp/${TMPNAME}"
+	schroot --chroot ${CHROOT_NAME} -d /tmp --user root -- "/tmp/${TMPNAME}" /
+	rm -f "/tmp/${TMPNAME}"
 }
 
 # http://stackoverflow.com/questions/64786/error-handling-in-bash
