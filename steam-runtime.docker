@@ -4,11 +4,13 @@
 #                    Must have associated cloud iamge in build directory, default amd64
 # extra_bootstrap  - Extra script file to include out of scripts/ and execute to bootstrap the container (out of /root).
 #                    e.g. --build-arg=extra_bootstrap=bootstrap-custom.sh
+# proxy            - optional argument for http/https proxy
 ARG arch=amd64
 FROM scratch
 ARG beta
 ARG arch
 ARG extra_bootstrap
+ARG proxy
 
 ##
 ## Docker setup, based on upsteam docker image's precise tweaks,
@@ -16,6 +18,13 @@ ARG extra_bootstrap
 ## also https://github.com/docker/docker/blob/9a9fc01af8fb5d98b8eec0740716226fadb3735c/contrib/mkimage/debootstrap
 ##
 ADD ubuntu-precise-core-cloudimg-${arch}-root.tar.gz /
+
+RUN [ "x${proxy}" = "x" ] || ( \
+    echo "configure proxy" \
+    && echo export http_proxy=${proxy} >> /etc/profile.d/proxy.sh \
+    && echo export https_proxy=${proxy} >> /etc/profile.d/proxy.sh \
+    && echo Acquire::http::Proxy \"${proxy}\"\; > /etc/apt/apt.conf \
+    )
 
 RUN set -xe \
 	\
@@ -68,4 +77,4 @@ RUN /root/bootstrap-runtime.sh --docker ${beta:+--beta}
 COPY ${extra_bootstrap:-scripts/bootstrap-runtime.sh} /root/bootstrap-extra.sh
 RUN [ "x${extra_bootstrap}" = 'x' ] || "/root/bootstrap-extra.sh"
 
-CMD ["/bin/bash"]
+CMD [ "/bin/bash", "--login" ]
