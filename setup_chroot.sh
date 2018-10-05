@@ -88,7 +88,7 @@ build_chroot()
 
 	# Create our chroot
 	echo -e "\n${COLOR_ON}Bootstrap the chroot...${COLOR_OFF}" 
-	sudo -E debootstrap --arch=${pkg} --include=wget precise ${CHROOT_DIR}/${CHROOT_NAME} http://archive.ubuntu.com/ubuntu/
+	sudo -E debootstrap --arch=${pkg} --include=wget --keyring=/etc/apt/trusted.gpg precise ${CHROOT_DIR}/${CHROOT_NAME} http://archive.ubuntu.com/ubuntu/
 
 	# Copy over proxy settings from host machine
 	echo -e "\n${COLOR_ON}Adding proxy info to chroot (if set)...${COLOR_OFF}" 
