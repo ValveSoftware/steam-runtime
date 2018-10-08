@@ -21,9 +21,11 @@ ADD ubuntu-precise-core-cloudimg-${arch}-root.tar.gz /
 
 RUN [ "x${proxy}" = "x" ] || ( \
     echo "configure proxy" \
-    && echo export http_proxy=${proxy} >> /etc/profile.d/proxy.sh \
-    && echo export https_proxy=${proxy} >> /etc/profile.d/proxy.sh \
-    && echo Acquire::http::Proxy \"${proxy}\"\; > /etc/apt/apt.conf \
+    && echo export http_proxy=${proxy} >> /etc/bash.bashrc \
+    && echo export https_proxy=${proxy} >> /etc/bash.bashrc \
+    && echo export ftp_proxy=${proxy} >> /etc/bash.bashrc \
+    && echo Acquire::http::proxy \"${proxy}\"\; > /etc/apt/apt.conf.d/01proxy \
+    && echo Acquire::https::proxy \"${proxy}\"\; >> /etc/apt/apt.conf.d/01proxy \
     )
 
 RUN set -xe \
