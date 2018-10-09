@@ -83,12 +83,13 @@ build_chroot()
 	echo -e "\n${COLOR_ON}Creating /etc/schroot/chroot.d/${CHROOT_NAME}.conf...${COLOR_OFF}" 
 	printf "[${CHROOT_NAME}]\ndescription=Ubuntu 12.04 Precise for ${pkg}\ndirectory=${CHROOT_DIR}/${CHROOT_NAME}\npersonality=${personality}\ngroups=sudo\nroot-groups=sudo\npreserve-environment=true\ntype=directory\n" | sudo tee /etc/schroot/chroot.d/${CHROOT_NAME}.conf
 
-	# Add the Ubuntu GPG key to apt
-	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0x40976EAF437D05B5
+	# Get the Ubuntu GPG key for Precise packages
+	PRECISE_KEYRING=/tmp/ubuntu-precise-keyring.gpg
+	gpg --keyring=${PRECISE_KEYRING} --no-default-keyring --keyserver keyserver.ubuntu.com --receive-keys 0x40976EAF437D05B5
 
 	# Create our chroot
 	echo -e "\n${COLOR_ON}Bootstrap the chroot...${COLOR_OFF}" 
-	sudo -E debootstrap --arch=${pkg} --include=wget precise ${CHROOT_DIR}/${CHROOT_NAME} http://archive.ubuntu.com/ubuntu/
+	sudo -E debootstrap --keyring=${PRECISE_KEYRING} --arch=${pkg} --include=wget precise ${CHROOT_DIR}/${CHROOT_NAME} http://archive.ubuntu.com/ubuntu/
 
 	# Copy over proxy settings from host machine
 	echo -e "\n${COLOR_ON}Adding proxy info to chroot (if set)...${COLOR_OFF}" 
