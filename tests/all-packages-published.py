@@ -10,47 +10,47 @@ from __future__ import print_function
 import sys
 
 if __name__ == '__main__':
-	source_pkgs = set()
-	binary_pkgs = set()
-	fail = False
+    source_pkgs = set()
+    binary_pkgs = set()
+    fail = False
 
-	with open("packages.txt") as f:
-		for line in f:
-			if line[0] != '#':
-				toks = line.split()
-				if len(toks) > 1:
-					source_pkgs.add(toks[0])
-					binary_pkgs.update(toks[1:])
+    with open("packages.txt") as f:
+        for line in f:
+            if line[0] != '#':
+                toks = line.split()
+                if len(toks) > 1:
+                    source_pkgs.add(toks[0])
+                    binary_pkgs.update(toks[1:])
 
-	last = None
+    last = None
 
-	with open("sourcepkgs.list") as f:
-		for i, line in enumerate(f):
-			if line.strip() != '' and line[0] != '#':
-				toks = line.split(' ', 1)
-				assert toks[1] == 'install\n', repr(line)
-				source_pkgs.discard(toks[0])
+    with open("sourcepkgs.list") as f:
+        for i, line in enumerate(f):
+            if line.strip() != '' and line[0] != '#':
+                toks = line.split(' ', 1)
+                assert toks[1] == 'install\n', repr(line)
+                source_pkgs.discard(toks[0])
 
-				if line <= last:
-					print(
-						'warning: '
-						'sourcepkgs.list:%d: '
-						'not in `LC_ALL=C sort -u` '
-						'order near %r'
-						% (i, line),
-						file=sys.stderr)
+                if line <= last:
+                    print(
+                        'warning: '
+                        'sourcepkgs.list:%d: '
+                        'not in `LC_ALL=C sort -u` '
+                        'order near %r'
+                        % (i, line),
+                        file=sys.stderr)
 
-				last = line
+                last = line
 
-	if source_pkgs:
-		for p in source_pkgs:
-			print(
-				'error: source package %s is listed in '
-				'sourcepkgs.list but not in packages.txt'
-				% p,
-				file=sys.stderr)
-			fail = True
+    if source_pkgs:
+        for p in source_pkgs:
+            print(
+                'error: source package %s is listed in '
+                'sourcepkgs.list but not in packages.txt'
+                % p,
+                file=sys.stderr)
+            fail = True
 
-	sys.exit(1 if fail else 0)
+    sys.exit(1 if fail else 0)
 
 # vi: set noexpandtab:
