@@ -57,8 +57,8 @@ libgpg-error install
 libice install
 libidn install
 libindicator install
-libjpeg6b install
 libjpeg-turbo install
+libjpeg6b install
 libmikmod install
 libnotify install
 libogg install
@@ -129,6 +129,7 @@ sdl-mixer1.2 install
 sdl-ttf2.0 install
 speex install
 sqlite3 install
+steamrt install
 sysvinit install
 tbb install
 tcp-wrappers install
@@ -153,4 +154,3 @@ xft install
 xtrans install
 zenity install
 zlib install
-steamrt install
