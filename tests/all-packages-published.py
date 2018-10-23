@@ -33,10 +33,8 @@ if __name__ == '__main__':
 
                 if line <= last:
                     print(
-                        'warning: '
-                        'sourcepkgs.list:%d: '
-                        'not in `LC_ALL=C sort -u` '
-                        'order near %r'
+                        'warning: sourcepkgs.list:%d: not in '
+                        '`LC_ALL=C sort -u` order near %r'
                         % (i, line),
                         file=sys.stderr)
 
@@ -45,8 +43,8 @@ if __name__ == '__main__':
     if source_pkgs:
         for p in source_pkgs:
             print(
-                'error: source package %s is listed in '
-                'sourcepkgs.list but not in packages.txt'
+                'error: source package %s is listed in sourcepkgs.list '
+                'but not in packages.txt'
                 % p,
                 file=sys.stderr)
             fail = True
