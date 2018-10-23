@@ -99,7 +99,7 @@ def install_sources (sourcelist):
 			p = subprocess.Popen(["dpkg-source", "-x", "--no-copy", dsc_file, os.path.join(dest_dir,ver)], stdout=subprocess.PIPE)
 			for line in iter(p.stdout.readline, ""):
 				if args.verbose or re.match('dpkg-source: warning: ',line):
-					print(line)
+					print(line, end='')
 
 	if skipped > 0:
 		print("Skipped downloading %i deb source file(s) that were already present." % skipped)
