@@ -53,4 +53,4 @@ if __name__ == '__main__':
 
     sys.exit(1 if fail else 0)
 
-# vi: set noexpandtab:
+# vi: set sw=4 sts=4 et:
