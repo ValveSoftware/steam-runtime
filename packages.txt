@@ -53,9 +53,8 @@ freetype	libfreetype6 libfreetype6-dev
 gcc-4.6		libgcc1 libstdc++6 libstdc++6-4.6-dev libstdc++6-4.6-pic libgomp1 gcc-4.6-base
 gconf		libgconf-2-4 libgconf2-dev
 gdk-pixbuf	libgdk-pixbuf2.0-0 libgdk-pixbuf2.0-dev
-glew		libglew1.6
-# glew1.10 isn't actually a valid source package name. This comes from trusty, so it is in CUSTOM_PACKAGES.
-glew1.10	libglew1.10 libglew-dev
+glew1.6		libglew1.6
+glew		libglew1.10 libglew-dev
 glib2.0		libglib2.0-0 libglib2.0-dev
 gmp		libgmp10 libgmp-dev
 gnutls26	libgnutls26 libgnutls-dev
@@ -162,7 +161,7 @@ tdb		libtdb1 libtdb-dev
 tiff		libtiff4 libtiff4-dev
 udev		libudev0 libudev-dev libgudev-1.0-0 libgudev-1.0-dev
 util-linux	libuuid1 uuid-dev
-vulkan		libvulkan1 libvulkan-dev
+vulkan	libvulkan1 libvulkan-dev
 x11proto-composite	x11proto-composite-dev
 x11proto-core	x11proto-core-dev
 x11proto-damage	x11proto-damage-dev
