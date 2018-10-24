@@ -44,6 +44,7 @@ dbus-glib	libdbus-glib-1-2 libdbus-glib-1-dev
 dummygl		dummygl-dev
 e2fsprogs	libcomerr2 comerr-dev
 expat		libexpat1 libexpat1-dev
+fcitx		fcitx-libs-dev
 flac		libflac8 libflac-dev
 fltk1.1		libfltk1.1 libfltk1.1-dev
 fontconfig	libfontconfig1 libfontconfig1-dev
@@ -161,7 +162,7 @@ tdb		libtdb1 libtdb-dev
 tiff		libtiff4 libtiff4-dev
 udev		libudev0 libudev-dev libgudev-1.0-0 libgudev-1.0-dev
 util-linux	libuuid1 uuid-dev
-vulkan		libvulkan1 libvulkan-dev
+vulkan-loader	libvulkan1 libvulkan-dev
 x11proto-composite	x11proto-composite-dev
 x11proto-core	x11proto-core-dev
 x11proto-damage	x11proto-damage-dev
