@@ -30,6 +30,7 @@ e2fsprogs install
 eglibc install
 elfutils install
 expat install
+fcitx install
 findutils install
 flac install
 fltk1.1 install
