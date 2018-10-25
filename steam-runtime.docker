@@ -5,8 +5,8 @@
 # extra_bootstrap  - Extra script file to include out of scripts/ and execute to bootstrap the container (out of /root).
 #                    e.g. --build-arg=extra_bootstrap=bootstrap-custom.sh
 # proxy            - optional argument for http/https proxy
-ARG arch=amd64
 FROM scratch
+ARG arch=amd64
 ARG beta
 ARG arch
 ARG extra_bootstrap
@@ -65,7 +65,12 @@ RUN sed -i 's/^#\s*\(deb.*universe\)$/\1/g' /etc/apt/sources.list
 RUN mkdir -p /run/systemd && echo 'docker' > /run/systemd/container
 
 # Allow resolvconf to be installed without error
-RUN echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-selections
+RUN apt-get -y install debconf-utils \
+	&& echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-selections \
+	&& apt-get -y install resolvconf
+
+# Prevent failure during installation of 'time'
+RUN apt-get -y install install-info
 
 ##
 ## Steam Runtime specific setup

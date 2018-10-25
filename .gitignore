@@ -22,3 +22,4 @@ merge_hg_to_runtime.sh
 x-tools
 tmp/
 newpkg/
+ubuntu-precise-core-cloudimg-*
