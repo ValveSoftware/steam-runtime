@@ -30,6 +30,7 @@ e2fsprogs install
 eglibc install
 elfutils install
 expat install
+fcitx install
 findutils install
 flac install
 fltk1.1 install
@@ -42,7 +43,7 @@ gcc-5 install
 gconf install
 gdk-pixbuf install
 glew install
-glew1.10 install
+glew1.6 install
 glib2.0 install
 gmp install
 gnupg install
