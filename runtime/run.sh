@@ -27,7 +27,11 @@ if [ "${STEAM_RUNTIME_PREFER_HOST_LIBRARIES-}" != "0" ]; then
 	
 			host_library_paths=$host_library_paths$library_path_prefix:
 		fi
-	done <<< "$(/sbin/ldconfig -XNv 2> /dev/null)"
+	# There's a bug where if LD_LIBRARY_PATH contains one of the expansion
+	# tokens ($LIB, $ORIGIN, etc), or any prefix of one, then ldconfig
+	# segfaults without printing anything. To avoid that, clear LD_LIBRARY_PATH
+	# when running ldconfig.
+	done <<< "$(LD_LIBRARY_PATH= /sbin/ldconfig -XNv 2> /dev/null)"
 	
 	host_library_paths="$STEAM_RUNTIME/pinned_libs_32:$STEAM_RUNTIME/pinned_libs_64:$host_library_paths"
 fi
