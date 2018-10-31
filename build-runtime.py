@@ -145,7 +145,8 @@ def install_binaries (binarylist, manifest):
 		#
 		packages_url = "%s/dists/%s/%s/binary-%s/Packages" % (REPO, DIST, COMPONENT, arch)
 		print("Downloading %s binaries from %s" % (arch, packages_url))
-		for stanza in deb822.Packages.iter_paragraphs(urlopen(packages_url)):
+		url_file_handle = BytesIO(urlopen(packages_url).read())
+		for stanza in deb822.Packages.iter_paragraphs(url_file_handle):
 			p = stanza['Package']
 
 			if p in installset:
@@ -215,7 +216,8 @@ def install_symbols (binarylist, manifest):
 		#
 		packages_url = "%s/dists/%s/%s/debug/binary-%s/Packages" % (REPO, DIST, COMPONENT, arch)
 		print("Downloading %s symbols from %s" % (arch, packages_url))
-		for stanza in deb822.Packages.iter_paragraphs(urlopen(packages_url)):
+		url_file_handle = BytesIO(urlopen(packages_url).read())
+		for stanza in deb822.Packages.iter_paragraphs(url_file_handle):
 			p = stanza['Package']
 			m = re.match('([\w\-\.]+)\-dbgsym', p)
 			if m and m.group(1) in binarylist:
