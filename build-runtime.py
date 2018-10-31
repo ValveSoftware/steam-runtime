@@ -6,13 +6,21 @@ from __future__ import print_function
 import os
 import re
 import sys
-import urllib
 import gzip
-import cStringIO
 import shutil
 import subprocess
 from debian import deb822
 import argparse
+
+try:
+    from io import BufferedReader, BytesIO
+except ImportError:
+    from cStringIO import StringIO as BytesIO
+
+try:
+    from urllib.request import (urlopen, urlretrieve)
+except ImportError:
+    from urllib import (urlopen, urlretrieve)
 
 destdir="newpkg"
 arches=["amd64", "i386"]
@@ -45,7 +53,7 @@ def download_file(file_url, file_path):
 	except:
 		pass
 
-	urllib.urlretrieve(file_url, file_path)
+	urlretrieve(file_url, file_path)
 	return True
 
 def install_sources (sourcelist):
@@ -54,8 +62,8 @@ def install_sources (sourcelist):
 	#
 	sources_url = "%s/dists/%s/%s/source/Sources.gz" % (REPO, DIST, COMPONENT)
 	print("Downloading sources from %s" % sources_url)
-	sz = urllib.urlopen(sources_url)
-	url_file_handle=cStringIO.StringIO( sz.read() )
+	sz = urlopen(sources_url)
+	url_file_handle=BytesIO( sz.read() )
 	sources = gzip.GzipFile(fileobj=url_file_handle);
 
 	skipped = 0
@@ -96,7 +104,7 @@ def install_sources (sourcelist):
 			os.makedirs(dest_dir);
 			dsc_file = os.path.join(dir,stanza['files'][0]['name'])
 			ver = stanza['files'][0]['name'].split('-')[0]
-			p = subprocess.Popen(["dpkg-source", "-x", "--no-copy", dsc_file, os.path.join(dest_dir,ver)], stdout=subprocess.PIPE)
+			p = subprocess.Popen(["dpkg-source", "-x", "--no-copy", dsc_file, os.path.join(dest_dir,ver)], stdout=subprocess.PIPE, universal_newlines=True)
 			for line in iter(p.stdout.readline, ""):
 				if args.verbose or re.match('dpkg-source: warning: ',line):
 					print(line, end='')
@@ -137,7 +145,7 @@ def install_binaries (binarylist, manifest):
 		#
 		packages_url = "%s/dists/%s/%s/binary-%s/Packages" % (REPO, DIST, COMPONENT, arch)
 		print("Downloading %s binaries from %s" % (arch, packages_url))
-		for stanza in deb822.Packages.iter_paragraphs(urllib.urlopen(packages_url)):
+		for stanza in deb822.Packages.iter_paragraphs(urlopen(packages_url)):
 			p = stanza['Package']
 
 			if p in installset:
@@ -207,7 +215,7 @@ def install_symbols (binarylist, manifest):
 		#
 		packages_url = "%s/dists/%s/%s/debug/binary-%s/Packages" % (REPO, DIST, COMPONENT, arch)
 		print("Downloading %s symbols from %s" % (arch, packages_url))
-		for stanza in deb822.Packages.iter_paragraphs(urllib.urlopen(packages_url)):
+		for stanza in deb822.Packages.iter_paragraphs(urlopen(packages_url)):
 			p = stanza['Package']
 			m = re.match('([\w\-\.]+)\-dbgsym', p)
 			if m and m.group(1) in binarylist:
@@ -267,7 +275,7 @@ def fix_debuglinks ():
 				#
 				# scrape the output of readelf to find the buildid for this binary
 				#
-				p = subprocess.Popen(["readelf", '-n', os.path.join(dir,file)], stdout=subprocess.PIPE)
+				p = subprocess.Popen(["readelf", '-n', os.path.join(dir,file)], stdout=subprocess.PIPE, universal_newlines=True)
 				for line in iter(p.stdout.readline, ""):
 					m = re.search('Build ID: (\w{2})(\w+)',line)
 					if m:
@@ -296,7 +304,7 @@ def write_manifests(manifest):
 					continue
 
 				if done:
-					writer.write('\n')
+					writer.write(b'\n')
 
 				binary.stanza.dump(writer)
 				done.add(key)
@@ -343,7 +351,7 @@ def write_manifests(manifest):
 
 args = parse_args()
 if args.verbose:
-	for property, value in vars(args).iteritems():
+	for property, value in sorted(vars(args).items()):
 		print("\t", property, ": ", value)
 
 
