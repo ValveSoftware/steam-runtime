@@ -190,7 +190,7 @@ def install_deb (basename, deb, dest_dir):
 	subprocess.check_call(['dpkg-deb', '-x', deb, dest_dir])
 
 
-def install_symbols (binarylist):
+def install_symbols (binarylist, manifest):
 	skipped = 0
 	for arch in arches:
 
