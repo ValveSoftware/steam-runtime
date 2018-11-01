@@ -55,6 +55,7 @@ def parse_args():
 	parser.add_argument("--official", help="mark this as an official runtime", action="store_true")
 	parser.add_argument("--set-name", help="set name for this runtime", default=None)
 	parser.add_argument("--set-version", help="set version number for this runtime", default=None)
+	parser.add_argument("--debug-url", help="set URL for debug/source version", default=None)
 	return parser.parse_args()
 
 
@@ -414,6 +415,24 @@ if not os.path.exists(args.runtime):
 
 with open(os.path.join(args.runtime, 'version.txt'), 'w') as writer:
 	writer.write('%s\n' % name_version)
+
+if args.debug_url:
+	# Note where people can get the debug version of this runtime
+	with open(
+		os.path.join(args.templates, 'README.txt')
+	) as reader:
+		with open(
+			os.path.join(args.runtime, 'README.txt.new'), 'w'
+		) as writer:
+			for line in reader:
+				line = re.sub(
+					r'https?://media\.steampowered\.com/client/runtime/.*$',
+					args.debug_url, line)
+				writer.write(line)
+
+	os.rename(
+		os.path.join(args.runtime, 'README.txt.new'),
+		os.path.join(args.runtime, 'README.txt'))
 
 # Process packages.txt to get the list of source and binary packages
 source_pkgs = set()
