@@ -68,7 +68,7 @@ def install_sources (sourcelist):
 	print("Downloading sources from %s" % sources_url)
 	sz = urlopen(sources_url)
 	url_file_handle=BytesIO( sz.read() )
-	sources = gzip.GzipFile(fileobj=url_file_handle);
+	sources = gzip.GzipFile(fileobj=url_file_handle)
 
 	skipped = 0
 	#
@@ -104,8 +104,8 @@ def install_sources (sourcelist):
 			#
 			dest_dir=os.path.join(args.runtime,"source",p)
 			if os.access(dest_dir, os.W_OK):
-				shutil.rmtree(dest_dir);
-			os.makedirs(dest_dir);
+				shutil.rmtree(dest_dir)
+			os.makedirs(dest_dir)
 			dsc_file = os.path.join(dir,stanza['files'][0]['name'])
 			ver = stanza['files'][0]['name'].split('-')[0]
 			p = subprocess.Popen(["dpkg-source", "-x", "--no-copy", dsc_file, os.path.join(dest_dir,ver)], stdout=subprocess.PIPE, universal_newlines=True)
