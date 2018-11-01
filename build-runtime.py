@@ -9,6 +9,7 @@ import sys
 import gzip
 import shutil
 import subprocess
+import time
 from debian import deb822
 import argparse
 
@@ -51,6 +52,9 @@ def parse_args():
 	parser.add_argument("--symbols", help="include debugging symbols", action="store_true")
 	parser.add_argument("--repo", help="source repository", default=REPO)
 	parser.add_argument("-v", "--verbose", help="verbose", action="store_true")
+	parser.add_argument("--official", help="mark this as an official runtime", action="store_true")
+	parser.add_argument("--set-name", help="set name for this runtime", default=None)
+	parser.add_argument("--set-version", help="set version number for this runtime", default=None)
 	return parser.parse_args()
 
 
@@ -367,16 +371,49 @@ if args.verbose:
 	for property, value in sorted(vars(args).items()):
 		print("\t", property, ": ", value)
 
-
 REPO=args.repo
 DIST = args.suite
 
 if args.debug:
 	COMPONENT = "debug"
 
+if args.set_name is not None:
+	name = args.set_name
+else:
+	name = 'steam-runtime'
+
+	if not args.official:
+		name = 'unofficial-' + name
+
+	if DIST == 'scout_beta':
+		name = '%s-beta' % name
+	elif DIST != 'scout':
+		name = '%s-%s' % DIST
+
+	if args.symbols:
+		name += '-sym'
+
+	if args.source:
+		name += '-src'
+
+	if args.debug:
+		name += '-debug'
+	else:
+		name += '-release'
+
+if args.set_version is not None:
+	version = args.set_version
+else:
+	version = time.strftime('snapshot-%Y%m%d-%H%M%SZ', time.gmtime())
+
+name_version = '%s_%s' % (name, version)
+
 # Populate runtime from template if necessary
 if not os.path.exists(args.runtime):
 	shutil.copytree(args.templates, args.runtime, symlinks=True)
+
+with open(os.path.join(args.runtime, 'version.txt'), 'w') as writer:
+	writer.write('%s\n' % name_version)
 
 # Process packages.txt to get the list of source and binary packages
 source_pkgs = set()
