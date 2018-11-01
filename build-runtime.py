@@ -67,7 +67,7 @@ def install_sources (sourcelist):
 	sources_url = "%s/dists/%s/%s/source/Sources.gz" % (REPO, DIST, COMPONENT)
 	print("Downloading sources from %s" % sources_url)
 	sz = urlopen(sources_url)
-	url_file_handle=BytesIO( sz.read() )
+	url_file_handle=BytesIO(sz.read())
 	sources = gzip.GzipFile(fileobj=url_file_handle)
 
 	skipped = 0
@@ -190,9 +190,9 @@ def install_deb (basename, deb, dest_dir):
 	#
 	# Write the tag file and checksum to the 'installed' subdirectory
 	#
-	with open(os.path.join(installtag_dir,basename),"w") as f:
+	with open(os.path.join(installtag_dir, basename), "w") as f:
 		subprocess.check_call(['dpkg-deb', '-c', deb], stdout=f)
-	with open(os.path.join(installtag_dir,basename+".md5"),"w") as f:
+	with open(os.path.join(installtag_dir, basename + ".md5"), "w") as f:
 		os.chdir(os.path.dirname(deb))
 		subprocess.check_call(['md5sum', os.path.basename(deb)], stdout=f)
 
