@@ -142,6 +142,7 @@ heredoc
   #  Install compilers and libraries
   #
 
+  apt-get install --force-yes -y install-info
   apt-get install --force-yes -y ubuntu-minimal pkg-config time wget
   apt-get install --force-yes -y build-essential cmake gdb
 
