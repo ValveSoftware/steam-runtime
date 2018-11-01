@@ -53,7 +53,7 @@ def download_file(file_url, file_path):
 	try:
 		if os.path.getsize(file_path) > 0:
 			return False
-	except:
+	except OSError:
 		pass
 
 	urlretrieve(file_url, file_path)
