@@ -32,8 +32,10 @@ COMPONENT="main"
 # The top level directory
 top = sys.path[0]
 
+
 def str2bool (b):
 	return b.lower() in ("yes", "true", "t", "1")
+
 
 def parse_args():
 	parser = argparse.ArgumentParser()
@@ -46,6 +48,7 @@ def parse_args():
 	parser.add_argument("-v", "--verbose", help="verbose", action="store_true")
 	return parser.parse_args()
 
+
 def download_file(file_url, file_path):
 	try:
 		if os.path.getsize(file_path) > 0:
@@ -55,6 +58,7 @@ def download_file(file_url, file_path):
 
 	urlretrieve(file_url, file_path)
 	return True
+
 
 def install_sources (sourcelist):
 	#
@@ -178,7 +182,6 @@ def install_binaries (binarylist, manifest):
 		print("Skipped downloading %i file(s) that were already present." % skipped)
 
 
-
 def install_deb (basename, deb, dest_dir):
 	installtag_dir=os.path.join(dest_dir, "installed")
 	if not os.access(installtag_dir, os.W_OK):
@@ -239,7 +242,7 @@ def install_symbols (binarylist, manifest):
 	if skipped > 0:
 		print("Skipped downloading %i symbol deb(s) that were already present." % skipped)
 
-#
+
 # Walks through the files in the runtime directory and converts any absolute symlinks
 # to their relative equivalent
 #
@@ -262,7 +265,7 @@ def fix_symlinks ():
 						os.unlink(filepath)
 						os.symlink(os.path.relpath(target2,dir), filepath)
 
-#
+
 # Creates the usr/lib/debug/.build-id/xx/xxxxxxxxx.debug symlink tree for all the debug
 # symbols
 #
