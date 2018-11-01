@@ -110,7 +110,7 @@ def install_sources (sourcelist):
 			ver = stanza['files'][0]['name'].split('-')[0]
 			p = subprocess.Popen(["dpkg-source", "-x", "--no-copy", dsc_file, os.path.join(dest_dir,ver)], stdout=subprocess.PIPE, universal_newlines=True)
 			for line in iter(p.stdout.readline, ""):
-				if args.verbose or re.match('dpkg-source: warning: ',line):
+				if args.verbose or re.match(r'dpkg-source: warning: ',line):
 					print(line, end='')
 
 	if skipped > 0:
@@ -222,7 +222,7 @@ def install_symbols (binarylist, manifest):
 		url_file_handle = BytesIO(urlopen(packages_url).read())
 		for stanza in deb822.Packages.iter_paragraphs(url_file_handle):
 			p = stanza['Package']
-			m = re.match('([\w\-\.]+)\-dbgsym', p)
+			m = re.match(r'([\w\-\.]+)\-dbgsym', p)
 			if m and m.group(1) in binarylist:
 				manifest.append(Binary(stanza))
 				if args.verbose:
@@ -282,7 +282,7 @@ def fix_debuglinks ():
 				#
 				p = subprocess.Popen(["readelf", '-n', os.path.join(dir,file)], stdout=subprocess.PIPE, universal_newlines=True)
 				for line in iter(p.stdout.readline, ""):
-					m = re.search('Build ID: (\w{2})(\w+)',line)
+					m = re.search(r'Build ID: (\w{2})(\w+)',line)
 					if m:
 						linkdir = os.path.join(args.runtime,arch,"usr/lib/debug/.build-id",m.group(1))
 						if not os.access(linkdir, os.W_OK):
