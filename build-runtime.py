@@ -118,8 +118,8 @@ def install_sources (sourcelist):
 			os.makedirs(dest_dir)
 			dsc_file = os.path.join(dir,stanza['files'][0]['name'])
 			ver = stanza['files'][0]['name'].split('-')[0]
-			p = subprocess.Popen(["dpkg-source", "-x", "--no-copy", dsc_file, os.path.join(dest_dir,ver)], stdout=subprocess.PIPE, universal_newlines=True)
-			for line in iter(p.stdout.readline, ""):
+			process = subprocess.Popen(["dpkg-source", "-x", "--no-copy", dsc_file, os.path.join(dest_dir,ver)], stdout=subprocess.PIPE, universal_newlines=True)
+			for line in iter(process.stdout.readline, ""):
 				if args.verbose or re.match(r'dpkg-source: warning: ',line):
 					print(line, end='')
 
