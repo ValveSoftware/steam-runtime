@@ -359,6 +359,9 @@ def write_manifests(manifest):
 			writer.write(line)
 
 
+# Create files u=rwX,go=rX by default
+os.umask(0o022)
+
 args = parse_args()
 if args.verbose:
 	for property, value in sorted(vars(args).items()):
@@ -406,5 +409,10 @@ if args.symbols:
 fix_symlinks()
 
 write_manifests(manifest)
+
+print("Normalizing permissions...")
+subprocess.check_call([
+	'chmod', '--changes', 'u=rwX,go=rX', '--', args.runtime,
+])
 
 # vi: set noexpandtab:
