@@ -3,6 +3,7 @@
 # Script to build and install packages into the Steam runtime
 
 from __future__ import print_function
+import errno
 import os
 import re
 import sys
@@ -56,6 +57,11 @@ def parse_args():
 	parser.add_argument("--set-name", help="set name for this runtime", default=None)
 	parser.add_argument("--set-version", help="set version number for this runtime", default=None)
 	parser.add_argument("--debug-url", help="set URL for debug/source version", default=None)
+	parser.add_argument("--archive", help="pack Steam Runtime into a tarball", default=None)
+	parser.add_argument(
+		"--compression", help="set compression [xz|gx|bz2|none]",
+		choices=('xz', 'gz', 'bz2', 'none'),
+		default='xz')
 	return parser.parse_args()
 
 
@@ -503,5 +509,109 @@ print("Normalizing permissions...")
 subprocess.check_call([
 	'chmod', '--changes', 'u=rwX,go=rX', '--', args.runtime,
 ])
+
+if args.archive is not None:
+	if args.archive.endswith('/'):
+		try:
+			os.makedirs(args.archive, 0o755)
+		except OSError as e:
+			if e.errno != errno.EEXIST:
+				raise
+
+	if args.compression == 'none':
+		ext = '.tar'
+	else:
+		ext = '.tar.' + args.compression
+
+	if os.path.isdir(args.archive):
+		archive = os.path.join(args.archive, name_version + ext)
+		archive_dir = args.archive
+	else:
+		archive = args.archive
+		archive_dir = None
+
+	print("Creating archive %s..." % archive)
+	subprocess.check_call([
+		'tar',
+		'cvf', archive,
+		'--auto-compress',
+		'--owner=nobody:65534',
+		'--group=nogroup:65534',
+		'-C', args.runtime,
+		# Transform regular archive members, but not symlinks
+		'--transform', 's,^[.]/,steam-runtime/,S',
+		'--show-transformed',
+		'.'
+	])
+
+	print("Creating archive checksum %s.checksum..." % archive)
+	with open(archive + '.checksum', 'w') as writer:
+		subprocess.check_call(
+			[
+				'md5sum',
+				os.path.basename(archive),
+			],
+			cwd=os.path.dirname(archive),
+			stdout=writer,
+		)
+
+	if archive_dir is not None:
+		print("Copying manifest files to %s..." % archive_dir)
+		shutil.copy(
+			os.path.join(args.runtime, 'manifest.txt'),
+			os.path.join(
+				archive_dir, name_version + '.manifest.txt'),
+		)
+		shutil.copy(
+			os.path.join(args.runtime, 'built-using.txt'),
+			os.path.join(
+				archive_dir, name_version + '.built-using.txt'),
+		)
+		shutil.copy(
+			os.path.join(args.runtime, 'manifest.deb822.gz'),
+			os.path.join(
+				archive_dir,
+				name_version + '.manifest.deb822.gz'),
+		)
+		if args.source:
+			shutil.copy(
+				os.path.join(
+					args.runtime,
+					'source',
+					'sources.txt'),
+				os.path.join(
+					archive_dir,
+					name_version + '.sources.txt'),
+			)
+			shutil.copy(
+				os.path.join(
+					args.runtime,
+					'source',
+					'sources.deb822.gz'),
+				os.path.join(
+					archive_dir,
+					name_version + '.sources.deb822.gz'),
+			)
+
+	if archive_dir is not None and version != 'latest':
+		print("Creating symlink %s_latest%s..." % (name, ext))
+		symlink = os.path.join(archive_dir, name + '_latest' + ext)
+
+		try:
+			os.remove(symlink)
+		except OSError as e:
+			if e.errno != errno.ENOENT:
+				raise
+
+		try:
+			os.remove(symlink + '.checksum')
+		except OSError as e:
+			if e.errno != errno.ENOENT:
+				raise
+
+		os.symlink(os.path.basename(archive), symlink)
+		os.symlink(
+			os.path.basename(archive) + '.checksum',
+			symlink + '.checksum')
 
 # vi: set noexpandtab:
