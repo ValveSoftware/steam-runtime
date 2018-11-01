@@ -39,6 +39,10 @@ def str2bool (b):
 
 def parse_args():
 	parser = argparse.ArgumentParser()
+	parser.add_argument(
+		"--templates",
+		help="specify template files to include in runtime",
+		default=os.path.join(top, "templates"))
 	parser.add_argument("-r", "--runtime", help="specify runtime path", default=os.path.join(top,"runtime"))
 	parser.add_argument("--suite", help="specify apt suite", default=DIST)
 	parser.add_argument("-b", "--beta", help="build beta runtime", dest='suite', action="store_const", const='scout_beta')
@@ -366,6 +370,10 @@ DIST = args.suite
 
 if args.debug:
 	COMPONENT = "debug"
+
+# Populate runtime from template if necessary
+if not os.path.exists(args.runtime):
+	shutil.copytree(args.templates, args.runtime, symlinks=True)
 
 # Process packages.txt to get the list of source and binary packages
 source_pkgs = set()
