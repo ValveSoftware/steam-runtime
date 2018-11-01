@@ -13,7 +13,7 @@ from debian import deb822
 import argparse
 
 try:
-    from io import BufferedReader, BytesIO
+    from io import BytesIO
 except ImportError:
     from cStringIO import StringIO as BytesIO
 
