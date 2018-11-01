@@ -13,14 +13,14 @@ from debian import deb822
 import argparse
 
 try:
-    from io import BufferedReader, BytesIO
+	from io import BytesIO
 except ImportError:
-    from cStringIO import StringIO as BytesIO
+	from cStringIO import StringIO as BytesIO
 
 try:
-    from urllib.request import (urlopen, urlretrieve)
+	from urllib.request import (urlopen, urlretrieve)
 except ImportError:
-    from urllib import (urlopen, urlretrieve)
+	from urllib import (urlopen, urlretrieve)
 
 destdir="newpkg"
 arches=["amd64", "i386"]
@@ -32,8 +32,10 @@ COMPONENT="main"
 # The top level directory
 top = sys.path[0]
 
+
 def str2bool (b):
 	return b.lower() in ("yes", "true", "t", "1")
+
 
 def parse_args():
 	parser = argparse.ArgumentParser()
@@ -46,15 +48,17 @@ def parse_args():
 	parser.add_argument("-v", "--verbose", help="verbose", action="store_true")
 	return parser.parse_args()
 
+
 def download_file(file_url, file_path):
 	try:
 		if os.path.getsize(file_path) > 0:
 			return False
-	except:
+	except OSError:
 		pass
 
 	urlretrieve(file_url, file_path)
 	return True
+
 
 def install_sources (sourcelist):
 	#
@@ -63,8 +67,8 @@ def install_sources (sourcelist):
 	sources_url = "%s/dists/%s/%s/source/Sources.gz" % (REPO, DIST, COMPONENT)
 	print("Downloading sources from %s" % sources_url)
 	sz = urlopen(sources_url)
-	url_file_handle=BytesIO( sz.read() )
-	sources = gzip.GzipFile(fileobj=url_file_handle);
+	url_file_handle=BytesIO(sz.read())
+	sources = gzip.GzipFile(fileobj=url_file_handle)
 
 	skipped = 0
 	#
@@ -100,13 +104,13 @@ def install_sources (sourcelist):
 			#
 			dest_dir=os.path.join(args.runtime,"source",p)
 			if os.access(dest_dir, os.W_OK):
-				shutil.rmtree(dest_dir);
-			os.makedirs(dest_dir);
+				shutil.rmtree(dest_dir)
+			os.makedirs(dest_dir)
 			dsc_file = os.path.join(dir,stanza['files'][0]['name'])
 			ver = stanza['files'][0]['name'].split('-')[0]
 			p = subprocess.Popen(["dpkg-source", "-x", "--no-copy", dsc_file, os.path.join(dest_dir,ver)], stdout=subprocess.PIPE, universal_newlines=True)
 			for line in iter(p.stdout.readline, ""):
-				if args.verbose or re.match('dpkg-source: warning: ',line):
+				if args.verbose or re.match(r'dpkg-source: warning: ',line):
 					print(line, end='')
 
 	if skipped > 0:
@@ -178,7 +182,6 @@ def install_binaries (binarylist, manifest):
 		print("Skipped downloading %i file(s) that were already present." % skipped)
 
 
-
 def install_deb (basename, deb, dest_dir):
 	installtag_dir=os.path.join(dest_dir, "installed")
 	if not os.access(installtag_dir, os.W_OK):
@@ -187,9 +190,9 @@ def install_deb (basename, deb, dest_dir):
 	#
 	# Write the tag file and checksum to the 'installed' subdirectory
 	#
-	with open(os.path.join(installtag_dir,basename),"w") as f:
+	with open(os.path.join(installtag_dir, basename), "w") as f:
 		subprocess.check_call(['dpkg-deb', '-c', deb], stdout=f)
-	with open(os.path.join(installtag_dir,basename+".md5"),"w") as f:
+	with open(os.path.join(installtag_dir, basename + ".md5"), "w") as f:
 		os.chdir(os.path.dirname(deb))
 		subprocess.check_call(['md5sum', os.path.basename(deb)], stdout=f)
 
@@ -219,7 +222,7 @@ def install_symbols (binarylist, manifest):
 		url_file_handle = BytesIO(urlopen(packages_url).read())
 		for stanza in deb822.Packages.iter_paragraphs(url_file_handle):
 			p = stanza['Package']
-			m = re.match('([\w\-\.]+)\-dbgsym', p)
+			m = re.match(r'([\w\-\.]+)\-dbgsym', p)
 			if m and m.group(1) in binarylist:
 				manifest.append(Binary(stanza))
 				if args.verbose:
@@ -239,7 +242,7 @@ def install_symbols (binarylist, manifest):
 	if skipped > 0:
 		print("Skipped downloading %i symbol deb(s) that were already present." % skipped)
 
-#
+
 # Walks through the files in the runtime directory and converts any absolute symlinks
 # to their relative equivalent
 #
@@ -262,7 +265,7 @@ def fix_symlinks ():
 						os.unlink(filepath)
 						os.symlink(os.path.relpath(target2,dir), filepath)
 
-#
+
 # Creates the usr/lib/debug/.build-id/xx/xxxxxxxxx.debug symlink tree for all the debug
 # symbols
 #
@@ -279,7 +282,7 @@ def fix_debuglinks ():
 				#
 				p = subprocess.Popen(["readelf", '-n', os.path.join(dir,file)], stdout=subprocess.PIPE, universal_newlines=True)
 				for line in iter(p.stdout.readline, ""):
-					m = re.search('Build ID: (\w{2})(\w+)',line)
+					m = re.search(r'Build ID: (\w{2})(\w+)',line)
 					if m:
 						linkdir = os.path.join(args.runtime,arch,"usr/lib/debug/.build-id",m.group(1))
 						if not os.access(linkdir, os.W_OK):
