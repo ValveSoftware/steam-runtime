@@ -40,7 +40,8 @@ def str2bool (b):
 def parse_args():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-r", "--runtime", help="specify runtime path", default=os.path.join(top,"runtime"))
-	parser.add_argument("-b", "--beta", help="build beta runtime", action="store_true")
+	parser.add_argument("--suite", help="specify apt suite", default=DIST)
+	parser.add_argument("-b", "--beta", help="build beta runtime", dest='suite', action="store_const", const='scout_beta')
 	parser.add_argument("-d", "--debug", help="build debug runtime", action="store_true")
 	parser.add_argument("--source", help="include sources", action="store_true")
 	parser.add_argument("--symbols", help="include debugging symbols", action="store_true")
@@ -361,9 +362,7 @@ if args.verbose:
 
 
 REPO=args.repo
-
-if args.beta:
-	DIST="scout_beta"
+DIST = args.suite
 
 if args.debug:
 	COMPONENT = "debug"
