@@ -13,14 +13,14 @@ from debian import deb822
 import argparse
 
 try:
-    from io import BytesIO
+	from io import BytesIO
 except ImportError:
-    from cStringIO import StringIO as BytesIO
+	from cStringIO import StringIO as BytesIO
 
 try:
-    from urllib.request import (urlopen, urlretrieve)
+	from urllib.request import (urlopen, urlretrieve)
 except ImportError:
-    from urllib import (urlopen, urlretrieve)
+	from urllib import (urlopen, urlretrieve)
 
 destdir="newpkg"
 arches=["amd64", "i386"]
