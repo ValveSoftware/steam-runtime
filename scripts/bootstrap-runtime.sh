@@ -17,6 +17,8 @@ bootstrap_container()
   #  Need to be inside a chroot
   if [[ $container_type = chroot && $(stat -c %d:%i /) != $(stat -c %d:%i /proc/1/root/.) ]]; then
     echo "Running in chroot environment. Continuing..."
+  elif [[ $container_type = chroot && "${container-}" = systemd-nspawn ]]; then
+    echo "Running in systemd-nspawn environment. Continuing..."
   elif [[ $container_type = docker && -f /.dockerenv ]]; then
     echo "Running in docker environment. Continuing..."
   else
