@@ -81,6 +81,8 @@ def install_sources (sourcelist):
 	sources = gzip.GzipFile(fileobj=url_file_handle)
 
 	skipped = 0
+	unpacked = []
+	manifest_lines = set()
 	#
 	# Walk through the Sources file and process any requested packages
 	#
@@ -122,6 +124,37 @@ def install_sources (sourcelist):
 			for line in iter(process.stdout.readline, ""):
 				if args.verbose or re.match(r'dpkg-source: warning: ',line):
 					print(line, end='')
+
+			unpacked.append((p, stanza['Version'], stanza))
+			manifest_lines.add(
+				'%s\t%s\t%s\n' % (
+					p, stanza['Version'],
+					stanza['files'][0]['name']))
+
+	# sources.txt: Tab-separated table of source packages, their
+	# versions, and the corresponding .dsc file.
+	with open(os.path.join(args.runtime, 'source', 'sources.txt'), 'w') as writer:
+		writer.write('#Source\t#Version\t#dsc\n')
+
+		for line in sorted(manifest_lines):
+			writer.write(line)
+
+	# sources.deb822.gz: The full Sources stanza for each included source
+	# package, suitable for later analysis.
+	with open(
+		os.path.join(args.runtime, 'source', 'sources.deb822.gz'), 'wb'
+	) as gz_writer:
+		with gzip.GzipFile(
+			filename='', fileobj=gz_writer, mtime=0
+		) as stanza_writer:
+			done_one = False
+
+			for source in sorted(unpacked):
+				if done_one:
+					stanza_writer.write(b'\n')
+
+				source[2].dump(stanza_writer)
+				done_one = True
 
 	if skipped > 0:
 		print("Skipped downloading %i deb source file(s) that were already present." % skipped)
