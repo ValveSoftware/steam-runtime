@@ -5,6 +5,9 @@ COLOR_ON="\033[1;93m"
 
 set -eu
 
+steamrt_mirror="http://repo.steampowered.com/steamrt"
+ubuntu_mirror="http://us.archive.ubuntu.com/ubuntu"
+
 # bootstrap_container <docker | chroot> [beta]
 bootstrap_container()
 {
@@ -35,10 +38,10 @@ bootstrap_container()
   #
   if [[ $container_type = chroot ]]; then
     (cat << heredoc
-deb http://us.archive.ubuntu.com/ubuntu precise main
-deb-src http://us.archive.ubuntu.com/ubuntu precise main
-deb http://us.archive.ubuntu.com/ubuntu precise universe
-deb-src http://us.archive.ubuntu.com/ubuntu precise universe
+deb ${ubuntu_mirror} precise main
+deb-src ${ubuntu_mirror} precise main
+deb ${ubuntu_mirror} precise universe
+deb-src ${ubuntu_mirror} precise universe
 heredoc
 ) > /etc/apt/sources.list
   fi
@@ -48,14 +51,14 @@ heredoc
   #
   if [[ $beta_arg == "beta" ]]; then
     (cat << heredoc
-deb http://repo.steampowered.com/steamrt/ scout_beta main
-deb-src http://repo.steampowered.com/steamrt/ scout_beta main
+deb ${steamrt_mirror} scout_beta main
+deb-src ${steamrt_mirror} scout_beta main
 heredoc
 ) > /etc/apt/sources.list.d/steamrt.list
   else
     (cat << heredoc
-deb http://repo.steampowered.com/steamrt/ scout main
-deb-src http://repo.steampowered.com/steamrt/ scout main
+deb ${steamrt_mirror} scout main
+deb-src ${steamrt_mirror} scout main
 heredoc
 ) > /etc/apt/sources.list.d/steamrt.list
   fi
@@ -210,6 +213,16 @@ while [[ $# -gt 0 ]]; do
     "--beta" )
       beta_arg=beta
       ;;
+    "--ubuntu-mirror" )
+      ubuntu_mirror="$2"
+      shift 2
+      continue
+      ;;
+    "--steamrt-mirror" )
+      steamrt_mirror="$2"
+      shift 2
+      continue
+      ;;
     * )
       echo >&2 "!! Unrecognized argument: $1"
       invalid_arg=1
@@ -221,7 +234,7 @@ done
 if [[ -z $invalid_arg && -n $mode_arg && $EUID = 0 ]]; then
   bootstrap_container "$mode_arg" "$beta_arg"
 else
-  echo >&2 "!! Usage: ./bootstrap-runtime.sh { --docker | --chroot } [ --beta ]"
+  echo >&2 "!! Usage: ./bootstrap-runtime.sh { --docker | --chroot } [ --ubuntu-mirror MIRROR ] [ --steamrt-mirror MIRROR ] [ --beta ]"
   echo >&2 "!!"
   echo >&2 "!! This script to be run in a base container/chroot to finish Steam runtime setup"
   exit 1
