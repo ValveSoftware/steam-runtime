@@ -189,6 +189,9 @@ heredoc
   echo -e "# Allow members of group sudo to execute any command\n%sudo   ALL= NOPASSWD: ALL\n" > /etc/sudoers.d/nopassword
   chmod 440 /etc/sudoers.d/nopassword
 
+  # Remove downloaded packages: we won't need to install them again
+  apt-get clean
+
   echo ""
   echo "#####"
   echo "##### Runtime setup is done!"
