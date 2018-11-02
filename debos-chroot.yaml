@@ -1,0 +1,50 @@
+{{- /* This file is a template for debos: https://github.com/go-debos/debos */ -}}
+
+{{- $architecture := or .architecture "amd64" -}}
+{{- $base_suite := or .base_suite "precise" -}}
+{{- $base_mirror := or .base_mirror "http://archive.ubuntu.com/ubuntu" -}}
+{{- $suite := or .suite "scout_beta" -}}
+{{- $mirror := or .mirror "http://repo.steamstatic.com/steamrt" -}}
+{{- $version := or .version "0" -}}
+{{- $basename := or .basename (printf "steam-runtime-sdk-chroot-%s_%s_%s" $suite $version $architecture) -}}
+{{- $tarball := or .tarball (printf "%s.tar.gz" $basename) -}}
+
+architecture: {{ $architecture }}
+actions:
+  - action: debootstrap
+    suite: {{ $base_suite }}
+    mirror: {{ $base_mirror }}
+    keyring-package: ubuntu-keyring
+    keyring-file: ubuntu-archive-keyring.gpg
+    merged-usr: false
+
+  - action: run
+    chroot: true
+    label: bootstrap-runtime.sh
+    script: >
+      scripts/bootstrap-runtime.sh
+      --chroot
+      --beta
+      --ubuntu-mirror "{{ $base_mirror }}"
+      --steamrt-mirror "{{ $mirror }}"
+
+  - action: run
+    chroot: true
+    label: create /etc/debian_chroot
+    command: |
+      echo "steamrt_{{ $suite }}_{{ $architecture }}" > /etc/debian_chroot
+
+  - action: run
+    chroot: true
+    script: write-manifest /
+
+  - action: run
+    chroot: false
+    command: |
+      cp "$ROOTDIR/usr/manifest.deb822.gz" "$ARTIFACTDIR/{{ $basename }}.deb822.gz"
+      cp "$ROOTDIR/usr/manifest.dpkg" "$ARTIFACTDIR/{{ $basename }}.manifest.txt"
+      cp "$ROOTDIR/usr/manifest.dpkg.built-using" "$ARTIFACTDIR/{{ $basename }}.built-using.txt"
+
+  - action: pack
+    compression: gz
+    file: {{ $tarball }}
