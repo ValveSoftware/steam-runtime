@@ -123,4 +123,11 @@ foreach my $using (@using) {
 }
 ' | LC_ALL=C sort -u >&3
 
+cut -f1 -s < "$sysroot/usr/manifest.dpkg" \
+| grep -v '^#' \
+| xargs -d '\n' dpkg-query -s \
+> "$sysroot/usr/manifest.deb822"
+
+gzip -9n "$sysroot/usr/manifest.deb822"
+
 # vim:set sw=4 sts=4 et:
