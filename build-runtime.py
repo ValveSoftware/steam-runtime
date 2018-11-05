@@ -3,12 +3,14 @@
 # Script to build and install packages into the Steam runtime
 
 from __future__ import print_function
+import errno
 import os
 import re
 import sys
 import gzip
 import shutil
 import subprocess
+import time
 from debian import deb822
 import argparse
 
@@ -39,13 +41,27 @@ def str2bool (b):
 
 def parse_args():
 	parser = argparse.ArgumentParser()
+	parser.add_argument(
+		"--templates",
+		help="specify template files to include in runtime",
+		default=os.path.join(top, "templates"))
 	parser.add_argument("-r", "--runtime", help="specify runtime path", default=os.path.join(top,"runtime"))
-	parser.add_argument("-b", "--beta", help="build beta runtime", action="store_true")
+	parser.add_argument("--suite", help="specify apt suite", default=DIST)
+	parser.add_argument("-b", "--beta", help="build beta runtime", dest='suite', action="store_const", const='scout_beta')
 	parser.add_argument("-d", "--debug", help="build debug runtime", action="store_true")
 	parser.add_argument("--source", help="include sources", action="store_true")
 	parser.add_argument("--symbols", help="include debugging symbols", action="store_true")
 	parser.add_argument("--repo", help="source repository", default=REPO)
 	parser.add_argument("-v", "--verbose", help="verbose", action="store_true")
+	parser.add_argument("--official", help="mark this as an official runtime", action="store_true")
+	parser.add_argument("--set-name", help="set name for this runtime", default=None)
+	parser.add_argument("--set-version", help="set version number for this runtime", default=None)
+	parser.add_argument("--debug-url", help="set URL for debug/source version", default=None)
+	parser.add_argument("--archive", help="pack Steam Runtime into a tarball", default=None)
+	parser.add_argument(
+		"--compression", help="set compression [xz|gx|bz2|none]",
+		choices=('xz', 'gz', 'bz2', 'none'),
+		default='xz')
 	return parser.parse_args()
 
 
@@ -71,6 +87,8 @@ def install_sources (sourcelist):
 	sources = gzip.GzipFile(fileobj=url_file_handle)
 
 	skipped = 0
+	unpacked = []
+	manifest_lines = set()
 	#
 	# Walk through the Sources file and process any requested packages
 	#
@@ -108,10 +126,41 @@ def install_sources (sourcelist):
 			os.makedirs(dest_dir)
 			dsc_file = os.path.join(dir,stanza['files'][0]['name'])
 			ver = stanza['files'][0]['name'].split('-')[0]
-			p = subprocess.Popen(["dpkg-source", "-x", "--no-copy", dsc_file, os.path.join(dest_dir,ver)], stdout=subprocess.PIPE, universal_newlines=True)
-			for line in iter(p.stdout.readline, ""):
+			process = subprocess.Popen(["dpkg-source", "-x", "--no-copy", dsc_file, os.path.join(dest_dir,ver)], stdout=subprocess.PIPE, universal_newlines=True)
+			for line in iter(process.stdout.readline, ""):
 				if args.verbose or re.match(r'dpkg-source: warning: ',line):
 					print(line, end='')
+
+			unpacked.append((p, stanza['Version'], stanza))
+			manifest_lines.add(
+				'%s\t%s\t%s\n' % (
+					p, stanza['Version'],
+					stanza['files'][0]['name']))
+
+	# sources.txt: Tab-separated table of source packages, their
+	# versions, and the corresponding .dsc file.
+	with open(os.path.join(args.runtime, 'source', 'sources.txt'), 'w') as writer:
+		writer.write('#Source\t#Version\t#dsc\n')
+
+		for line in sorted(manifest_lines):
+			writer.write(line)
+
+	# sources.deb822.gz: The full Sources stanza for each included source
+	# package, suitable for later analysis.
+	with open(
+		os.path.join(args.runtime, 'source', 'sources.deb822.gz'), 'wb'
+	) as gz_writer:
+		with gzip.GzipFile(
+			filename='', fileobj=gz_writer, mtime=0
+		) as stanza_writer:
+			done_one = False
+
+			for source in sorted(unpacked):
+				if done_one:
+					stanza_writer.write(b'\n')
+
+				source[2].dump(stanza_writer)
+				done_one = True
 
 	if skipped > 0:
 		print("Skipped downloading %i deb source file(s) that were already present." % skipped)
@@ -354,19 +403,75 @@ def write_manifests(manifest):
 			writer.write(line)
 
 
+# Create files u=rwX,go=rX by default
+os.umask(0o022)
+
 args = parse_args()
 if args.verbose:
 	for property, value in sorted(vars(args).items()):
 		print("\t", property, ": ", value)
 
-
 REPO=args.repo
-
-if args.beta:
-	DIST="scout_beta"
+DIST = args.suite
 
 if args.debug:
 	COMPONENT = "debug"
+
+if args.set_name is not None:
+	name = args.set_name
+else:
+	name = 'steam-runtime'
+
+	if not args.official:
+		name = 'unofficial-' + name
+
+	if DIST == 'scout_beta':
+		name = '%s-beta' % name
+	elif DIST != 'scout':
+		name = '%s-%s' % DIST
+
+	if args.symbols:
+		name += '-sym'
+
+	if args.source:
+		name += '-src'
+
+	if args.debug:
+		name += '-debug'
+	else:
+		name += '-release'
+
+if args.set_version is not None:
+	version = args.set_version
+else:
+	version = time.strftime('snapshot-%Y%m%d-%H%M%SZ', time.gmtime())
+
+name_version = '%s_%s' % (name, version)
+
+# Populate runtime from template if necessary
+if not os.path.exists(args.runtime):
+	shutil.copytree(args.templates, args.runtime, symlinks=True)
+
+with open(os.path.join(args.runtime, 'version.txt'), 'w') as writer:
+	writer.write('%s\n' % name_version)
+
+if args.debug_url:
+	# Note where people can get the debug version of this runtime
+	with open(
+		os.path.join(args.templates, 'README.txt')
+	) as reader:
+		with open(
+			os.path.join(args.runtime, 'README.txt.new'), 'w'
+		) as writer:
+			for line in reader:
+				line = re.sub(
+					r'https?://media\.steampowered\.com/client/runtime/.*$',
+					args.debug_url, line)
+				writer.write(line)
+
+	os.rename(
+		os.path.join(args.runtime, 'README.txt.new'),
+		os.path.join(args.runtime, 'README.txt'))
 
 # Process packages.txt to get the list of source and binary packages
 source_pkgs = set()
@@ -399,5 +504,114 @@ if args.symbols:
 fix_symlinks()
 
 write_manifests(manifest)
+
+print("Normalizing permissions...")
+subprocess.check_call([
+	'chmod', '--changes', 'u=rwX,go=rX', '--', args.runtime,
+])
+
+if args.archive is not None:
+	if args.archive.endswith('/'):
+		try:
+			os.makedirs(args.archive, 0o755)
+		except OSError as e:
+			if e.errno != errno.EEXIST:
+				raise
+
+	if args.compression == 'none':
+		ext = '.tar'
+	else:
+		ext = '.tar.' + args.compression
+
+	if os.path.isdir(args.archive):
+		archive = os.path.join(args.archive, name_version + ext)
+		archive_dir = args.archive
+	else:
+		archive = args.archive
+		archive_dir = None
+
+	print("Creating archive %s..." % archive)
+	subprocess.check_call([
+		'tar',
+		'cvf', archive,
+		'--auto-compress',
+		'--owner=nobody:65534',
+		'--group=nogroup:65534',
+		'-C', args.runtime,
+		# Transform regular archive members, but not symlinks
+		'--transform', 's,^[.]/,steam-runtime/,S',
+		'--show-transformed',
+		'.'
+	])
+
+	print("Creating archive checksum %s.checksum..." % archive)
+	with open(archive + '.checksum', 'w') as writer:
+		subprocess.check_call(
+			[
+				'md5sum',
+				os.path.basename(archive),
+			],
+			cwd=os.path.dirname(archive),
+			stdout=writer,
+		)
+
+	if archive_dir is not None:
+		print("Copying manifest files to %s..." % archive_dir)
+		shutil.copy(
+			os.path.join(args.runtime, 'manifest.txt'),
+			os.path.join(
+				archive_dir, name_version + '.manifest.txt'),
+		)
+		shutil.copy(
+			os.path.join(args.runtime, 'built-using.txt'),
+			os.path.join(
+				archive_dir, name_version + '.built-using.txt'),
+		)
+		shutil.copy(
+			os.path.join(args.runtime, 'manifest.deb822.gz'),
+			os.path.join(
+				archive_dir,
+				name_version + '.manifest.deb822.gz'),
+		)
+		if args.source:
+			shutil.copy(
+				os.path.join(
+					args.runtime,
+					'source',
+					'sources.txt'),
+				os.path.join(
+					archive_dir,
+					name_version + '.sources.txt'),
+			)
+			shutil.copy(
+				os.path.join(
+					args.runtime,
+					'source',
+					'sources.deb822.gz'),
+				os.path.join(
+					archive_dir,
+					name_version + '.sources.deb822.gz'),
+			)
+
+	if archive_dir is not None and version != 'latest':
+		print("Creating symlink %s_latest%s..." % (name, ext))
+		symlink = os.path.join(archive_dir, name + '_latest' + ext)
+
+		try:
+			os.remove(symlink)
+		except OSError as e:
+			if e.errno != errno.ENOENT:
+				raise
+
+		try:
+			os.remove(symlink + '.checksum')
+		except OSError as e:
+			if e.errno != errno.ENOENT:
+				raise
+
+		os.symlink(os.path.basename(archive), symlink)
+		os.symlink(
+			os.path.basename(archive) + '.checksum',
+			symlink + '.checksum')
 
 # vi: set noexpandtab:
