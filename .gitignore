@@ -23,6 +23,9 @@ newpkg/
 /steam-runtime-*.sources.txt
 /steam-runtime-*.tar.gz
 /steam-runtime-*.tar.xz
+/steam-runtime-sdk-chroot-*.deb822.gz
+/steam-runtime-sdk-chroot-*.tar.gz
+/steam-runtime-sdk-chroot-*.txt
 /unofficial-steam-runtime-*.built-using.txt
 /unofficial-steam-runtime-*.deb822.gz
 /unofficial-steam-runtime-*.manifest.txt
