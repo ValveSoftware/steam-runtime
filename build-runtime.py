@@ -214,7 +214,7 @@ def install_binaries (binarylist, manifest):
 				dest_deb=os.path.join(dir, os.path.basename(stanza['Filename']))
 				if not download_file(file_url, dest_deb):
 					if args.verbose:
-						print("Skipping download of existing deb: %s", dest_deb)
+						print("Skipping download of existing deb: %s" % dest_deb)
 					else:
 						skipped += 1
 				install_deb(os.path.splitext(os.path.basename(stanza['Filename']))[0], dest_deb, os.path.join(args.runtime, arch))
@@ -531,18 +531,20 @@ if args.archive is not None:
 		archive_dir = None
 
 	print("Creating archive %s..." % archive)
-	subprocess.check_call([
+	cmd = [
 		'tar',
 		'cvf', archive,
 		'--auto-compress',
-		'--owner=nobody:65534',
-		'--group=nogroup:65534',
+		'--owner=nobody',
+		'--group=nogroup',
 		'-C', args.runtime,
 		# Transform regular archive members, but not symlinks
 		'--transform', 's,^[.]/,steam-runtime/,S',
 		'--show-transformed',
 		'.'
-	])
+	]
+	print(' '.join(cmd))
+	subprocess.check_call(cmd)
 
 	print("Creating archive checksum %s.checksum..." % archive)
 	with open(archive + '.checksum', 'w') as writer:
