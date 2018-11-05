@@ -5,6 +5,9 @@ COLOR_ON="\033[1;93m"
 
 set -eu
 
+steamrt_mirror="http://repo.steampowered.com/steamrt"
+ubuntu_mirror="http://us.archive.ubuntu.com/ubuntu"
+
 # bootstrap_container <docker | chroot> [beta]
 bootstrap_container()
 {
@@ -14,6 +17,8 @@ bootstrap_container()
   #  Need to be inside a chroot
   if [[ $container_type = chroot && $(stat -c %d:%i /) != $(stat -c %d:%i /proc/1/root/.) ]]; then
     echo "Running in chroot environment. Continuing..."
+  elif [[ $container_type = chroot && "${container-}" = systemd-nspawn ]]; then
+    echo "Running in systemd-nspawn environment. Continuing..."
   elif [[ $container_type = docker && -f /.dockerenv ]]; then
     echo "Running in docker environment. Continuing..."
   else
@@ -35,10 +40,10 @@ bootstrap_container()
   #
   if [[ $container_type = chroot ]]; then
     (cat << heredoc
-deb http://us.archive.ubuntu.com/ubuntu precise main
-deb-src http://us.archive.ubuntu.com/ubuntu precise main
-deb http://us.archive.ubuntu.com/ubuntu precise universe
-deb-src http://us.archive.ubuntu.com/ubuntu precise universe
+deb ${ubuntu_mirror} precise main
+deb-src ${ubuntu_mirror} precise main
+deb ${ubuntu_mirror} precise universe
+deb-src ${ubuntu_mirror} precise universe
 heredoc
 ) > /etc/apt/sources.list
   fi
@@ -48,14 +53,14 @@ heredoc
   #
   if [[ $beta_arg == "beta" ]]; then
     (cat << heredoc
-deb http://repo.steampowered.com/steamrt/ scout_beta main
-deb-src http://repo.steampowered.com/steamrt/ scout_beta main
+deb ${steamrt_mirror} scout_beta main
+deb-src ${steamrt_mirror} scout_beta main
 heredoc
 ) > /etc/apt/sources.list.d/steamrt.list
   else
     (cat << heredoc
-deb http://repo.steampowered.com/steamrt/ scout main
-deb-src http://repo.steampowered.com/steamrt/ scout main
+deb ${steamrt_mirror} scout main
+deb-src ${steamrt_mirror} scout main
 heredoc
 ) > /etc/apt/sources.list.d/steamrt.list
   fi
@@ -142,6 +147,7 @@ heredoc
   #  Install compilers and libraries
   #
 
+  apt-get install --force-yes -y install-info
   apt-get install --force-yes -y ubuntu-minimal pkg-config time wget
   apt-get install --force-yes -y build-essential cmake gdb
 
@@ -183,6 +189,9 @@ heredoc
   echo -e "# Allow members of group sudo to execute any command\n%sudo   ALL= NOPASSWD: ALL\n" > /etc/sudoers.d/nopassword
   chmod 440 /etc/sudoers.d/nopassword
 
+  # Remove downloaded packages: we won't need to install them again
+  apt-get clean
+
   echo ""
   echo "#####"
   echo "##### Runtime setup is done!"
@@ -209,6 +218,16 @@ while [[ $# -gt 0 ]]; do
     "--beta" )
       beta_arg=beta
       ;;
+    "--ubuntu-mirror" )
+      ubuntu_mirror="$2"
+      shift 2
+      continue
+      ;;
+    "--steamrt-mirror" )
+      steamrt_mirror="$2"
+      shift 2
+      continue
+      ;;
     * )
       echo >&2 "!! Unrecognized argument: $1"
       invalid_arg=1
@@ -220,7 +239,7 @@ done
 if [[ -z $invalid_arg && -n $mode_arg && $EUID = 0 ]]; then
   bootstrap_container "$mode_arg" "$beta_arg"
 else
-  echo >&2 "!! Usage: ./bootstrap-runtime.sh { --docker | --chroot } [ --beta ]"
+  echo >&2 "!! Usage: ./bootstrap-runtime.sh { --docker | --chroot } [ --ubuntu-mirror MIRROR ] [ --steamrt-mirror MIRROR ] [ --beta ]"
   echo >&2 "!!"
   echo >&2 "!! This script to be run in a base container/chroot to finish Steam runtime setup"
   exit 1

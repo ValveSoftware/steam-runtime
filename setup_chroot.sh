@@ -2,8 +2,8 @@
 
 SCRIPT="$(readlink -f "$0")"
 SCRIPTNAME="$(basename "$SCRIPT")"
-SCRIPT_DIR=$(dirname "$SCRIPT")
-BOOTSTRAP_SCRIPT="$(dirname "$0")"/scripts/bootstrap-runtime.sh
+SCRIPT_DIR="$(dirname "$SCRIPT")"
+BOOTSTRAP_SCRIPT="$SCRIPT_DIR/scripts/bootstrap-runtime.sh"
 LOGFILE="$(mktemp --tmpdir steam-runtime-setup-chroot-XXX.log)"
 CHROOT_PREFIX="steamrt_scout_"
 CHROOT_DIR="/var/chroots"

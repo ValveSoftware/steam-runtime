@@ -5,7 +5,7 @@ all:
 check:
 	@set -e; \
 	e=0; \
-	for t in tests/*.py; do \
+	for t in tests/*.py tests/*.sh; do \
 		echo "$$t..."; \
 		if $$t; then \
 			echo "$$t: PASS"; \
