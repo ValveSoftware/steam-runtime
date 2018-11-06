@@ -17,6 +17,7 @@ merge_hg_to_runtime.sh
 x-tools
 tmp/
 newpkg/
+/ubuntu-precise-core-cloudimg-*
 /steam-runtime-*.built-using.txt
 /steam-runtime-*.deb822.gz
 /steam-runtime-*.manifest.txt
@@ -31,4 +32,6 @@ newpkg/
 /unofficial-steam-runtime-*.manifest.txt
 /unofficial-steam-runtime-*.sources.txt
 /unofficial-steam-runtime-*.tar.xz
-/ubuntu-precise-core-cloudimg-*
+/unofficial-steam-runtime-sdk-chroot-*.deb822.gz
+/unofficial-steam-runtime-sdk-chroot-*.tar.gz
+/unofficial-steam-runtime-sdk-chroot-*.txt

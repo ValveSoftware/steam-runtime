@@ -6,7 +6,9 @@
 {{- $suite := or .suite "scout_beta" -}}
 {{- $mirror := or .mirror "http://repo.steamstatic.com/steamrt" -}}
 {{- $version := or .version "0" -}}
-{{- $basename := or .basename (printf "steam-runtime-sdk-chroot-%s_%s_%s" $suite $version $architecture) -}}
+{{- /* More readably: .official ? "" : "unofficial-" */ -}}
+{{- $basename_prefix := or (and (not .official) "unofficial-") ("") -}}
+{{- $basename := or .basename (printf "%ssteam-runtime-sdk-chroot-%s_%s_%s" $basename_prefix $suite $version $architecture) -}}
 {{- $tarball := or .tarball (printf "%s.tar.gz" $basename) -}}
 
 architecture: {{ $architecture }}
