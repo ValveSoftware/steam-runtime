@@ -428,7 +428,7 @@ else:
 	if DIST == 'scout_beta':
 		name = '%s-beta' % name
 	elif DIST != 'scout':
-		name = '%s-%s' % DIST
+		name = '%s-%s' % (name, DIST)
 
 	if args.symbols:
 		name += '-sym'
