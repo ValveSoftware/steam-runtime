@@ -5,7 +5,7 @@ SCRIPTNAME="$(basename "$SCRIPT")"
 SCRIPT_DIR="$(dirname "$SCRIPT")"
 BOOTSTRAP_SCRIPT="$SCRIPT_DIR/scripts/bootstrap-runtime.sh"
 LOGFILE="$(mktemp --tmpdir steam-runtime-setup-chroot-XXX.log)"
-CHROOT_PREFIX="steamrt_scout_"
+CHROOT_PREFIX="steamrt_"
 CHROOT_DIR="/var/chroots"
 BETA_ARG=""
 
@@ -148,15 +148,21 @@ main()
 {
 	# Check if we have any arguments.
 	if [[ $# == 0 ]]; then
-		echo >&2 "Usage: $0 [--beta] [--output-dir <DIRNAME>] --i386 | --amd64"
+		echo >&2 "Usage: $0 [--beta | --suite SUITE] [--output-dir <DIRNAME>] --i386 | --amd64"
 		exit 1
 	fi
 
 	# Beta repo or regular repo?
-	if [[ "$1" == "--beta" ]]; then
+	if [[ "$1" == "--suite" ]]; then
+		BETA_ARG="--suite $2"
+		CHROOT_PREFIX="${CHROOT_PREFIX}${2}_"
+		shift 2
+	elif [[ "$1" == "--beta" ]]; then
 		BETA_ARG="--beta"
-		CHROOT_PREFIX=${CHROOT_PREFIX}beta_
+		CHROOT_PREFIX="${CHROOT_PREFIX}scout_beta_"
 		shift
+	else
+		CHROOT_PREFIX="${CHROOT_PREFIX}scout_"
 	fi
 
 	if [[ "$1" == "--output-dir" ]]; then

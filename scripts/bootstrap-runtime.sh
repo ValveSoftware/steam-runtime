@@ -8,11 +8,11 @@ set -eu
 steamrt_mirror="http://repo.steampowered.com/steamrt"
 ubuntu_mirror="http://us.archive.ubuntu.com/ubuntu"
 
-# bootstrap_container <docker | chroot> [beta]
+# bootstrap_container <docker | chroot> suite
 bootstrap_container()
 {
   local container_type="$1"
-  local beta_arg="$2"
+  local suite="$2"
 
   #  Need to be inside a chroot
   if [[ $container_type = chroot && $(stat -c %d:%i /) != $(stat -c %d:%i /proc/1/root/.) ]]; then
@@ -48,22 +48,11 @@ heredoc
 ) > /etc/apt/sources.list
   fi
 
-  #
-  # steamrt - beta or non-beta repo?
-  #
-  if [[ $beta_arg == "beta" ]]; then
-    (cat << heredoc
-deb ${steamrt_mirror} scout_beta main
-deb-src ${steamrt_mirror} scout_beta main
+  (cat << heredoc
+deb ${steamrt_mirror} ${suite} main
+deb-src ${steamrt_mirror} ${suite} main
 heredoc
 ) > /etc/apt/sources.list.d/steamrt.list
-  else
-    (cat << heredoc
-deb ${steamrt_mirror} scout main
-deb-src ${steamrt_mirror} scout main
-heredoc
-) > /etc/apt/sources.list.d/steamrt.list
-  fi
 
   #
   # Install Valve apt repository key
@@ -203,7 +192,7 @@ heredoc
 # Parse arguments & run
 #
 mode_arg=""
-beta_arg=""
+suite="scout"
 invalid_arg=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -216,7 +205,12 @@ while [[ $# -gt 0 ]]; do
       mode_arg=chroot
       ;;
     "--beta" )
-      beta_arg=beta
+      suite=scout_beta
+      ;;
+    "--suite" )
+      suite="$2"
+      shift 2
+      continue
       ;;
     "--ubuntu-mirror" )
       ubuntu_mirror="$2"
@@ -237,9 +231,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z $invalid_arg && -n $mode_arg && $EUID = 0 ]]; then
-  bootstrap_container "$mode_arg" "$beta_arg"
+  bootstrap_container "$mode_arg" "$suite"
 else
-  echo >&2 "!! Usage: ./bootstrap-runtime.sh { --docker | --chroot } [ --ubuntu-mirror MIRROR ] [ --steamrt-mirror MIRROR ] [ --beta ]"
+  echo >&2 "!! Usage: ./bootstrap-runtime.sh { --docker | --chroot } [ --ubuntu-mirror MIRROR ] [ --steamrt-mirror MIRROR ] [ --beta | --suite SUITE ]"
   echo >&2 "!!"
   echo >&2 "!! This script to be run in a base container/chroot to finish Steam runtime setup"
   exit 1
