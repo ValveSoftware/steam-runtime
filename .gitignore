@@ -31,3 +31,6 @@ newpkg/
 /unofficial-steam-runtime-*.manifest.txt
 /unofficial-steam-runtime-*.sources.txt
 /unofficial-steam-runtime-*.tar.xz
+/unofficial-steam-runtime-sdk-chroot-*.deb822.gz
+/unofficial-steam-runtime-sdk-chroot-*.tar.gz
+/unofficial-steam-runtime-sdk-chroot-*.txt
