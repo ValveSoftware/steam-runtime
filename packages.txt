@@ -61,10 +61,9 @@ gmp		libgmp10 libgmp-dev
 gnutls26	libgnutls26 libgnutls-dev
 gst-plugins-base0.10	libgstreamer-plugins-base0.10-0 libgstreamer-plugins-base0.10-dev
 gstreamer0.10	libgstreamer0.10-0 libgstreamer0.10-dev
-gtk+2.0		libgtk2.0-common libgtk2.0-0 libgtk2.0-dev
+gtk+2.0		libgtk2.0-common libgtk2.0-0 libgtk2.0-dev gtk2-engines-pixbuf
 gtk2-engines	gtk2-engines
 gtk2-engines-murrine	gtk2-engines-murrine
-gtk2-engines-pixbuf	gtk2-engines-pixbuf
 heimdal		libasn1-8-heimdal libgssapi3-heimdal libhcrypto4-heimdal libheimbase1-heimdal libheimntlm0-heimdal libhx509-5-heimdal libkrb5-26-heimdal libroken18-heimdal libwind0-heimdal
 # Replace jack-audio-connection-kit with jackd2
 # jack-audio-connection-kit     libjack0 libjack-dev
