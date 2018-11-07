@@ -31,7 +31,7 @@ if __name__ == '__main__':
                 assert toks[1] == 'install\n', repr(line)
                 source_pkgs.discard(toks[0])
 
-                if line <= last:
+                if last is not None and line <= last:
                     print(
                         'warning: sourcepkgs.list:%d: not in '
                         '`LC_ALL=C sort -u` order near %r'
