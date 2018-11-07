@@ -50,7 +50,8 @@ fltk1.1		libfltk1.1 libfltk1.1-dev
 fontconfig	libfontconfig1 libfontconfig1-dev
 freeglut	freeglut3 freeglut3-dev
 freetype	libfreetype6 libfreetype6-dev
-gcc-4.6		libgcc1 libstdc++6 libstdc++6-4.6-dev libstdc++6-4.6-pic libgomp1 gcc-4.6-base
+gcc-4.6		libstdc++6-4.6-dev libstdc++6-4.6-pic gcc-4.6-base
+gcc-5		libgcc1 libstdc++6 libgomp1 gcc-5-base
 gconf		libgconf-2-4 libgconf2-dev
 gdk-pixbuf	libgdk-pixbuf2.0-0 libgdk-pixbuf2.0-dev
 glew1.6		libglew1.6
