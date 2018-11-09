@@ -754,6 +754,16 @@ if args.archive is not None:
 
 	if archive_dir is not None:
 		print("Copying manifest files to %s..." % archive_dir)
+
+		with open(
+			os.path.join(
+				archive_dir,
+				name_version + '.sources.list'),
+			'w'
+		) as writer:
+			for apt_source in apt_sources:
+				writer.write('%s\n' % apt_source)
+
 		shutil.copy(
 			os.path.join(args.runtime, 'manifest.txt'),
 			os.path.join(
