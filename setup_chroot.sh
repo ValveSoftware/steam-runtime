@@ -144,36 +144,87 @@ function cleanup()
 	tput sgr0
 }
 
-main()
+usage()
 {
-	# Check if we have any arguments.
-	if [[ $# == 0 ]]; then
-		echo >&2 "Usage: $0 [--beta | --suite SUITE] [--output-dir <DIRNAME>] --i386 | --amd64"
-		exit 1
+	if [ "$1" -ne 0 ]; then
+		exec >&2
 	fi
 
-	# Beta repo or regular repo?
-	if [[ "$1" == "--suite" ]]; then
-		BETA_ARG="--suite $2"
-		CHROOT_PREFIX="${CHROOT_PREFIX}${2}_"
-		shift 2
-	elif [[ "$1" == "--beta" ]]; then
-		BETA_ARG="--beta"
-		CHROOT_PREFIX="${CHROOT_PREFIX}scout_beta_"
-		shift
-	else
+	echo "Usage: $0 [--beta | --suite SUITE] [--output-dir <DIRNAME>] --i386 | --amd64"
+	exit $1
+}
+
+main()
+{
+	local getopt_temp
+	getopt_temp="$(getopt -o '' --long \
+	'amd64,beta,i386,output-dir:,suite:,help' \
+	-n "$0" -- "$@")"
+	eval set -- "$getopt_temp"
+	unset getopt_temp
+
+	local -a arch_arguments=()
+	local chroot_prefix_has_suite=""
+
+	while [ "$#" -gt 0 ]; do
+		case "$1" in
+			(--amd64|--i386)
+				arch_arguments+=($1)
+				shift
+				;;
+
+			(--beta)
+				BETA_ARG="--beta"
+				CHROOT_PREFIX="${CHROOT_PREFIX}scout_beta_"
+				chroot_prefix_has_suite=yes
+				shift
+				;;
+
+			(--help)
+				usage 0
+				;;
+
+			(--output-dir)
+				CHROOT_DIR="$2"
+				shift 2
+				;;
+
+			(--suite)
+				BETA_ARG="--suite $2"
+				CHROOT_PREFIX="${CHROOT_PREFIX}${2}_"
+				chroot_prefix_has_suite=yes
+				shift 2
+				;;
+
+			(--)
+				shift
+				break
+				;;
+
+			(-*)
+				usage 2
+				;;
+
+			(*)
+				# no non-option arguments are currently allowed
+				usage 2
+				break
+				;;
+		esac
+	done
+
+	if [ -z "$chroot_prefix_has_suite" ]; then
 		CHROOT_PREFIX="${CHROOT_PREFIX}scout_"
 	fi
 
-	if [[ "$1" == "--output-dir" ]]; then
-		CHROOT_DIR=$2
-		shift;shift
+	if [ -z "${arch_arguments+set}" ]; then
+		usage 2
 	fi
 
 	# Building root(s)
-	prebuild_chroot $@
+	prebuild_chroot "${arch_arguments[@]}"
 	trap cleanup EXIT
-	for var in "$@"; do
+	for var in "${arch_arguments[@]}"; do
 		build_chroot $var
 	done
 	trap - EXIT
