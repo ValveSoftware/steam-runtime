@@ -36,6 +36,11 @@ def str2bool (b):
 	return b.lower() in ("yes", "true", "t", "1")
 
 
+def check_path_traversal(s):
+	if '..' in s or s.startswith('/'):
+		raise ValueError('Path traversal detected in %r' % s)
+
+
 class AptSource:
 	def __init__(
 		self,
@@ -187,6 +192,7 @@ def install_sources(apt_sources, sourcelist):
 			# Download each file
 			#
 			for file in sp.stanza['files']:
+				check_path_traversal(file['name'])
 				file_path = os.path.join(dir, file['name'])
 				file_url = "%s/%s/%s" % (
 					sp.apt_source.url,
@@ -329,6 +335,7 @@ def install_binaries(binaries_by_arch, binarylist, manifest):
 				#
 				# Download the package and install it
 				#
+				check_path_traversal(newest.stanza['Filename'])
 				file_url = "%s/%s" % (
 					newest.apt_source.url,
 					newest.stanza['Filename'],
@@ -365,6 +372,7 @@ def install_binaries(binaries_by_arch, binarylist, manifest):
 
 
 def install_deb (basename, deb, dest_dir):
+	check_path_traversal(basename)
 	installtag_dir=os.path.join(dest_dir, "installed")
 	if not os.access(installtag_dir, os.W_OK):
 		os.makedirs(installtag_dir)
@@ -411,6 +419,7 @@ def install_symbols(dbgsym_by_arch, binarylist, manifest):
 				#
 				# Download the package and install it
 				#
+				check_path_traversal(newest.stanza['Filename'])
 				file_url = "%s/%s" % (
 					newest.apt_source.url,
 					newest.stanza['Filename'],
@@ -479,6 +488,8 @@ def fix_debuglinks ():
 				for line in iter(p.stdout.readline, ""):
 					m = re.search(r'Build ID: (\w{2})(\w+)',line)
 					if m:
+						check_path_traversal(m.group(1))
+						check_path_traversal(m.group(2))
 						linkdir = os.path.join(args.runtime,arch,"usr/lib/debug/.build-id",m.group(1))
 						if not os.access(linkdir, os.W_OK):
 							os.makedirs(linkdir)
