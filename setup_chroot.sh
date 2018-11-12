@@ -7,7 +7,6 @@ BOOTSTRAP_SCRIPT="$SCRIPT_DIR/scripts/bootstrap-runtime.sh"
 LOGFILE="$(mktemp --tmpdir steam-runtime-setup-chroot-XXX.log)"
 CHROOT_PREFIX="steamrt_"
 CHROOT_DIR="/var/chroots"
-BETA_ARG=""
 
 # exit on any script line that fails
 set -o errexit
@@ -67,6 +66,9 @@ prebuild_chroot()
 
 build_chroot()
 {
+	# build_chroot {--amd64 | --i386} [setup options...]
+	# Build a chroot for the specified architecture.
+
 	# Check that we are running in the right environment
 	if [[ ! -x $BOOTSTRAP_SCRIPT ]]; then
 		echo >&2 "!! Required helper script not found: \"$BOOTSTRAP_SCRIPT\""
@@ -86,6 +88,9 @@ build_chroot()
 			exit 1
 			;;
 	esac
+
+	shift
+	# Remaining arguments are for $BOOTSTRAP_SCRIPT
 
 	CHROOT_NAME=${CHROOT_PREFIX}${pkg}
 
@@ -109,7 +114,7 @@ build_chroot()
 	sudo rm -rf "${CHROOT_DIR}/${CHROOT_NAME}/etc/apt/apt.conf"
 	if [ -f /etc/apt/apt.conf ]; then sudo cp "/etc/apt/apt.conf" "${CHROOT_DIR}/${CHROOT_NAME}/etc/apt"; fi  
 
-	echo -e "\n${COLOR_ON}Running ${BOOTSTRAP_SCRIPT} ${BETA_ARG}...${COLOR_OFF}" 
+	echo -e "\n${COLOR_ON}Running ${BOOTSTRAP_SCRIPT}$(printf ' %q' "$@")...${COLOR_OFF}"
 
 	# Touch the logfile first so it has the proper permissions
 	rm -f "${LOGFILE}"
@@ -120,7 +125,7 @@ build_chroot()
 	TMPNAME="${TMPNAME%.*}-$$.sh"
 	cp -f "$BOOTSTRAP_SCRIPT" "/tmp/${TMPNAME}"
 	chmod +x "/tmp/${TMPNAME}"
-	schroot --chroot ${CHROOT_NAME} -d /tmp --user root -- "/tmp/${TMPNAME}" --chroot ${BETA_ARG}
+	schroot --chroot ${CHROOT_NAME} -d /tmp --user root -- "/tmp/${TMPNAME}" --chroot "$@"
 	rm -f "/tmp/${TMPNAME}"
 	cp -f "$SCRIPT_DIR/write-manifest" "/tmp/${TMPNAME}"
 	chmod +x "/tmp/${TMPNAME}"
@@ -164,6 +169,7 @@ main()
 	unset getopt_temp
 
 	local -a arch_arguments=()
+	local -a setup_arguments=()
 	local chroot_prefix_has_suite=""
 
 	while [ "$#" -gt 0 ]; do
@@ -174,7 +180,7 @@ main()
 				;;
 
 			(--beta)
-				BETA_ARG="--beta"
+				setup_arguments+=(--beta)
 				CHROOT_PREFIX="${CHROOT_PREFIX}scout_beta_"
 				chroot_prefix_has_suite=yes
 				shift
@@ -190,7 +196,7 @@ main()
 				;;
 
 			(--suite)
-				BETA_ARG="--suite $2"
+				setup_arguments+=(--suite "$2")
 				CHROOT_PREFIX="${CHROOT_PREFIX}${2}_"
 				chroot_prefix_has_suite=yes
 				shift 2
@@ -225,7 +231,7 @@ main()
 	prebuild_chroot "${arch_arguments[@]}"
 	trap cleanup EXIT
 	for var in "${arch_arguments[@]}"; do
-		build_chroot $var
+		build_chroot "$var" ${setup_arguments+"${setup_arguments[@]}"}
 	done
 	trap - EXIT
 
