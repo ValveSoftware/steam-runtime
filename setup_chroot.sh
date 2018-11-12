@@ -194,6 +194,6 @@ if [[ ! -v SETUP_CHROOT_LOGGING_STARTED ]]; then
 	fi
 fi
 
-main $@
+main "$@"
 
 # vi: ts=4 sw=4 expandtab
