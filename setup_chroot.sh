@@ -155,7 +155,7 @@ usage()
 		exec >&2
 	fi
 
-	echo "Usage: $0 [--beta | --suite SUITE] [--output-dir <DIRNAME>] --i386 | --amd64"
+	echo "Usage: $0 [--beta | --suite SUITE] [--extra-apt-source 'deb http://MIRROR SUITE COMPONENT...'] [--output-dir <DIRNAME>] --i386 | --amd64"
 	exit $1
 }
 
@@ -163,7 +163,7 @@ main()
 {
 	local getopt_temp
 	getopt_temp="$(getopt -o '' --long \
-	'amd64,beta,i386,output-dir:,suite:,help' \
+	'amd64,beta,extra-apt-source:,i386,output-dir:,suite:,help' \
 	-n "$0" -- "$@")"
 	eval set -- "$getopt_temp"
 	unset getopt_temp
@@ -184,6 +184,11 @@ main()
 				CHROOT_PREFIX="${CHROOT_PREFIX}scout_beta_"
 				chroot_prefix_has_suite=yes
 				shift
+				;;
+
+			(--extra-apt-source)
+				setup_arguments+=("$1" "$2")
+				shift 2
 				;;
 
 			(--help)

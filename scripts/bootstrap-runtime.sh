@@ -7,6 +7,7 @@ set -eu
 
 steamrt_mirror="http://repo.steampowered.com/steamrt"
 ubuntu_mirror="http://us.archive.ubuntu.com/ubuntu"
+extra_apt_sources=()
 
 # bootstrap_container <docker | chroot> suite
 bootstrap_container()
@@ -48,11 +49,19 @@ heredoc
 ) > /etc/apt/sources.list
   fi
 
-  (cat << heredoc
+  if ! [ -e /etc/apt/sources.list.d/steamrt.list ]; then
+    (cat << heredoc
 deb ${steamrt_mirror} ${suite} main
 deb-src ${steamrt_mirror} ${suite} main
 heredoc
 ) > /etc/apt/sources.list.d/steamrt.list
+  fi
+
+  if [ -n "${extra_apt_sources+set}" ]; then
+    for line in "${extra_apt_sources[@]}"; do
+      printf '%s\n' "$line"
+    done > /etc/apt/sources.list.d/steamrt-extra.list
+  fi
 
   #
   # Install Valve apt repository key
@@ -194,7 +203,7 @@ usage ()
     exec >&2
   fi
 
-  echo "!! Usage: ./bootstrap-runtime.sh { --docker | --chroot } [ --ubuntu-mirror MIRROR ] [ --steamrt-mirror MIRROR ] [ --beta | --suite SUITE ]"
+  echo "!! Usage: ./bootstrap-runtime.sh { --docker | --chroot } [ --ubuntu-mirror MIRROR ] [ --steamrt-mirror MIRROR ] [ --beta | --suite SUITE ] [--extra-apt-source 'deb http://MIRROR SUITE COMPONENT...']"
   echo "!!"
   echo "!! This script to be run in a base container/chroot to finish Steam runtime setup"
   exit "$1"
@@ -208,7 +217,7 @@ suite="scout"
 invalid_arg=""
 
 getopt_temp="$(getopt -o '' --long \
-  'beta,chroot,docker,help,steamrt-mirror:,suite:,ubuntu-mirror:' \
+  'beta,chroot,docker,extra-apt-source:,help,steamrt-mirror:,suite:,ubuntu-mirror:' \
   -n "$0" -- "$@")"
 eval set -- "$getopt_temp"
 unset getopt_temp
@@ -238,6 +247,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     "--steamrt-mirror" )
       steamrt_mirror="$2"
+      shift 2
+      continue
+      ;;
+    "--extra-apt-source" )
+      extra_apt_sources+=("$2")
       shift 2
       continue
       ;;

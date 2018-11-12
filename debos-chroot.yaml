@@ -5,6 +5,8 @@
 {{- $base_mirror := or .base_mirror "http://archive.ubuntu.com/ubuntu" -}}
 {{- $suite := or .suite "scout_beta" -}}
 {{- $mirror := or .mirror "http://repo.steamstatic.com/steamrt" -}}
+{{- /* Must be relative to the directory of this recipe */ -}}
+{{- $apt_sources_file := or .apt_sources_file "" -}}
 {{- $version := or .version "0" -}}
 {{- /* More readably: .official ? "" : "unofficial-" */ -}}
 {{- $basename_prefix := or (and (not .official) "unofficial-") ("") -}}
@@ -19,6 +21,14 @@ actions:
     keyring-package: ubuntu-keyring
     keyring-file: ubuntu-archive-keyring.gpg
     merged-usr: false
+
+  {{ if $apt_sources_file }}
+  - action: run
+    chroot: false
+    command: |
+      mkdir -p "$ROOTDIR/etc/apt/sources.list.d"
+      cp "$RECIPEDIR/{{ $apt_sources_file }}" "$ROOTDIR/etc/apt/sources.list.d/steamrt.list"
+  {{ end }}
 
   - action: run
     chroot: true
