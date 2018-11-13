@@ -26,10 +26,10 @@
 
 set -e
 set -u
-set -x
 set -o pipefail
 
 me="$(basename "$0")"
+debug=
 
 usage () {
     local status="${1-2}"
@@ -46,7 +46,7 @@ usage () {
 }
 
 getopt_temp="$(getopt -o '' --long \
-    'help' \
+    'help,debug' \
     -n "$me" -- "$@")"
 
 eval set -- "$getopt_temp"
@@ -54,6 +54,11 @@ unset getopt_temp
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
+        (--debug)
+            debug=yes
+            shift
+            ;;
+
         (--help)
             usage 0
             # not reached
@@ -79,6 +84,10 @@ done
 if [ "x$(id -u)" != x0 ] || [ "$#" -ne 1 ]; then
     usage 2
     # not reached
+fi
+
+if [ -n "$debug" ]; then
+    set -x
 fi
 
 sysroot="$1"
