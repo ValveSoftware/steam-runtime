@@ -739,7 +739,7 @@ if args.archive is not None:
 	print("Creating archive %s..." % archive)
 	cmd = [
 		'tar',
-		'cvf', archive,
+		'cf', archive,
 		'--auto-compress',
 		'--owner=nobody',
 		'--group=nogroup',
@@ -747,8 +747,12 @@ if args.archive is not None:
 		# Transform regular archive members, but not symlinks
 		'--transform', 's,^[.]/,steam-runtime/,S',
 		'--show-transformed',
-		'.'
 	]
+
+	if args.verbose:
+		cmd.append('-v')
+
+	cmd.append('.')
 	print(' '.join(cmd))
 	subprocess.check_call(cmd)
 
