@@ -405,29 +405,59 @@ def install_symbols(dbgsym_by_arch, binarylist, manifest):
 			os.makedirs(dir)
 
 		for p, binaries in arch_binaries.items():
-			m = re.match(r'([\w\-\.]+)\-dbgsym', p)
+			if not p.endswith('-dbgsym'):
+				# not a detached debug symbol package
+				continue
 
-			if m and m.group(1) in binarylist:
-				newest = max(
-					binaries,
-					key=lambda b:
-						Version(b.stanza['Version']))
-				manifest[(p, arch)] = newest
+			# If p is libfoo2-dbgsym, then parent_name is libfoo2.
+			parent_name = p[:-len('-dbgsym')]
+			parent = manifest.get((parent_name, arch))
+
+			# We only download detached debug symbols for
+			# packages that we already installed for the
+			# corresponding architecture
+			if parent is not None:
+				# Find a matching version if we can
+				tried = []
+
+				for b in binaries:
+					if b.version == parent.version:
+						dbgsym = b
+						break
+					else:
+						tried.append(b.version)
+				else:
+					# There's no point in installing
+					# detached debug symbols if they don't
+					# match
+					tried.sort()
+					sys.stderr.write(
+						'WARNING: Debug symbol package '
+						'%s not found at version %s '
+						'(available: %s)\n' % (
+							p,
+							parent.version,
+							', '.join(tried),
+						)
+					)
+					continue
+
+				manifest[(p, arch)] = dbgsym
 
 				if args.verbose:
 					print("DOWNLOADING SYMBOLS: %s" % p)
 				#
 				# Download the package and install it
 				#
-				check_path_traversal(newest.stanza['Filename'])
+				check_path_traversal(dbgsym.stanza['Filename'])
 				file_url = "%s/%s" % (
-					newest.apt_source.url,
-					newest.stanza['Filename'],
+					dbgsym.apt_source.url,
+					dbgsym.stanza['Filename'],
 				)
 				dest_deb = os.path.join(
 					dir,
 					os.path.basename(
-						newest.stanza['Filename'])
+						dbgsym.stanza['Filename'])
 				)
 				if not download_file(file_url, dest_deb):
 					if args.verbose:
@@ -437,7 +467,7 @@ def install_symbols(dbgsym_by_arch, binarylist, manifest):
 				install_deb(
 					os.path.splitext(
 						os.path.basename(
-							newest.stanza['Filename'])
+							dbgsym.stanza['Filename'])
 					)[0],
 					dest_deb,
 					os.path.join(args.runtime, arch)
