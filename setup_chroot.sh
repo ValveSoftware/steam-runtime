@@ -7,7 +7,6 @@ BOOTSTRAP_SCRIPT="$SCRIPT_DIR/scripts/bootstrap-runtime.sh"
 LOGFILE="$(mktemp --tmpdir steam-runtime-setup-chroot-XXX.log)"
 CHROOT_PREFIX="steamrt_"
 CHROOT_DIR="/var/chroots"
-BETA_ARG=""
 
 # exit on any script line that fails
 set -o errexit
@@ -67,6 +66,9 @@ prebuild_chroot()
 
 build_chroot()
 {
+	# build_chroot {--amd64 | --i386} [setup options...]
+	# Build a chroot for the specified architecture.
+
 	# Check that we are running in the right environment
 	if [[ ! -x $BOOTSTRAP_SCRIPT ]]; then
 		echo >&2 "!! Required helper script not found: \"$BOOTSTRAP_SCRIPT\""
@@ -86,6 +88,9 @@ build_chroot()
 			exit 1
 			;;
 	esac
+
+	shift
+	# Remaining arguments are for $BOOTSTRAP_SCRIPT
 
 	CHROOT_NAME=${CHROOT_PREFIX}${pkg}
 
@@ -109,7 +114,7 @@ build_chroot()
 	sudo rm -rf "${CHROOT_DIR}/${CHROOT_NAME}/etc/apt/apt.conf"
 	if [ -f /etc/apt/apt.conf ]; then sudo cp "/etc/apt/apt.conf" "${CHROOT_DIR}/${CHROOT_NAME}/etc/apt"; fi  
 
-	echo -e "\n${COLOR_ON}Running ${BOOTSTRAP_SCRIPT} ${BETA_ARG}...${COLOR_OFF}" 
+	echo -e "\n${COLOR_ON}Running ${BOOTSTRAP_SCRIPT}$(printf ' %q' "$@")...${COLOR_OFF}"
 
 	# Touch the logfile first so it has the proper permissions
 	rm -f "${LOGFILE}"
@@ -120,7 +125,7 @@ build_chroot()
 	TMPNAME="${TMPNAME%.*}-$$.sh"
 	cp -f "$BOOTSTRAP_SCRIPT" "/tmp/${TMPNAME}"
 	chmod +x "/tmp/${TMPNAME}"
-	schroot --chroot ${CHROOT_NAME} -d /tmp --user root -- "/tmp/${TMPNAME}" --chroot ${BETA_ARG}
+	schroot --chroot ${CHROOT_NAME} -d /tmp --user root -- "/tmp/${TMPNAME}" --chroot "$@"
 	rm -f "/tmp/${TMPNAME}"
 	cp -f "$SCRIPT_DIR/write-manifest" "/tmp/${TMPNAME}"
 	chmod +x "/tmp/${TMPNAME}"
@@ -144,37 +149,94 @@ function cleanup()
 	tput sgr0
 }
 
-main()
+usage()
 {
-	# Check if we have any arguments.
-	if [[ $# == 0 ]]; then
-		echo >&2 "Usage: $0 [--beta | --suite SUITE] [--output-dir <DIRNAME>] --i386 | --amd64"
-		exit 1
+	if [ "$1" -ne 0 ]; then
+		exec >&2
 	fi
 
-	# Beta repo or regular repo?
-	if [[ "$1" == "--suite" ]]; then
-		BETA_ARG="--suite $2"
-		CHROOT_PREFIX="${CHROOT_PREFIX}${2}_"
-		shift 2
-	elif [[ "$1" == "--beta" ]]; then
-		BETA_ARG="--beta"
-		CHROOT_PREFIX="${CHROOT_PREFIX}scout_beta_"
-		shift
-	else
+	echo "Usage: $0 [--beta | --suite SUITE] [--extra-apt-source 'deb http://MIRROR SUITE COMPONENT...'] [--output-dir <DIRNAME>] --i386 | --amd64"
+	exit $1
+}
+
+main()
+{
+	local getopt_temp
+	getopt_temp="$(getopt -o '' --long \
+	'amd64,beta,extra-apt-source:,i386,output-dir:,suite:,help' \
+	-n "$0" -- "$@")"
+	eval set -- "$getopt_temp"
+	unset getopt_temp
+
+	local -a arch_arguments=()
+	local -a setup_arguments=()
+	local chroot_prefix_has_suite=""
+
+	while [ "$#" -gt 0 ]; do
+		case "$1" in
+			(--amd64|--i386)
+				arch_arguments+=($1)
+				shift
+				;;
+
+			(--beta)
+				setup_arguments+=(--beta)
+				CHROOT_PREFIX="${CHROOT_PREFIX}scout_beta_"
+				chroot_prefix_has_suite=yes
+				shift
+				;;
+
+			(--extra-apt-source)
+				setup_arguments+=("$1" "$2")
+				shift 2
+				;;
+
+			(--help)
+				usage 0
+				;;
+
+			(--output-dir)
+				CHROOT_DIR="$2"
+				shift 2
+				;;
+
+			(--suite)
+				setup_arguments+=(--suite "$2")
+				CHROOT_PREFIX="${CHROOT_PREFIX}${2}_"
+				chroot_prefix_has_suite=yes
+				shift 2
+				;;
+
+			(--)
+				shift
+				break
+				;;
+
+			(-*)
+				usage 2
+				;;
+
+			(*)
+				# no non-option arguments are currently allowed
+				usage 2
+				break
+				;;
+		esac
+	done
+
+	if [ -z "$chroot_prefix_has_suite" ]; then
 		CHROOT_PREFIX="${CHROOT_PREFIX}scout_"
 	fi
 
-	if [[ "$1" == "--output-dir" ]]; then
-		CHROOT_DIR=$2
-		shift;shift
+	if [ -z "${arch_arguments+set}" ]; then
+		usage 2
 	fi
 
 	# Building root(s)
-	prebuild_chroot $@
+	prebuild_chroot "${arch_arguments[@]}"
 	trap cleanup EXIT
-	for var in "$@"; do
-		build_chroot $var
+	for var in "${arch_arguments[@]}"; do
+		build_chroot "$var" ${setup_arguments+"${setup_arguments[@]}"}
 	done
 	trap - EXIT
 
@@ -194,6 +256,6 @@ if [[ ! -v SETUP_CHROOT_LOGGING_STARTED ]]; then
 	fi
 fi
 
-main $@
+main "$@"
 
 # vi: ts=4 sw=4 expandtab

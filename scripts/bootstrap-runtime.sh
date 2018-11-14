@@ -7,6 +7,7 @@ set -eu
 
 steamrt_mirror="http://repo.steampowered.com/steamrt"
 ubuntu_mirror="http://us.archive.ubuntu.com/ubuntu"
+extra_apt_sources=()
 
 # bootstrap_container <docker | chroot> suite
 bootstrap_container()
@@ -48,11 +49,19 @@ heredoc
 ) > /etc/apt/sources.list
   fi
 
-  (cat << heredoc
+  if ! [ -e /etc/apt/sources.list.d/steamrt.list ]; then
+    (cat << heredoc
 deb ${steamrt_mirror} ${suite} main
 deb-src ${steamrt_mirror} ${suite} main
 heredoc
 ) > /etc/apt/sources.list.d/steamrt.list
+  fi
+
+  if [ -n "${extra_apt_sources+set}" ]; then
+    for line in "${extra_apt_sources[@]}"; do
+      printf '%s\n' "$line"
+    done > /etc/apt/sources.list.d/steamrt-extra.list
+  fi
 
   #
   # Install Valve apt repository key
@@ -188,12 +197,31 @@ heredoc
   echo ""
 }
 
+usage ()
+{
+  if [ "$1" -ne 0 ]; then
+    exec >&2
+  fi
+
+  echo "!! Usage: ./bootstrap-runtime.sh { --docker | --chroot } [ --ubuntu-mirror MIRROR ] [ --steamrt-mirror MIRROR ] [ --beta | --suite SUITE ] [--extra-apt-source 'deb http://MIRROR SUITE COMPONENT...']"
+  echo "!!"
+  echo "!! This script to be run in a base container/chroot to finish Steam runtime setup"
+  exit "$1"
+}
+
 #
 # Parse arguments & run
 #
 mode_arg=""
 suite="scout"
 invalid_arg=""
+
+getopt_temp="$(getopt -o '' --long \
+  'beta,chroot,docker,extra-apt-source:,help,steamrt-mirror:,suite:,ubuntu-mirror:' \
+  -n "$0" -- "$@")"
+eval set -- "$getopt_temp"
+unset getopt_temp
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     "--docker" )
@@ -222,6 +250,19 @@ while [[ $# -gt 0 ]]; do
       shift 2
       continue
       ;;
+    "--extra-apt-source" )
+      extra_apt_sources+=("$2")
+      shift 2
+      continue
+      ;;
+    "--help" )
+      usage 0
+      ;;
+    "--" )
+      # getopt adds this as a separator before any positional arguments
+      shift
+      break
+      ;;
     * )
       echo >&2 "!! Unrecognized argument: $1"
       invalid_arg=1
@@ -230,11 +271,13 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+if [[ $# -gt 0 ]]; then
+  echo >&2 "!! Unrecognized argument: $1"
+  invalid_arg=1
+fi
+
 if [[ -z $invalid_arg && -n $mode_arg && $EUID = 0 ]]; then
   bootstrap_container "$mode_arg" "$suite"
 else
-  echo >&2 "!! Usage: ./bootstrap-runtime.sh { --docker | --chroot } [ --ubuntu-mirror MIRROR ] [ --steamrt-mirror MIRROR ] [ --beta | --suite SUITE ]"
-  echo >&2 "!!"
-  echo >&2 "!! This script to be run in a base container/chroot to finish Steam runtime setup"
-  exit 1
+  usage 1
 fi

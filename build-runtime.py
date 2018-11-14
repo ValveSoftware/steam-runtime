@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import time
 from debian import deb822
+from debian.debian_support import Version
 import argparse
 
 try:
@@ -27,16 +28,74 @@ except ImportError:
 destdir="newpkg"
 arches=["amd64", "i386"]
 
-REPO="http://repo.steampowered.com/steamrt"
-DIST="scout"
-COMPONENT="main"
-
 # The top level directory
 top = sys.path[0]
 
 
 def str2bool (b):
 	return b.lower() in ("yes", "true", "t", "1")
+
+
+def check_path_traversal(s):
+	if '..' in s or s.startswith('/'):
+		raise ValueError('Path traversal detected in %r' % s)
+
+
+class AptSource:
+	def __init__(
+		self,
+		kind,
+		url,
+		suite,
+		components=('main',),
+		trusted=False
+	):
+		self.kind = kind
+		self.url = url
+		self.suite = suite
+		self.components = components
+		self.trusted = trusted
+
+	def __str__(self):
+		if self.trusted:
+			maybe_options = ' [trusted=yes]'
+		else:
+			maybe_options = ''
+
+		return '%s%s %s %s %s' % (
+			self.kind,
+			maybe_options,
+			self.url,
+			self.suite,
+			' '.join(self.components),
+		)
+
+	@property
+	def sources_urls(self):
+		if self.kind != 'deb-src':
+			return []
+
+		return [
+			"%s/dists/%s/%s/source/Sources.gz" % (
+				self.url, self.suite, component)
+			for component in self.components
+		]
+
+	def get_packages_urls(self, arch, dbgsym=False):
+		if self.kind != 'deb':
+			return []
+
+		if dbgsym:
+			maybe_debug = 'debug/'
+		else:
+			maybe_debug = ''
+
+		return [
+			"%s/dists/%s/%s/%sbinary-%s/Packages" % (
+				self.url, self.suite, component,
+				maybe_debug, arch)
+			for component in self.components
+		]
 
 
 def parse_args():
@@ -46,12 +105,24 @@ def parse_args():
 		help="specify template files to include in runtime",
 		default=os.path.join(top, "templates"))
 	parser.add_argument("-r", "--runtime", help="specify runtime path", default=os.path.join(top,"runtime"))
-	parser.add_argument("--suite", help="specify apt suite", default=DIST)
+	parser.add_argument("--suite", help="specify apt suite", default='scout')
 	parser.add_argument("-b", "--beta", help="build beta runtime", dest='suite', action="store_const", const='scout_beta')
 	parser.add_argument("-d", "--debug", help="build debug runtime", action="store_true")
 	parser.add_argument("--source", help="include sources", action="store_true")
 	parser.add_argument("--symbols", help="include debugging symbols", action="store_true")
-	parser.add_argument("--repo", help="source repository", default=REPO)
+	parser.add_argument(
+		"--repo", help="main apt repository URL",
+		default="http://repo.steampowered.com/steamrt",
+	)
+	parser.add_argument(
+		"--extra-apt-source", dest='extra_apt_sources',
+		default=[], action='append',
+		help=(
+			"additional apt sources in the form "
+			"'deb http://URL SUITE COMPONENT [COMPONENT...]' "
+			"(may be repeated)"
+		),
+	)
 	parser.add_argument("-v", "--verbose", help="verbose", action="store_true")
 	parser.add_argument("--official", help="mark this as an official runtime", action="store_true")
 	parser.add_argument("--set-name", help="set name for this runtime", default=None)
@@ -76,24 +147,36 @@ def download_file(file_url, file_path):
 	return True
 
 
-def install_sources (sourcelist):
-	#
-	# Load the Sources file so we can find the location of each source package
-	#
-	sources_url = "%s/dists/%s/%s/source/Sources.gz" % (REPO, DIST, COMPONENT)
-	print("Downloading sources from %s" % sources_url)
-	sz = urlopen(sources_url)
-	url_file_handle=BytesIO(sz.read())
-	sources = gzip.GzipFile(fileobj=url_file_handle)
+class SourcePackage:
+	def __init__(self, apt_source, stanza):
+		self.apt_source = apt_source
+		self.stanza = stanza
+
+
+def install_sources(apt_sources, sourcelist):
+	# Load the Sources files so we can find the location of each source package
+	source_packages = []
+
+	for apt_source in apt_sources:
+		for url in apt_source.sources_urls:
+			print("Downloading sources from %s" % url)
+			sz = urlopen(url)
+			url_file_handle=BytesIO(sz.read())
+			sources = gzip.GzipFile(fileobj=url_file_handle)
+			for stanza in deb822.Sources.iter_paragraphs(sources):
+				source_packages.append(
+					SourcePackage(apt_source, stanza))
 
 	skipped = 0
 	unpacked = []
 	manifest_lines = set()
-	#
-	# Walk through the Sources file and process any requested packages
-	#
-	for stanza in deb822.Sources.iter_paragraphs(sources):
-		p = stanza['package']
+
+	# Walk through the Sources file and process any requested packages.
+	# If a particular source package name appears more than once (for
+	# example in scout and also in an overlay suite), we err on the side
+	# of completeness and download all of them.
+	for sp in source_packages:
+		p = sp.stanza['package']
 		if p in sourcelist:
 			if args.verbose:
 				print("DOWNLOADING SOURCE: %s" % p)
@@ -108,9 +191,14 @@ def install_sources (sourcelist):
 			#
 			# Download each file
 			#
-			for file in stanza['files']:
+			for file in sp.stanza['files']:
+				check_path_traversal(file['name'])
 				file_path = os.path.join(dir, file['name'])
-				file_url = "%s/%s/%s" % (REPO, stanza['directory'], file['name'])
+				file_url = "%s/%s/%s" % (
+					sp.apt_source.url,
+					sp.stanza['directory'],
+					file['name']
+				)
 				if not download_file(file_url, file_path):
 					if args.verbose:
 						print("Skipping download of existing deb source file(s): %s" % file_path)
@@ -124,18 +212,21 @@ def install_sources (sourcelist):
 			if os.access(dest_dir, os.W_OK):
 				shutil.rmtree(dest_dir)
 			os.makedirs(dest_dir)
-			dsc_file = os.path.join(dir,stanza['files'][0]['name'])
-			ver = stanza['files'][0]['name'].split('-')[0]
+			dsc_file = os.path.join(
+				dir,
+				sp.stanza['files'][0]['name']
+			)
+			ver = sp.stanza['files'][0]['name'].split('-')[0]
 			process = subprocess.Popen(["dpkg-source", "-x", "--no-copy", dsc_file, os.path.join(dest_dir,ver)], stdout=subprocess.PIPE, universal_newlines=True)
 			for line in iter(process.stdout.readline, ""):
 				if args.verbose or re.match(r'dpkg-source: warning: ',line):
 					print(line, end='')
 
-			unpacked.append((p, stanza['Version'], stanza))
+			unpacked.append((p, sp.stanza['Version'], sp.stanza))
 			manifest_lines.add(
 				'%s\t%s\t%s\n' % (
-					p, stanza['Version'],
-					stanza['files'][0]['name']))
+					p, sp.stanza['Version'],
+					sp.stanza['files'][0]['name']))
 
 	# sources.txt: Tab-separated table of source packages, their
 	# versions, and the corresponding .dsc file.
@@ -167,7 +258,8 @@ def install_sources (sourcelist):
 
 
 class Binary:
-	def __init__(self, stanza):
+	def __init__(self, apt_source, stanza):
+		self.apt_source = apt_source
 		self.stanza = stanza
 		self.name = stanza['Package']
 		self.arch = stanza['Architecture']
@@ -182,10 +274,46 @@ class Binary:
 			self.source_version = self.version
 
 
-def install_binaries (binarylist, manifest):
-	skipped = 0
+def list_binaries(apt_sources, dbgsym=False):
+	by_arch = {}
+
+	if dbgsym:
+		description = 'debug symbols'
+	else:
+		description = 'binaries'
+
 	for arch in arches:
+		by_name = {}
+
+		# Load the Packages files so we can find the location of each
+		# binary package
+		for apt_source in apt_sources:
+			for url in apt_source.get_packages_urls(
+				arch,
+				dbgsym=dbgsym,
+			):
+				print("Downloading %s %s from %s" % (
+					arch, description, url))
+				url_file_handle = BytesIO(urlopen(url).read())
+				for stanza in deb822.Packages.iter_paragraphs(
+					url_file_handle
+				):
+					p = stanza['Package']
+					binary = Binary(apt_source, stanza)
+					by_name.setdefault(p, []).append(
+						binary)
+
+		by_arch[arch] = by_name
+
+	return by_arch
+
+
+def install_binaries(binaries_by_arch, binarylist, manifest):
+	skipped = 0
+
+	for arch, arch_binaries in binaries_by_arch.items():
 		installset = binarylist.copy()
+
 		#
 		# Create the destination directory if necessary
 		#
@@ -193,38 +321,50 @@ def install_binaries (binarylist, manifest):
 		if not os.access(dir, os.W_OK):
 			os.makedirs(dir)
 
-		#
-		# Load the Packages file so we can find the location of each binary package
-		#
-		packages_url = "%s/dists/%s/%s/binary-%s/Packages" % (REPO, DIST, COMPONENT, arch)
-		print("Downloading %s binaries from %s" % (arch, packages_url))
-		url_file_handle = BytesIO(urlopen(packages_url).read())
-		for stanza in deb822.Packages.iter_paragraphs(url_file_handle):
-			p = stanza['Package']
-
+		for p, binaries in arch_binaries.items():
 			if p in installset:
-				manifest.append(Binary(stanza))
 				if args.verbose:
 					print("DOWNLOADING BINARY: %s" % p)
+
+				newest = max(
+					binaries,
+					key=lambda b:
+						Version(b.stanza['Version']))
+				manifest.append(newest)
 
 				#
 				# Download the package and install it
 				#
-				file_url="%s/%s" % (REPO,stanza['Filename'])
-				dest_deb=os.path.join(dir, os.path.basename(stanza['Filename']))
+				check_path_traversal(newest.stanza['Filename'])
+				file_url = "%s/%s" % (
+					newest.apt_source.url,
+					newest.stanza['Filename'],
+				)
+				dest_deb = os.path.join(
+					dir,
+					os.path.basename(newest.stanza['Filename']),
+				)
 				if not download_file(file_url, dest_deb):
 					if args.verbose:
 						print("Skipping download of existing deb: %s" % dest_deb)
 					else:
 						skipped += 1
-				install_deb(os.path.splitext(os.path.basename(stanza['Filename']))[0], dest_deb, os.path.join(args.runtime, arch))
+				install_deb(
+					os.path.splitext(
+						os.path.basename(
+							newest.stanza['Filename']
+						)
+					)[0],
+					dest_deb,
+					os.path.join(args.runtime, arch)
+				)
 				installset.remove(p)
 
 		for p in installset:
 			#
 			# There was a binary package in the list to be installed that is not in the repo
 			#
-			e = "ERROR: Package %s not found in Packages file %s\n" % (p, packages_url)
+			e = "ERROR: Package %s not found in Packages files\n" % p
 			sys.stderr.write(e)
 
 	if skipped > 0:
@@ -232,6 +372,7 @@ def install_binaries (binarylist, manifest):
 
 
 def install_deb (basename, deb, dest_dir):
+	check_path_traversal(basename)
 	installtag_dir=os.path.join(dest_dir, "installed")
 	if not os.access(installtag_dir, os.W_OK):
 		os.makedirs(installtag_dir)
@@ -252,9 +393,9 @@ def install_deb (basename, deb, dest_dir):
 	subprocess.check_call(['dpkg-deb', '-x', deb, dest_dir])
 
 
-def install_symbols (binarylist, manifest):
+def install_symbols(dbgsym_by_arch, binarylist, manifest):
 	skipped = 0
-	for arch in arches:
+	for arch, arch_binaries in dbgsym_by_arch.items():
 
 		#
 		# Create the destination directory if necessary
@@ -263,30 +404,44 @@ def install_symbols (binarylist, manifest):
 		if not os.access(dir, os.W_OK):
 			os.makedirs(dir)
 
-		#
-		# Load the Packages file to find the location of each symbol package
-		#
-		packages_url = "%s/dists/%s/%s/debug/binary-%s/Packages" % (REPO, DIST, COMPONENT, arch)
-		print("Downloading %s symbols from %s" % (arch, packages_url))
-		url_file_handle = BytesIO(urlopen(packages_url).read())
-		for stanza in deb822.Packages.iter_paragraphs(url_file_handle):
-			p = stanza['Package']
+		for p, binaries in arch_binaries.items():
 			m = re.match(r'([\w\-\.]+)\-dbgsym', p)
+
 			if m and m.group(1) in binarylist:
-				manifest.append(Binary(stanza))
+				newest = max(
+					binaries,
+					key=lambda b:
+						Version(b.stanza['Version']))
+				manifest.append(newest)
+
 				if args.verbose:
 					print("DOWNLOADING SYMBOLS: %s" % p)
 				#
 				# Download the package and install it
 				#
-				file_url="%s/%s" % (REPO,stanza['Filename'])
-				dest_deb=os.path.join(dir, os.path.basename(stanza['Filename']))
+				check_path_traversal(newest.stanza['Filename'])
+				file_url = "%s/%s" % (
+					newest.apt_source.url,
+					newest.stanza['Filename'],
+				)
+				dest_deb = os.path.join(
+					dir,
+					os.path.basename(
+						newest.stanza['Filename'])
+				)
 				if not download_file(file_url, dest_deb):
 					if args.verbose:
 						print("Skipping download of existing symbol deb: %s", dest_deb)
 					else:
 						skipped += 1
-				install_deb(os.path.splitext(os.path.basename(stanza['Filename']))[0], dest_deb, os.path.join(args.runtime, arch))
+				install_deb(
+					os.path.splitext(
+						os.path.basename(
+							newest.stanza['Filename'])
+					)[0],
+					dest_deb,
+					os.path.join(args.runtime, arch)
+				)
 
 	if skipped > 0:
 		print("Skipped downloading %i symbol deb(s) that were already present." % skipped)
@@ -333,6 +488,8 @@ def fix_debuglinks ():
 				for line in iter(p.stdout.readline, ""):
 					m = re.search(r'Build ID: (\w{2})(\w+)',line)
 					if m:
+						check_path_traversal(m.group(1))
+						check_path_traversal(m.group(2))
 						linkdir = os.path.join(args.runtime,arch,"usr/lib/debug/.build-id",m.group(1))
 						if not os.access(linkdir, os.W_OK):
 							os.makedirs(linkdir)
@@ -411,11 +568,58 @@ if args.verbose:
 	for property, value in sorted(vars(args).items()):
 		print("\t", property, ": ", value)
 
-REPO=args.repo
-DIST = args.suite
-
 if args.debug:
-	COMPONENT = "debug"
+	component = 'debug'
+else:
+	component = 'main'
+
+apt_sources = [
+	AptSource('deb', args.repo, args.suite, (component,)),
+	AptSource('deb-src', args.repo, args.suite, (component,)),
+]
+
+for line in args.extra_apt_sources:
+	trusted=False
+	tokens = line.split()
+
+	if len(tokens) < 4:
+		raise ValueError(
+			'--extra-apt-source argument must be in the form '
+			'"deb http://URL SUITE COMPONENT [COMPONENT...]"')
+
+	if tokens[0] not in ('deb', 'deb-src', 'both'):
+		raise ValueError(
+			'--extra-apt-source argument must start with '
+			'"deb ", "deb-src " or "both "')
+
+	if tokens[1] == '[trusted=yes]':
+		trusted=True
+		tokens = [tokens[0]] + tokens[2:]
+	elif tokens[1].startswith('['):
+		raise ValueError(
+			'--extra-apt-source does not support [opt=value] '
+			'syntax, except for [trusted=yes]')
+
+	if tokens[0] == 'both':
+		apt_sources.append(
+			AptSource(
+				'deb', tokens[1], tokens[2], tokens[3:],
+				trusted=trusted,
+			)
+		)
+		apt_sources.append(
+			AptSource(
+				'deb-src', tokens[1], tokens[2], tokens[3:],
+				trusted=trusted,
+			)
+		)
+	else:
+		apt_sources.append(
+			AptSource(
+				tokens[0], tokens[1], tokens[2], tokens[3:],
+				trusted=trusted,
+			)
+		)
 
 if args.set_name is not None:
 	name = args.set_name
@@ -425,10 +629,10 @@ else:
 	if not args.official:
 		name = 'unofficial-' + name
 
-	if DIST == 'scout_beta':
+	if apt_sources[0].suite == 'scout_beta':
 		name = '%s-beta' % name
-	elif DIST != 'scout':
-		name = '%s-%s' % (name, DIST)
+	elif apt_sources[0].suite != 'scout':
+		name = '%s-%s' % (name, apt_sources[0].suite)
 
 	if args.symbols:
 		name += '-sym'
@@ -492,13 +696,15 @@ if not args.debug:
 	binary_pkgs -= {x for x in binary_pkgs if re.search('-dbg$|-dev$|-multidev$',x)}
 
 if args.source:
-	install_sources(source_pkgs)
+	install_sources(apt_sources, source_pkgs)
 
 manifest = []
-install_binaries(binary_pkgs, manifest)
+binaries_by_arch = list_binaries(apt_sources)
+install_binaries(binaries_by_arch, binary_pkgs, manifest)
 
 if args.symbols:
-	install_symbols(binary_pkgs, manifest)
+	dbgsym_by_arch = list_binaries(apt_sources)
+	install_symbols(dbgsym_by_arch, binary_pkgs, manifest)
 	fix_debuglinks()
 
 fix_symlinks()
@@ -559,6 +765,16 @@ if args.archive is not None:
 
 	if archive_dir is not None:
 		print("Copying manifest files to %s..." % archive_dir)
+
+		with open(
+			os.path.join(
+				archive_dir,
+				name_version + '.sources.list'),
+			'w'
+		) as writer:
+			for apt_source in apt_sources:
+				writer.write('%s\n' % apt_source)
+
 		shutil.copy(
 			os.path.join(args.runtime, 'manifest.txt'),
 			os.path.join(
