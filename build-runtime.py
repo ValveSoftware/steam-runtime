@@ -294,7 +294,16 @@ def list_binaries(apt_sources, dbgsym=False):
 			):
 				print("Downloading %s %s from %s" % (
 					arch, description, url))
-				url_file_handle = BytesIO(urlopen(url).read())
+
+				try:
+					url_file_handle = BytesIO(urlopen(url).read())
+				except Exception as e:
+					if dbgsym:
+						print(e)
+						continue
+					else:
+						raise
+
 				for stanza in deb822.Packages.iter_paragraphs(
 					url_file_handle
 				):
