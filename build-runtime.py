@@ -703,7 +703,7 @@ binaries_by_arch = list_binaries(apt_sources)
 install_binaries(binaries_by_arch, binary_pkgs, manifest)
 
 if args.symbols:
-	dbgsym_by_arch = list_binaries(apt_sources)
+	dbgsym_by_arch = list_binaries(apt_sources, dbgsym=True)
 	install_symbols(dbgsym_by_arch, binary_pkgs, manifest)
 	fix_debuglinks()
 
