@@ -330,7 +330,7 @@ def install_binaries(binaries_by_arch, binarylist, manifest):
 					binaries,
 					key=lambda b:
 						Version(b.stanza['Version']))
-				manifest.append(newest)
+				manifest[(p, arch)] = newest
 
 				#
 				# Download the package and install it
@@ -405,29 +405,59 @@ def install_symbols(dbgsym_by_arch, binarylist, manifest):
 			os.makedirs(dir)
 
 		for p, binaries in arch_binaries.items():
-			m = re.match(r'([\w\-\.]+)\-dbgsym', p)
+			if not p.endswith('-dbgsym'):
+				# not a detached debug symbol package
+				continue
 
-			if m and m.group(1) in binarylist:
-				newest = max(
-					binaries,
-					key=lambda b:
-						Version(b.stanza['Version']))
-				manifest.append(newest)
+			# If p is libfoo2-dbgsym, then parent_name is libfoo2.
+			parent_name = p[:-len('-dbgsym')]
+			parent = manifest.get((parent_name, arch))
+
+			# We only download detached debug symbols for
+			# packages that we already installed for the
+			# corresponding architecture
+			if parent is not None:
+				# Find a matching version if we can
+				tried = []
+
+				for b in binaries:
+					if b.version == parent.version:
+						dbgsym = b
+						break
+					else:
+						tried.append(b.version)
+				else:
+					# There's no point in installing
+					# detached debug symbols if they don't
+					# match
+					tried.sort()
+					sys.stderr.write(
+						'WARNING: Debug symbol package '
+						'%s not found at version %s '
+						'(available: %s)\n' % (
+							p,
+							parent.version,
+							', '.join(tried),
+						)
+					)
+					continue
+
+				manifest[(p, arch)] = dbgsym
 
 				if args.verbose:
 					print("DOWNLOADING SYMBOLS: %s" % p)
 				#
 				# Download the package and install it
 				#
-				check_path_traversal(newest.stanza['Filename'])
+				check_path_traversal(dbgsym.stanza['Filename'])
 				file_url = "%s/%s" % (
-					newest.apt_source.url,
-					newest.stanza['Filename'],
+					dbgsym.apt_source.url,
+					dbgsym.stanza['Filename'],
 				)
 				dest_deb = os.path.join(
 					dir,
 					os.path.basename(
-						newest.stanza['Filename'])
+						dbgsym.stanza['Filename'])
 				)
 				if not download_file(file_url, dest_deb):
 					if args.verbose:
@@ -437,7 +467,7 @@ def install_symbols(dbgsym_by_arch, binarylist, manifest):
 				install_deb(
 					os.path.splitext(
 						os.path.basename(
-							newest.stanza['Filename'])
+							dbgsym.stanza['Filename'])
 					)[0],
 					dest_deb,
 					os.path.join(args.runtime, arch)
@@ -508,9 +538,7 @@ def write_manifests(manifest):
 	# suitable for later analysis.
 	with open(os.path.join(args.runtime, 'manifest.deb822.gz'), 'wb') as out:
 		with gzip.GzipFile(filename='', fileobj=out, mtime=0) as writer:
-			for binary in sorted(manifest, key=lambda b: b.name + ':' + b.arch):
-				key = (binary.name, binary.arch)
-
+			for key, binary in sorted(manifest.items()):
 				if key in done:
 					continue
 
@@ -524,7 +552,7 @@ def write_manifests(manifest):
 	# a table of tab-separated values.
 	lines = set()
 
-	for binary in manifest:
+	for binary in manifest.values():
 		lines.add('%s:%s\t%s\t%s\t%s\n' % (binary.name, binary.arch, binary.version, binary.stanza.get('Source', binary.name), binary.stanza.get('Installed-Size', '')))
 
 	with open(os.path.join(args.runtime, 'manifest.txt'), 'w') as writer:
@@ -537,7 +565,7 @@ def write_manifests(manifest):
 	# installed binary packages, as a table of tab-separated values.
 	lines = set()
 
-	for binary in manifest:
+	for binary in manifest.values():
 		built_using = binary.stanza.get('Built-Using', '')
 
 		if not built_using:
@@ -698,12 +726,14 @@ if not args.debug:
 if args.source:
 	install_sources(apt_sources, source_pkgs)
 
-manifest = []
+# {('libfoo2', 'amd64'): Binary for libfoo2_1.2-3_amd64}
+manifest = {}
+
 binaries_by_arch = list_binaries(apt_sources)
 install_binaries(binaries_by_arch, binary_pkgs, manifest)
 
 if args.symbols:
-	dbgsym_by_arch = list_binaries(apt_sources)
+	dbgsym_by_arch = list_binaries(apt_sources, dbgsym=True)
 	install_symbols(dbgsym_by_arch, binary_pkgs, manifest)
 	fix_debuglinks()
 
@@ -739,7 +769,7 @@ if args.archive is not None:
 	print("Creating archive %s..." % archive)
 	cmd = [
 		'tar',
-		'cvf', archive,
+		'cf', archive,
 		'--auto-compress',
 		'--owner=nobody',
 		'--group=nogroup',
@@ -747,8 +777,12 @@ if args.archive is not None:
 		# Transform regular archive members, but not symlinks
 		'--transform', 's,^[.]/,steam-runtime/,S',
 		'--show-transformed',
-		'.'
 	]
+
+	if args.verbose:
+		cmd.append('-v')
+
+	cmd.append('.')
 	print(' '.join(cmd))
 	subprocess.check_call(cmd)
 

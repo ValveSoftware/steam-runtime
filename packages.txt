@@ -50,7 +50,8 @@ fltk1.1		libfltk1.1 libfltk1.1-dev
 fontconfig	libfontconfig1 libfontconfig1-dev
 freeglut	freeglut3 freeglut3-dev
 freetype	libfreetype6 libfreetype6-dev
-gcc-4.6		libgcc1 libstdc++6 libstdc++6-4.6-dev libstdc++6-4.6-pic libgomp1 gcc-4.6-base
+gcc-4.6		libstdc++6-4.6-dev libstdc++6-4.6-pic gcc-4.6-base
+gcc-5		libgcc1 libstdc++6 libgomp1 gcc-5-base
 gconf		libgconf-2-4 libgconf2-dev
 gdk-pixbuf	libgdk-pixbuf2.0-0 libgdk-pixbuf2.0-dev
 glew1.6		libglew1.6
@@ -60,10 +61,9 @@ gmp		libgmp10 libgmp-dev
 gnutls26	libgnutls26 libgnutls-dev
 gst-plugins-base0.10	libgstreamer-plugins-base0.10-0 libgstreamer-plugins-base0.10-dev
 gstreamer0.10	libgstreamer0.10-0 libgstreamer0.10-dev
-gtk+2.0		libgtk2.0-common libgtk2.0-0 libgtk2.0-dev
+gtk+2.0		libgtk2.0-common libgtk2.0-0 libgtk2.0-dev gtk2-engines-pixbuf
 gtk2-engines	gtk2-engines
 gtk2-engines-murrine	gtk2-engines-murrine
-gtk2-engines-pixbuf	gtk2-engines-pixbuf
 heimdal		libasn1-8-heimdal libgssapi3-heimdal libhcrypto4-heimdal libheimbase1-heimdal libheimntlm0-heimdal libhx509-5-heimdal libkrb5-26-heimdal libroken18-heimdal libwind0-heimdal
 # Replace jack-audio-connection-kit with jackd2
 # jack-audio-connection-kit     libjack0 libjack-dev
@@ -115,7 +115,7 @@ libvpx		libvpx1 libvpx-dev
 libx11		libx11-6 libx11-dev libx11-xcb1 libx11-xcb-dev libx11-data
 libxau		libxau6 libxau-dev
 libxaw		libxaw7 libxaw7-dev
-libxcb		libxcb-composite0 libxcb-composite0-dev libxcb-damage0 libxcb-damage0-dev libxcb-doc libxcb-dpms0 libxcb-dpms0-dev libxcb-dri2-0 libxcb-dri2-0-dev libxcb-dri3-0 libxcb-dri3-dev libxcb-glx0 libxcb-glx0-dev libxcb-present-dev libxcb-present0 libxcb-randr0 libxcb-randr0-dev libxcb-record0 libxcb-record0-dev libxcb-render0 libxcb-render0-dev libxcb-res0 libxcb-res0-dev libxcb-screensaver0 libxcb-screensaver0-dev libxcb-shape0 libxcb-shape0-dev libxcb-shm0 libxcb-shm0-dev libxcb-sync-dev libxcb-sync1 libxcb-xevie0 libxcb-xevie0-dev libxcb-xf86dri0 libxcb-xf86dri0-dev libxcb-xfixes0 libxcb-xfixes0-dev libxcb-xinerama0 libxcb-xinerama0-dev libxcb-xkb-dev libxcb-xkb1 libxcb-xprint0 libxcb-xprint0-dev libxcb-xtest0 libxcb-xtest0-dev libxcb-xv0 libxcb-xv0-dev libxcb-xvmc0 libxcb-xvmc0-dev libxcb1 libxcb1-dev
+libxcb		libxcb-composite0 libxcb-composite0-dev libxcb-damage0 libxcb-damage0-dev libxcb-dpms0 libxcb-dpms0-dev libxcb-dri2-0 libxcb-dri2-0-dev libxcb-dri3-0 libxcb-dri3-dev libxcb-glx0 libxcb-glx0-dev libxcb-present-dev libxcb-present0 libxcb-randr0 libxcb-randr0-dev libxcb-record0 libxcb-record0-dev libxcb-render0 libxcb-render0-dev libxcb-res0 libxcb-res0-dev libxcb-screensaver0 libxcb-screensaver0-dev libxcb-shape0 libxcb-shape0-dev libxcb-shm0 libxcb-shm0-dev libxcb-sync-dev libxcb-sync1 libxcb-xevie0 libxcb-xevie0-dev libxcb-xf86dri0 libxcb-xf86dri0-dev libxcb-xfixes0 libxcb-xfixes0-dev libxcb-xinerama0 libxcb-xinerama0-dev libxcb-xkb-dev libxcb-xkb1 libxcb-xprint0 libxcb-xprint0-dev libxcb-xtest0 libxcb-xtest0-dev libxcb-xv0 libxcb-xv0-dev libxcb-xvmc0 libxcb-xvmc0-dev libxcb1 libxcb1-dev
 libxcomposite	libxcomposite1 libxcomposite-dev
 libxcursor	libxcursor1 libxcursor-dev
 libxdamage	libxdamage1 libxdamage-dev
