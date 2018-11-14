@@ -330,7 +330,7 @@ def install_binaries(binaries_by_arch, binarylist, manifest):
 					binaries,
 					key=lambda b:
 						Version(b.stanza['Version']))
-				manifest.append(newest)
+				manifest[(p, arch)] = newest
 
 				#
 				# Download the package and install it
@@ -412,7 +412,7 @@ def install_symbols(dbgsym_by_arch, binarylist, manifest):
 					binaries,
 					key=lambda b:
 						Version(b.stanza['Version']))
-				manifest.append(newest)
+				manifest[(p, arch)] = newest
 
 				if args.verbose:
 					print("DOWNLOADING SYMBOLS: %s" % p)
@@ -508,9 +508,7 @@ def write_manifests(manifest):
 	# suitable for later analysis.
 	with open(os.path.join(args.runtime, 'manifest.deb822.gz'), 'wb') as out:
 		with gzip.GzipFile(filename='', fileobj=out, mtime=0) as writer:
-			for binary in sorted(manifest, key=lambda b: b.name + ':' + b.arch):
-				key = (binary.name, binary.arch)
-
+			for key, binary in sorted(manifest.items()):
 				if key in done:
 					continue
 
@@ -524,7 +522,7 @@ def write_manifests(manifest):
 	# a table of tab-separated values.
 	lines = set()
 
-	for binary in manifest:
+	for binary in manifest.values():
 		lines.add('%s:%s\t%s\t%s\t%s\n' % (binary.name, binary.arch, binary.version, binary.stanza.get('Source', binary.name), binary.stanza.get('Installed-Size', '')))
 
 	with open(os.path.join(args.runtime, 'manifest.txt'), 'w') as writer:
@@ -537,7 +535,7 @@ def write_manifests(manifest):
 	# installed binary packages, as a table of tab-separated values.
 	lines = set()
 
-	for binary in manifest:
+	for binary in manifest.values():
 		built_using = binary.stanza.get('Built-Using', '')
 
 		if not built_using:
@@ -698,7 +696,9 @@ if not args.debug:
 if args.source:
 	install_sources(apt_sources, source_pkgs)
 
-manifest = []
+# {('libfoo2', 'amd64'): Binary for libfoo2_1.2-3_amd64}
+manifest = {}
+
 binaries_by_arch = list_binaries(apt_sources)
 install_binaries(binaries_by_arch, binary_pkgs, manifest)
 
