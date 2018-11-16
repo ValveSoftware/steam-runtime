@@ -10,6 +10,8 @@ from __future__ import print_function
 import sys
 
 if __name__ == '__main__':
+    print('1..1')
+
     source_pkgs = set()
     binary_pkgs = set()
     fail = False
@@ -31,24 +33,26 @@ if __name__ == '__main__':
                 assert toks[1] == 'install\n', repr(line)
                 source_pkgs.discard(toks[0])
 
-                if line <= last:
+                if last is not None and line <= last:
                     print(
-                        'warning: sourcepkgs.list:%d: not in '
+                        '# warning: sourcepkgs.list:%d: not in '
                         '`LC_ALL=C sort -u` order near %r'
-                        % (i, line),
-                        file=sys.stderr)
+                        % (i, line))
 
                 last = line
 
     if source_pkgs:
         for p in source_pkgs:
             print(
-                'error: source package %s is listed in packages.txt '
+                '# error: source package %s is listed in packages.txt '
                 'but not in sourcepkgs.list'
-                % p,
-                file=sys.stderr)
+                % p)
             fail = True
 
-    sys.exit(1 if fail else 0)
+    if fail:
+        print('not ok 1')
+        sys.exit(1)
+    else:
+        print('ok 1')
 
 # vi: set sw=4 sts=4 et:
