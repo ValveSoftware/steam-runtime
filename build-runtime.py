@@ -8,6 +8,7 @@ import os
 import re
 import sys
 import gzip
+import hashlib
 import shutil
 import subprocess
 import time
@@ -30,6 +31,10 @@ arches=["amd64", "i386"]
 
 # The top level directory
 top = sys.path[0]
+
+ONE_MEGABYTE = 1024 * 1024
+SPLIT_MEGABYTES = 50
+MIN_PARTS = 3
 
 
 def str2bool (b):
@@ -136,7 +141,16 @@ def parse_args():
 	parser.add_argument(
 		'--strict', action="store_true",
 		help='Exit unsuccessfully when something seems wrong')
-	return parser.parse_args()
+	parser.add_argument(
+		'--split', default=None,
+		help='Also generate an archive split into 50M parts')
+
+	args = parser.parse_args()
+
+	if args.split is not None and args.archive is None:
+		parser.error('--split requires --archive')
+
+	return args
 
 
 def download_file(file_url, file_path):
@@ -802,15 +816,21 @@ if args.archive is not None:
 	subprocess.check_call(cmd)
 
 	print("Creating archive checksum %s.checksum..." % archive)
+	archive_md5 = hashlib.md5()
+
+	with open(archive, 'rb') as archive_reader:
+		while True:
+			blob = archive_reader.read(ONE_MEGABYTE)
+
+			if not blob:
+				break
+
+			archive_md5.update(blob)
+
 	with open(archive + '.checksum', 'w') as writer:
-		subprocess.check_call(
-			[
-				'md5sum',
-				os.path.basename(archive),
-			],
-			cwd=os.path.dirname(archive),
-			stdout=writer,
-		)
+		writer.write('%s  %s\n' % (
+			archive_md5.hexdigest(), os.path.basename(archive)
+		))
 
 	if archive_dir is not None:
 		print("Copying manifest files to %s..." % archive_dir)
@@ -880,5 +900,48 @@ if args.archive is not None:
 		os.symlink(
 			os.path.basename(archive) + '.checksum',
 			symlink + '.checksum')
+
+	if args.split:
+		with open(archive, 'rb') as archive_reader:
+			part = 0
+			position = 0
+			part_writer = open(args.split + ext + '.part0', 'wb')
+
+			while True:
+				blob = archive_reader.read(ONE_MEGABYTE)
+
+				if not blob:
+					break
+
+				if position >= SPLIT_MEGABYTES:
+					part += 1
+					position -= SPLIT_MEGABYTES
+					part_writer.close()
+					part_writer = open(
+						'%s%s.part%d' % (
+							args.split, ext, part
+						),
+						'wb')
+
+				part_writer.write(blob)
+				position += 1
+
+			while part < MIN_PARTS - 1:
+				part += 1
+				part_writer.close()
+				part_writer = open(
+					'%s%s.part%d' % (
+						args.split, ext, part
+					),
+					'wb')
+
+			part_writer.close()
+
+		with open(args.split + '.checksum', 'w') as writer:
+			writer.write('%s  %s%s\n' % (
+				archive_md5.hexdigest(),
+				os.path.basename(args.split),
+				ext,
+			))
 
 # vi: set noexpandtab:
