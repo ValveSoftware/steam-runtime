@@ -8,6 +8,7 @@ import os
 import re
 import sys
 import gzip
+import hashlib
 import shutil
 import subprocess
 import time
@@ -802,15 +803,21 @@ if args.archive is not None:
 	subprocess.check_call(cmd)
 
 	print("Creating archive checksum %s.checksum..." % archive)
+	archive_md5 = hashlib.md5()
+
+	with open(archive, 'rb') as archive_reader:
+		while True:
+			blob = archive_reader.read(ONE_MEGABYTE)
+
+			if not blob:
+				break
+
+			archive_md5.update(blob)
+
 	with open(archive + '.checksum', 'w') as writer:
-		subprocess.check_call(
-			[
-				'md5sum',
-				os.path.basename(archive),
-			],
-			cwd=os.path.dirname(archive),
-			stdout=writer,
-		)
+		writer.write('%s  %s\n' % (
+			archive_md5.hexdigest(), os.path.basename(archive)
+		))
 
 	if archive_dir is not None:
 		print("Copying manifest files to %s..." % archive_dir)
