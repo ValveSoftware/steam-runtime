@@ -133,6 +133,9 @@ def parse_args():
 		"--compression", help="set compression [xz|gx|bz2|none]",
 		choices=('xz', 'gz', 'bz2', 'none'),
 		default='xz')
+	parser.add_argument(
+		'--strict', action="store_true",
+		help='Exit unsuccessfully when something seems wrong')
 	return parser.parse_args()
 
 
@@ -375,6 +378,9 @@ def install_binaries(binaries_by_arch, binarylist, manifest):
 			#
 			e = "ERROR: Package %s not found in Packages files\n" % p
 			sys.stderr.write(e)
+
+		if installset and args.strict:
+			raise SystemExit('Not all binary packages were found')
 
 	if skipped > 0:
 		print("Skipped downloading %i file(s) that were already present." % skipped)
