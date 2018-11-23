@@ -3,6 +3,7 @@
 # Script to build and install packages into the Steam runtime
 
 from __future__ import print_function
+import calendar
 import errno
 import os
 import re
@@ -76,6 +77,10 @@ class AptSource:
 			self.suite,
 			' '.join(self.components),
 		)
+
+	@property
+	def release_url(self):
+		return '%s/dists/%s/Release' % (self.url, self.suite)
 
 	@property
 	def sources_urls(self):
@@ -642,6 +647,10 @@ def normalize_tar_entry(entry):
 
 	entry.uid = 65534
 	entry.gid = 65534
+
+	if entry.mtime > reference_timestamp:
+		entry.mtime = reference_timestamp
+
 	entry.uname = 'nobody'
 	entry.gname = 'nogroup'
 
@@ -708,6 +717,21 @@ for line in args.extra_apt_sources:
 				trusted=trusted,
 			)
 		)
+
+timestamps = {}
+
+for source in apt_sources:
+	with closing(urlopen(source.release_url)) as release_file:
+		release_info = deb822.Deb822(release_file)
+		timestamps[source] = calendar.timegm(time.strptime(
+			release_info['date'],
+			'%a, %d %b %Y %H:%M:%S %Z',
+		))
+
+if 'SOURCE_DATE_EPOCH' in os.environ:
+	reference_timestamp = int(os.environ['SOURCE_DATE_EPOCH'])
+else:
+	reference_timestamp = max(timestamps.values())
 
 if args.set_name is not None:
 	name = args.set_name
@@ -898,6 +922,14 @@ if args.archive is not None:
 			'w'
 		) as writer:
 			for apt_source in apt_sources:
+				writer.write(
+					time.strftime(
+						'# as of %Y-%m-%d %H:%M:%S\n',
+						time.gmtime(
+							timestamps[apt_source]
+						)
+					)
+				)
 				writer.write('%s\n' % apt_source)
 
 		shutil.copy(
