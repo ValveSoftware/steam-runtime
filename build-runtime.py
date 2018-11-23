@@ -337,7 +337,7 @@ def list_binaries(apt_sources, dbgsym=False):
 def install_binaries(binaries_by_arch, binarylist, manifest):
 	skipped = 0
 
-	for arch, arch_binaries in binaries_by_arch.items():
+	for arch, arch_binaries in sorted(binaries_by_arch.items()):
 		installset = binarylist.copy()
 
 		#
@@ -347,7 +347,7 @@ def install_binaries(binaries_by_arch, binarylist, manifest):
 		if not os.access(dir, os.W_OK):
 			os.makedirs(dir)
 
-		for p, binaries in arch_binaries.items():
+		for p, binaries in sorted(arch_binaries.items()):
 			if p in installset:
 				if args.verbose:
 					print("DOWNLOADING BINARY: %s" % p)
@@ -424,7 +424,7 @@ def install_deb (basename, deb, dest_dir):
 
 def install_symbols(dbgsym_by_arch, binarylist, manifest):
 	skipped = 0
-	for arch, arch_binaries in dbgsym_by_arch.items():
+	for arch, arch_binaries in sorted(dbgsym_by_arch.items()):
 
 		#
 		# Create the destination directory if necessary
@@ -433,7 +433,7 @@ def install_symbols(dbgsym_by_arch, binarylist, manifest):
 		if not os.access(dir, os.W_OK):
 			os.makedirs(dir)
 
-		for p, binaries in arch_binaries.items():
+		for p, binaries in sorted(arch_binaries.items()):
 			if not p.endswith('-dbgsym'):
 				# not a detached debug symbol package
 				continue
