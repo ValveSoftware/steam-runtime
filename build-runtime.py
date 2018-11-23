@@ -11,7 +11,9 @@ import gzip
 import hashlib
 import shutil
 import subprocess
+import tarfile
 import time
+from contextlib import closing, contextmanager
 from debian import deb822
 from debian.debian_support import Version
 import argparse
@@ -617,6 +619,35 @@ def write_manifests(manifest):
 			writer.write(line)
 
 
+@contextmanager
+def waiting(popen):
+	"""
+	Context manager to wait for a subprocess.Popen object to finish,
+	similar to contextlib.closing().
+
+	Popen objects are context managers themselves, but only in
+	Python 3.2 or later.
+	"""
+	try:
+		yield popen
+	finally:
+		popen.stdin.close()
+		popen.wait()
+
+
+def normalize_tar_entry(entry):
+	# type: (TarInfo) -> TarInfo
+	if args.verbose:
+		print(entry.name)
+
+	entry.uid = 65534
+	entry.gid = 65534
+	entry.uname = 'nobody'
+	entry.gname = 'nogroup'
+
+	return entry
+
+
 # Create files u=rwX,go=rX by default
 os.umask(0o022)
 
@@ -796,24 +827,49 @@ if args.archive is not None:
 		archive_dir = None
 
 	print("Creating archive %s..." % archive)
-	cmd = [
-		'tar',
-		'cf', archive,
-		'--auto-compress',
-		'--owner=nobody',
-		'--group=nogroup',
-		'-C', args.runtime,
-		# Transform regular archive members, but not symlinks
-		'--transform', 's,^[.]/,steam-runtime/,S',
-		'--show-transformed',
-	]
 
-	if args.verbose:
-		cmd.append('-v')
+	with open(archive, 'wb') as archive_writer, waiting(subprocess.Popen(
+		['xz', '-v'],
+		stdin=subprocess.PIPE,
+		stdout=archive_writer,
+	)) as xz, closing(tarfile.open(
+		archive,
+		mode='w|',
+		format=tarfile.GNU_FORMAT,
+		fileobj=xz.stdin,
+	)) as archiver:
+		members = []
 
-	cmd.append('.')
-	print(' '.join(cmd))
-	subprocess.check_call(cmd)
+		for dir_path, dirs, files in os.walk(
+			args.runtime,
+			topdown=True,
+			followlinks=False,
+		):
+			rel_dir_path = os.path.relpath(
+				dir_path, args.runtime)
+
+			if not rel_dir_path.startswith('./'):
+				rel_dir_path = './' + rel_dir_path
+
+			for member in dirs:
+				members.append(
+					os.path.join(rel_dir_path, member))
+
+			for member in files:
+				members.append(
+					os.path.join(rel_dir_path, member))
+
+		for member in sorted(members):
+			archiver.add(
+				os.path.join(args.runtime, member),
+				arcname=os.path.normpath(
+					os.path.join(
+						'steam-runtime',
+						member,
+					)),
+				recursive=False,
+				filter=normalize_tar_entry,
+			)
 
 	print("Creating archive checksum %s.checksum..." % archive)
 	archive_md5 = hashlib.md5()
