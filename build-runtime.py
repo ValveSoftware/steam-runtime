@@ -3,6 +3,7 @@
 # Script to build and install packages into the Steam runtime
 
 from __future__ import print_function
+import calendar
 import errno
 import os
 import re
@@ -11,7 +12,9 @@ import gzip
 import hashlib
 import shutil
 import subprocess
+import tarfile
 import time
+from contextlib import closing, contextmanager
 from debian import deb822
 from debian.debian_support import Version
 import argparse
@@ -74,6 +77,10 @@ class AptSource:
 			self.suite,
 			' '.join(self.components),
 		)
+
+	@property
+	def release_url(self):
+		return '%s/dists/%s/Release' % (self.url, self.suite)
 
 	@property
 	def sources_urls(self):
@@ -337,7 +344,7 @@ def list_binaries(apt_sources, dbgsym=False):
 def install_binaries(binaries_by_arch, binarylist, manifest):
 	skipped = 0
 
-	for arch, arch_binaries in binaries_by_arch.items():
+	for arch, arch_binaries in sorted(binaries_by_arch.items()):
 		installset = binarylist.copy()
 
 		#
@@ -347,7 +354,7 @@ def install_binaries(binaries_by_arch, binarylist, manifest):
 		if not os.access(dir, os.W_OK):
 			os.makedirs(dir)
 
-		for p, binaries in arch_binaries.items():
+		for p, binaries in sorted(arch_binaries.items()):
 			if p in installset:
 				if args.verbose:
 					print("DOWNLOADING BINARY: %s" % p)
@@ -424,7 +431,7 @@ def install_deb (basename, deb, dest_dir):
 
 def install_symbols(dbgsym_by_arch, binarylist, manifest):
 	skipped = 0
-	for arch, arch_binaries in dbgsym_by_arch.items():
+	for arch, arch_binaries in sorted(dbgsym_by_arch.items()):
 
 		#
 		# Create the destination directory if necessary
@@ -433,7 +440,7 @@ def install_symbols(dbgsym_by_arch, binarylist, manifest):
 		if not os.access(dir, os.W_OK):
 			os.makedirs(dir)
 
-		for p, binaries in arch_binaries.items():
+		for p, binaries in sorted(arch_binaries.items()):
 			if not p.endswith('-dbgsym'):
 				# not a detached debug symbol package
 				continue
@@ -617,6 +624,39 @@ def write_manifests(manifest):
 			writer.write(line)
 
 
+@contextmanager
+def waiting(popen):
+	"""
+	Context manager to wait for a subprocess.Popen object to finish,
+	similar to contextlib.closing().
+
+	Popen objects are context managers themselves, but only in
+	Python 3.2 or later.
+	"""
+	try:
+		yield popen
+	finally:
+		popen.stdin.close()
+		popen.wait()
+
+
+def normalize_tar_entry(entry):
+	# type: (TarInfo) -> TarInfo
+	if args.verbose:
+		print(entry.name)
+
+	entry.uid = 65534
+	entry.gid = 65534
+
+	if entry.mtime > reference_timestamp:
+		entry.mtime = reference_timestamp
+
+	entry.uname = 'nobody'
+	entry.gname = 'nogroup'
+
+	return entry
+
+
 # Create files u=rwX,go=rX by default
 os.umask(0o022)
 
@@ -677,6 +717,21 @@ for line in args.extra_apt_sources:
 				trusted=trusted,
 			)
 		)
+
+timestamps = {}
+
+for source in apt_sources:
+	with closing(urlopen(source.release_url)) as release_file:
+		release_info = deb822.Deb822(release_file)
+		timestamps[source] = calendar.timegm(time.strptime(
+			release_info['date'],
+			'%a, %d %b %Y %H:%M:%S %Z',
+		))
+
+if 'SOURCE_DATE_EPOCH' in os.environ:
+	reference_timestamp = int(os.environ['SOURCE_DATE_EPOCH'])
+else:
+	reference_timestamp = max(timestamps.values())
 
 if args.set_name is not None:
 	name = args.set_name
@@ -796,24 +851,49 @@ if args.archive is not None:
 		archive_dir = None
 
 	print("Creating archive %s..." % archive)
-	cmd = [
-		'tar',
-		'cf', archive,
-		'--auto-compress',
-		'--owner=nobody',
-		'--group=nogroup',
-		'-C', args.runtime,
-		# Transform regular archive members, but not symlinks
-		'--transform', 's,^[.]/,steam-runtime/,S',
-		'--show-transformed',
-	]
 
-	if args.verbose:
-		cmd.append('-v')
+	with open(archive, 'wb') as archive_writer, waiting(subprocess.Popen(
+		['xz', '-v'],
+		stdin=subprocess.PIPE,
+		stdout=archive_writer,
+	)) as xz, closing(tarfile.open(
+		archive,
+		mode='w|',
+		format=tarfile.GNU_FORMAT,
+		fileobj=xz.stdin,
+	)) as archiver:
+		members = []
 
-	cmd.append('.')
-	print(' '.join(cmd))
-	subprocess.check_call(cmd)
+		for dir_path, dirs, files in os.walk(
+			args.runtime,
+			topdown=True,
+			followlinks=False,
+		):
+			rel_dir_path = os.path.relpath(
+				dir_path, args.runtime)
+
+			if not rel_dir_path.startswith('./'):
+				rel_dir_path = './' + rel_dir_path
+
+			for member in dirs:
+				members.append(
+					os.path.join(rel_dir_path, member))
+
+			for member in files:
+				members.append(
+					os.path.join(rel_dir_path, member))
+
+		for member in sorted(members):
+			archiver.add(
+				os.path.join(args.runtime, member),
+				arcname=os.path.normpath(
+					os.path.join(
+						'steam-runtime',
+						member,
+					)),
+				recursive=False,
+				filter=normalize_tar_entry,
+			)
 
 	print("Creating archive checksum %s.checksum..." % archive)
 	archive_md5 = hashlib.md5()
@@ -842,6 +922,14 @@ if args.archive is not None:
 			'w'
 		) as writer:
 			for apt_source in apt_sources:
+				writer.write(
+					time.strftime(
+						'# as of %Y-%m-%d %H:%M:%S\n',
+						time.gmtime(
+							timestamps[apt_source]
+						)
+					)
+				)
 				writer.write('%s\n' % apt_source)
 
 		shutil.copy(
