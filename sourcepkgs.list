@@ -133,6 +133,7 @@ mawk install
 mesa install
 mpclib3 install
 mpfr4 install
+mpg123 install
 ncurses install
 network-manager install
 nspr install
@@ -141,6 +142,8 @@ nvidia-cg-toolkit install
 openal-soft install
 openldap install
 openssl install
+opus install
+opusfile install
 orc install
 p11-kit install
 pam install
