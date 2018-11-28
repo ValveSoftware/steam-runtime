@@ -29,21 +29,35 @@ Testing or shipping with the runtime
 
 Steam ships with a copy of the Steam Runtime and all Steam Applications are launched within the runtime environment. For some scenarios, you may want to test an application with a different build of the runtime. You can use the **build-runtime.py** script to download various flavors of the runtime.
 
-    usage: build-runtime.py [-h] [-r RUNTIME] [-b] [-d] [--source] [--symbols]
-                            [--repo REPO] [-v]
-    
-    optional arguments:
-      -h, --help            show this help message and exit
-      -r RUNTIME, --runtime RUNTIME
-                            specify runtime path
-      -b, --beta            build beta runtime
-      -d, --debug           build debug runtime
-      --source              include sources
-      --symbols             include debugging symbols
-      --repo REPO           source repository
-      -v, --verbose         verbose
-    
-Once the runtime is downloaded, you can use the **run.sh** script to launch any program within that runtime environment. 
+To get a Steam Runtime in a directory, run a command like:
+
+    ./build-runtime.py --output=$(pwd)/runtime
+
+The resulting directory is similar to the `ubuntu12_32/steam-runtime`
+directory in a Steam installation.
+
+To get a Steam Runtime in a compressed tar archive for easy transfer to
+other systems, similar to the official runtime deployed with the
+Steam client, use a command like:
+
+    ./build-runtime.py --archive=$(pwd)/steam-runtime.tar.xz
+
+or to output a tarball and metadata files with automatically-generated
+names in a directory, specify the name of an existing directory, or a
+directory to be created with a `/` suffix:
+
+    ./build-runtime.py --archive=$(pwd)/archives/
+
+The archive will unpack into a directory named `steam-runtime`.
+
+The `--archive` and `--output` options can be combined, but at least one
+is required.
+
+Run `./build-runtime.py --help` for more options.
+
+Once the runtime is downloaded (and unpacked into a directory, if you used
+an archive), you can use the **run.sh** script to launch any program
+within that runtime environment.
 
 To launch Steam itself (and any Steam applications) within your runtime, set the STEAM_RUNTIME environment variable to point to your runtime directory;
 
