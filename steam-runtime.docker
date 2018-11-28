@@ -1,0 +1,87 @@
+# Arguments:
+# beta             - set to select beta runtime (docker build --build-arg=beta=1 ...)
+# arch             - set to select runtime architecture (docker build --build-arg=arch=i386 ...)
+#                    Must have associated cloud iamge in build directory, default amd64
+# extra_bootstrap  - Extra script file to include out of scripts/ and execute to bootstrap the container (out of /root).
+#                    e.g. --build-arg=extra_bootstrap=bootstrap-custom.sh
+# proxy            - optional argument for http/https proxy
+FROM scratch
+ARG arch=amd64
+ARG beta
+ARG arch
+ARG extra_bootstrap
+ARG proxy
+
+##
+## Docker setup, based on upsteam docker image's precise tweaks,
+## see  https://github.com/tianon/docker-brew-ubuntu-core
+## also https://github.com/docker/docker/blob/9a9fc01af8fb5d98b8eec0740716226fadb3735c/contrib/mkimage/debootstrap
+##
+ADD ubuntu-precise-core-cloudimg-${arch}-root.tar.gz /
+
+RUN [ "x${proxy}" = "x" ] || ( \
+    echo "configure proxy" \
+    && echo export http_proxy=${proxy} >> /etc/bash.bashrc \
+    && echo export https_proxy=${proxy} >> /etc/bash.bashrc \
+    && echo export ftp_proxy=${proxy} >> /etc/bash.bashrc \
+    && echo Acquire::http::proxy \"${proxy}\"\; > /etc/apt/apt.conf.d/01proxy \
+    && echo Acquire::https::proxy \"${proxy}\"\; >> /etc/apt/apt.conf.d/01proxy \
+    )
+
+RUN set -xe \
+	\
+# https://github.com/docker/docker/blob/9a9fc01af8fb5d98b8eec0740716226fadb3735c/contrib/mkimage/debootstrap#L40-L48
+	&& echo '#!/bin/sh' > /usr/sbin/policy-rc.d \
+	&& echo 'exit 101' >> /usr/sbin/policy-rc.d \
+	&& chmod +x /usr/sbin/policy-rc.d \
+	\
+# https://github.com/docker/docker/blob/9a9fc01af8fb5d98b8eec0740716226fadb3735c/contrib/mkimage/debootstrap#L54-L56
+	&& dpkg-divert --local --rename --add /sbin/initctl \
+	&& cp -a /usr/sbin/policy-rc.d /sbin/initctl \
+	&& sed -i 's/^exit.*/exit 0/' /sbin/initctl \
+	\
+# https://github.com/docker/docker/blob/9a9fc01af8fb5d98b8eec0740716226fadb3735c/contrib/mkimage/debootstrap#L71-L78
+	&& echo 'force-unsafe-io' > /etc/dpkg/dpkg.cfg.d/docker-apt-speedup \
+	\
+# https://github.com/docker/docker/blob/9a9fc01af8fb5d98b8eec0740716226fadb3735c/contrib/mkimage/debootstrap#L85-L105
+	&& echo 'DPkg::Post-Invoke { "rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin || true"; };' > /etc/apt/apt.conf.d/docker-clean \
+	&& echo 'APT::Update::Post-Invoke { "rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin || true"; };' >> /etc/apt/apt.conf.d/docker-clean \
+	&& echo 'Dir::Cache::pkgcache ""; Dir::Cache::srcpkgcache "";' >> /etc/apt/apt.conf.d/docker-clean \
+	\
+# https://github.com/docker/docker/blob/9a9fc01af8fb5d98b8eec0740716226fadb3735c/contrib/mkimage/debootstrap#L109-L115
+	&& echo 'Acquire::Languages "none";' > /etc/apt/apt.conf.d/docker-no-languages \
+	\
+# https://github.com/docker/docker/blob/9a9fc01af8fb5d98b8eec0740716226fadb3735c/contrib/mkimage/debootstrap#L118-L130
+	&& echo 'Acquire::GzipIndexes "true"; Acquire::CompressionTypes::Order:: "gz";' > /etc/apt/apt.conf.d/docker-gzip-indexes \
+	\
+# https://github.com/docker/docker/blob/9a9fc01af8fb5d98b8eec0740716226fadb3735c/contrib/mkimage/debootstrap#L134-L151
+	&& echo 'Apt::AutoRemove::SuggestsImportant "false";' > /etc/apt/apt.conf.d/docker-autoremove-suggests
+
+# enable the universe
+RUN sed -i 's/^#\s*\(deb.*universe\)$/\1/g' /etc/apt/sources.list
+
+# make systemd-detect-virt return "docker"
+# See: https://github.com/systemd/systemd/blob/aa0c34279ee40bce2f9681b496922dedbadfca19/src/basic/virt.c#L434
+RUN mkdir -p /run/systemd && echo 'docker' > /run/systemd/container
+
+# Allow resolvconf to be installed without error
+RUN apt-get -y install debconf-utils \
+	&& echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-selections \
+	&& apt-get -y install resolvconf
+
+# Prevent failure during installation of 'time'
+RUN apt-get -y install install-info
+
+##
+## Steam Runtime specific setup
+##
+
+COPY scripts/bootstrap-runtime.sh /root/
+RUN /root/bootstrap-runtime.sh --docker ${beta:+--beta}
+
+# The default-value expansion means we'll copy bootstrap-runtime.sh over twice if extra_bootstrap isn't set, which is a
+# silly way to conditionally copy a second file.
+COPY ${extra_bootstrap:-scripts/bootstrap-runtime.sh} /root/bootstrap-extra.sh
+RUN [ "x${extra_bootstrap}" = 'x' ] || "/root/bootstrap-extra.sh"
+
+CMD [ "/bin/bash", "--login" ]

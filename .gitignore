@@ -17,6 +17,7 @@ merge_hg_to_runtime.sh
 x-tools
 tmp/
 newpkg/
+/ubuntu-precise-core-cloudimg-*
 /steam-runtime-*.built-using.txt
 /steam-runtime-*.deb822.gz
 /steam-runtime-*.manifest.txt
