@@ -13,6 +13,7 @@ import hashlib
 import shutil
 import subprocess
 import tarfile
+import tempfile
 import time
 from contextlib import closing, contextmanager
 from debian import deb822
@@ -116,7 +117,9 @@ def parse_args():
 		"--templates",
 		help="specify template files to include in runtime",
 		default=os.path.join(top, "templates"))
-	parser.add_argument("-r", "--runtime", help="specify runtime path", default=os.path.join(top,"runtime"))
+	parser.add_argument(
+		"-o", "--output", default=None,
+		help="specify output directory [default: delete after archiving]")
 	parser.add_argument("--suite", help="specify apt suite", default='scout')
 	parser.add_argument("-b", "--beta", help="build beta runtime", dest='suite', action="store_const", const='scout_beta')
 	parser.add_argument("-d", "--debug", help="build debug runtime", action="store_true")
@@ -154,6 +157,10 @@ def parse_args():
 
 	args = parser.parse_args()
 
+	if args.output is None and args.archive is None:
+		parser.error(
+			'At least one of --output and --archive is required')
+
 	if args.split is not None and args.archive is None:
 		parser.error('--split requires --archive')
 
@@ -163,10 +170,13 @@ def parse_args():
 			% args.templates)
 
 	# os.path.exists is false for dangling symlinks, so check for both
-	if os.path.exists(args.runtime) or os.path.islink(args.runtime):
+	if args.output is not None and (
+		os.path.exists(args.output)
+		or os.path.islink(args.output)
+	):
 		parser.error(
-			'Argument to --runtime, %r, must not already exist'
-			% args.runtime)
+			'Argument to --output, %r, must not already exist'
+			% args.output)
 
 	return args
 
@@ -241,9 +251,9 @@ def install_sources(apt_sources, sourcelist):
 						skipped += 1
 
 			#
-			# Unpack the source package into the runtime directory
+			# Unpack the source package into the output directory
 			#
-			dest_dir=os.path.join(args.runtime,"source",p)
+			dest_dir = os.path.join(args.output, "source", p)
 			if os.access(dest_dir, os.W_OK):
 				shutil.rmtree(dest_dir)
 			os.makedirs(dest_dir)
@@ -265,7 +275,7 @@ def install_sources(apt_sources, sourcelist):
 
 	# sources.txt: Tab-separated table of source packages, their
 	# versions, and the corresponding .dsc file.
-	with open(os.path.join(args.runtime, 'source', 'sources.txt'), 'w') as writer:
+	with open(os.path.join(args.output, 'source', 'sources.txt'), 'w') as writer:
 		writer.write('#Source\t#Version\t#dsc\n')
 
 		for line in sorted(manifest_lines):
@@ -274,7 +284,7 @@ def install_sources(apt_sources, sourcelist):
 	# sources.deb822.gz: The full Sources stanza for each included source
 	# package, suitable for later analysis.
 	with open(
-		os.path.join(args.runtime, 'source', 'sources.deb822.gz'), 'wb'
+		os.path.join(args.output, 'source', 'sources.deb822.gz'), 'wb'
 	) as gz_writer:
 		with gzip.GzipFile(
 			filename='', fileobj=gz_writer, mtime=0
@@ -400,7 +410,7 @@ def install_binaries(binaries_by_arch, binarylist, manifest):
 						)
 					)[0],
 					dest_deb,
-					os.path.join(args.runtime, arch)
+					os.path.join(args.output, arch)
 				)
 				installset.remove(p)
 
@@ -517,19 +527,19 @@ def install_symbols(dbgsym_by_arch, binarylist, manifest):
 							dbgsym.stanza['Filename'])
 					)[0],
 					dest_deb,
-					os.path.join(args.runtime, arch)
+					os.path.join(args.output, arch)
 				)
 
 	if skipped > 0:
 		print("Skipped downloading %i symbol deb(s) that were already present." % skipped)
 
 
-# Walks through the files in the runtime directory and converts any absolute symlinks
+# Walks through the files in the output directory and converts any absolute symlinks
 # to their relative equivalent
 #
 def fix_symlinks ():
 	for arch in arches:
-		for dir, subdirs, files in os.walk(os.path.join(args.runtime,arch)):
+		for dir, subdirs, files in os.walk(os.path.join(args.output, arch)):
 			for name in files:
 				filepath=os.path.join(dir,name)
 				if os.path.islink(filepath):
@@ -538,7 +548,7 @@ def fix_symlinks ():
 						#
 						# compute the target of the symlink based on the 'root' of the architecture's runtime
 						#
-						target2 = os.path.join(args.runtime,arch,target[1:])
+						target2 = os.path.join(args.output, arch, target[1:])
 
 						#
 						# Set the new relative target path
@@ -552,7 +562,7 @@ def fix_symlinks ():
 #
 def fix_debuglinks ():
 	for arch in arches:
-		for dir, subdirs, files in os.walk(os.path.join(args.runtime,arch,"usr/lib/debug")):
+		for dir, subdirs, files in os.walk(os.path.join(args.output, arch, "usr/lib/debug")):
 			if ".build-id" in subdirs:
 				subdirs.remove(".build-id")		# don't recurse into .build-id directory we are creating
 
@@ -567,7 +577,7 @@ def fix_debuglinks ():
 					if m:
 						check_path_traversal(m.group(1))
 						check_path_traversal(m.group(2))
-						linkdir = os.path.join(args.runtime,arch,"usr/lib/debug/.build-id",m.group(1))
+						linkdir = os.path.join(args.output, arch, "usr/lib/debug/.build-id", m.group(1))
 						if not os.access(linkdir, os.W_OK):
 							os.makedirs(linkdir)
 						link = os.path.join(linkdir,m.group(2))
@@ -583,7 +593,7 @@ def write_manifests(manifest):
 
 	# manifest.deb822: The full Packages stanza for each installed package,
 	# suitable for later analysis.
-	with open(os.path.join(args.runtime, 'manifest.deb822.gz'), 'wb') as out:
+	with open(os.path.join(args.output, 'manifest.deb822.gz'), 'wb') as out:
 		with gzip.GzipFile(filename='', fileobj=out, mtime=0) as writer:
 			for key, binary in sorted(manifest.items()):
 				if key in done:
@@ -602,7 +612,7 @@ def write_manifests(manifest):
 	for binary in manifest.values():
 		lines.add('%s:%s\t%s\t%s\t%s\n' % (binary.name, binary.arch, binary.version, binary.stanza.get('Source', binary.name), binary.stanza.get('Installed-Size', '')))
 
-	with open(os.path.join(args.runtime, 'manifest.txt'), 'w') as writer:
+	with open(os.path.join(args.output, 'manifest.txt'), 'w') as writer:
 		writer.write('#Package[:Architecture]\t#Version\t#Source\t#Installed-Size\n')
 
 		for line in sorted(lines):
@@ -628,7 +638,7 @@ def write_manifests(manifest):
 			v = v[:-1]
 			lines.add('%s\t%s\t%s\n' % (binary.name, p, v))
 
-	with open(os.path.join(args.runtime, 'built-using.txt'), 'w') as writer:
+	with open(os.path.join(args.output, 'built-using.txt'), 'w') as writer:
 		writer.write('#Built-Binary\t#Built-Using-Source\t#Built-Using-Version\n')
 
 		for line in sorted(lines):
@@ -775,10 +785,15 @@ else:
 
 name_version = '%s_%s' % (name, version)
 
-# Populate runtime from template
-shutil.copytree(args.templates, args.runtime, symlinks=True)
+tmpdir = tempfile.mkdtemp(prefix='build-runtime-')
 
-with open(os.path.join(args.runtime, 'version.txt'), 'w') as writer:
+if args.output is None:
+	args.output = os.path.join(tmpdir, 'root')
+
+# Populate runtime from template
+shutil.copytree(args.templates, args.output, symlinks=True)
+
+with open(os.path.join(args.output, 'version.txt'), 'w') as writer:
 	writer.write('%s\n' % name_version)
 
 if args.debug_url:
@@ -787,7 +802,7 @@ if args.debug_url:
 		os.path.join(args.templates, 'README.txt')
 	) as reader:
 		with open(
-			os.path.join(args.runtime, 'README.txt.new'), 'w'
+			os.path.join(args.output, 'README.txt.new'), 'w'
 		) as writer:
 			for line in reader:
 				line = re.sub(
@@ -796,14 +811,14 @@ if args.debug_url:
 				writer.write(line)
 
 	os.rename(
-		os.path.join(args.runtime, 'README.txt.new'),
-		os.path.join(args.runtime, 'README.txt'))
+		os.path.join(args.output, 'README.txt.new'),
+		os.path.join(args.output, 'README.txt'))
 
 # Process packages.txt to get the list of source and binary packages
 source_pkgs = set()
 binary_pkgs = set()
 
-print("Creating Steam Runtime in %s" % args.runtime)
+print("Creating Steam Runtime in %s" % args.output)
 
 with open("packages.txt") as f:
 	for line in f:
@@ -837,7 +852,7 @@ write_manifests(manifest)
 
 print("Normalizing permissions...")
 subprocess.check_call([
-	'chmod', '--changes', 'u=rwX,go=rX', '--', args.runtime,
+	'chmod', '--changes', 'u=rwX,go=rX', '--', args.output,
 ])
 
 if args.archive is not None:
@@ -875,12 +890,12 @@ if args.archive is not None:
 		members = []
 
 		for dir_path, dirs, files in os.walk(
-			args.runtime,
+			args.output,
 			topdown=True,
 			followlinks=False,
 		):
 			rel_dir_path = os.path.relpath(
-				dir_path, args.runtime)
+				dir_path, args.output)
 
 			if not rel_dir_path.startswith('./'):
 				rel_dir_path = './' + rel_dir_path
@@ -895,7 +910,7 @@ if args.archive is not None:
 
 		for member in sorted(members):
 			archiver.add(
-				os.path.join(args.runtime, member),
+				os.path.join(args.output, member),
 				arcname=os.path.normpath(
 					os.path.join(
 						'steam-runtime',
@@ -943,17 +958,17 @@ if args.archive is not None:
 				writer.write('%s\n' % apt_source)
 
 		shutil.copy(
-			os.path.join(args.runtime, 'manifest.txt'),
+			os.path.join(args.output, 'manifest.txt'),
 			os.path.join(
 				archive_dir, name_version + '.manifest.txt'),
 		)
 		shutil.copy(
-			os.path.join(args.runtime, 'built-using.txt'),
+			os.path.join(args.output, 'built-using.txt'),
 			os.path.join(
 				archive_dir, name_version + '.built-using.txt'),
 		)
 		shutil.copy(
-			os.path.join(args.runtime, 'manifest.deb822.gz'),
+			os.path.join(args.output, 'manifest.deb822.gz'),
 			os.path.join(
 				archive_dir,
 				name_version + '.manifest.deb822.gz'),
@@ -961,7 +976,7 @@ if args.archive is not None:
 		if args.source:
 			shutil.copy(
 				os.path.join(
-					args.runtime,
+					args.output,
 					'source',
 					'sources.txt'),
 				os.path.join(
@@ -970,7 +985,7 @@ if args.archive is not None:
 			)
 			shutil.copy(
 				os.path.join(
-					args.runtime,
+					args.output,
 					'source',
 					'sources.deb822.gz'),
 				os.path.join(
@@ -1041,5 +1056,7 @@ if args.archive is not None:
 				os.path.basename(args.split),
 				ext,
 			))
+
+shutil.rmtree(tmpdir)
 
 # vi: set noexpandtab:
