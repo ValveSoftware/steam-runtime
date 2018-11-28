@@ -41,6 +41,7 @@ gcc-4.6 install
 gcc-4.8 install
 gcc-5 install
 gconf install
+gdb install
 gdk-pixbuf install
 glew install
 glew1.6 install
@@ -133,6 +134,7 @@ mawk install
 mesa install
 mpclib3 install
 mpfr4 install
+mpg123 install
 ncurses install
 network-manager install
 nspr install
@@ -141,6 +143,8 @@ nvidia-cg-toolkit install
 openal-soft install
 openldap install
 openssl install
+opus install
+opusfile install
 orc install
 p11-kit install
 pam install
