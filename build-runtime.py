@@ -157,6 +157,17 @@ def parse_args():
 	if args.split is not None and args.archive is None:
 		parser.error('--split requires --archive')
 
+	if not os.path.isdir(args.templates):
+		parser.error(
+			'Argument to --templates, %r, must be a directory'
+			% args.templates)
+
+	# os.path.exists is false for dangling symlinks, so check for both
+	if os.path.exists(args.runtime) or os.path.islink(args.runtime):
+		parser.error(
+			'Argument to --runtime, %r, must not already exist'
+			% args.runtime)
+
 	return args
 
 
@@ -764,9 +775,8 @@ else:
 
 name_version = '%s_%s' % (name, version)
 
-# Populate runtime from template if necessary
-if not os.path.exists(args.runtime):
-	shutil.copytree(args.templates, args.runtime, symlinks=True)
+# Populate runtime from template
+shutil.copytree(args.templates, args.runtime, symlinks=True)
 
 with open(os.path.join(args.runtime, 'version.txt'), 'w') as writer:
 	writer.write('%s\n' % name_version)
