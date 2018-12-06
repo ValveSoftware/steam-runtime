@@ -12,6 +12,7 @@ bzip2 install
 ca-certificates install
 cairo install
 cloog-lts install
+cmake install
 coreutils install
 cups install
 curl install
@@ -49,6 +50,7 @@ glib2.0 install
 gmp install
 gnupg install
 gnutls26 install
+gnutls28 install
 grep install
 gst-plugins-base0.10 install
 gstreamer0.10 install
@@ -68,6 +70,7 @@ krb5 install
 lcms2 install
 less install
 libappindicator install
+libarchive install
 libasyncns install
 libav install
 libcanberra install
@@ -97,6 +100,7 @@ libselinux install
 libsm install
 libsndfile install
 libtasn1-3 install
+libtasn1-6 install
 libtheora install
 libtool install
 libusb install
@@ -136,6 +140,7 @@ mpclib3 install
 mpfr4 install
 mpg123 install
 ncurses install
+nettle install
 network-manager install
 nspr install
 nss install
