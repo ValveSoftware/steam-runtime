@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 SCRIPT="$(readlink -f "$0")"
 SCRIPTNAME="$(basename "$SCRIPT")"
@@ -12,6 +12,8 @@ CHROOT_DIR="/var/chroots"
 set -o errexit
 # bail on any unitialized variable reads
 set -o nounset
+# bail on failing commands before last pipe
+set -o pipefail
 
 # Output helpers
 COLOR_OFF=""
