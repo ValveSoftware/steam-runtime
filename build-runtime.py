@@ -897,7 +897,7 @@ if args.archive is not None:
 			rel_dir_path = os.path.relpath(
 				dir_path, args.output)
 
-			if not rel_dir_path.startswith('./'):
+			if rel_dir_path != '.' and not rel_dir_path.startswith('./'):
 				rel_dir_path = './' + rel_dir_path
 
 			for member in dirs:
