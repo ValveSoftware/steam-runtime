@@ -119,28 +119,6 @@ if __name__ == '__main__':
 
     last = None
 
-    with open("sourcepkgs.list") as reader:
-        for i, line in enumerate(reader):
-            if line.strip() != '' and line[0] != '#':
-                toks = line.split(' ', 1)
-                assert toks[1] == 'install\n', repr(line)
-                source_pkgs.discard(toks[0])
-
-                if last is not None and line <= last:
-                    test.not_ok(
-                        'sourcepkgs.list:%d: not in '
-                        '`LC_ALL=C sort -u` order near %r'
-                        % (i, line))
-
-                last = line
-
-    if source_pkgs:
-        for p in source_pkgs:
-            test.not_ok(
-                'source package %s is listed in packages.txt '
-                'but not in sourcepkgs.list'
-                % p)
-
     runtime_package_lists = set()
     source_lists = set()
     sdk_package_lists = set()
