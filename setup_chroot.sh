@@ -110,9 +110,11 @@ build_chroot()
 	sudo -E debootstrap --arch=${pkg} --include=wget --keyring="${SCRIPT_DIR}/ubuntu-archive-keyring.gpg" precise ${CHROOT_DIR}/${CHROOT_NAME} http://archive.ubuntu.com/ubuntu/
 
 	# Copy over proxy settings from host machine
-	echo -e "\n${COLOR_ON}Adding proxy info to chroot (if set)...${COLOR_OFF}" 
+	echo -e "\n${COLOR_ON}Adding proxy info to chroot (if set)...${COLOR_OFF}"
+	set +o pipefail
 	env | grep -i "_proxy=" | grep -v PERSISTENT_HISTORY_LAST | xargs -i echo export {} | sudo tee ${CHROOT_DIR}/${CHROOT_NAME}/etc/profile.d/steamrtproj.sh
 	env | grep -i "_proxy=" | grep -v PERSISTENT_HISTORY_LAST | xargs -i echo export {} | sudo tee -a ${CHROOT_DIR}/${CHROOT_NAME}/etc/environment
+	set -o pipefail
 	sudo rm -rf "${CHROOT_DIR}/${CHROOT_NAME}/etc/apt/apt.conf"
 	if [ -f /etc/apt/apt.conf ]; then sudo cp "/etc/apt/apt.conf" "${CHROOT_DIR}/${CHROOT_NAME}/etc/apt"; fi  
 
