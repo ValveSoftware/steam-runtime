@@ -39,7 +39,21 @@ IMAGE_NAME="ubuntu-precise-core-cloudimg-${ARCH}-root.tar.gz"
 SHA_FILE="${IMAGE_NAME}-SHA256SUMS"
 SIG_FILE="${IMAGE_NAME}-SHA256SUMS.gpg"
 
+if command -v gpg2 >/dev/null; then
+  gpg2=gpg2
+elif command -v gpg >/dev/null; then
+  gpg2=gpg
+else
+  die "gpg2 not found, please install the gnupg2 or gnupg (>= 2) package"
+fi
 
+if command -v gpgv2 >/dev/null; then
+  gpgv2=gpgv2
+elif command -v gpgv >/dev/null; then
+  gpgv2=gpgv
+else
+  die "gpgv2 not found, please install the gpgv2 or gpgv (>= 2) package"
+fi
 
 # Make sure the keyfile is there
 [[ -f "$KEYFILE" ]] || die "Missing required file $KEYFILE"
@@ -56,11 +70,11 @@ cd "$tmpdir"
 verify() {
   local targetdir="$1"
   # Import plaintext key
-  gpg2 --batch --no-default-keyring --keyring ./ubuntu-cloud-key.gpg --import --armor --skip-verify < "$KEYFILE"
-  if gpgv2 --keyring ./ubuntu-cloud-key.gpg "$targetdir"/"$SIG_FILE" "$targetdir"/"$SHA_FILE"; then
+  $gpg2 --batch --no-default-keyring --keyring ./ubuntu-cloud-key.gpg --import --armor --skip-verify < "$KEYFILE"
+  if $gpgv2 --keyring ./ubuntu-cloud-key.gpg "$targetdir"/"$SIG_FILE" "$targetdir"/"$SHA_FILE"; then
     stat "SHA256SUMS file signature matches, checking checksum"
   else
-    err "gpgv2: Signature verification failed"
+    err "$gpgv2: Signature verification failed"
     return 1
   fi
 
