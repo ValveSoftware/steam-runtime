@@ -1,2 +1,5 @@
-runtime/common-licenses/* linguist-documentation
+# Stop license files from skewing language-stats on GitHub
+templates/common-licenses/* linguist-documentation linguist-language=Text
+
+# Enforce Unix-style line-endings for shell-scripts
 *.sh text eol=lf
