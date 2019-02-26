@@ -107,51 +107,81 @@ build_docker() # build_docker <imagename> <arch> [beta]
 # Argument
 #
 # Parse arguments & run
-#
+
+usage () {
+  if [ "$1" = 0 ]; then
+    say=stat
+  else
+    say=err
+  fi
+
+  "$say" "Usage: $0 [--beta] [--extra-bootstrap FILE] -- {amd64|i386} [IMAGE]"
+  exit "$1"
+}
+
 beta_arg="" # --beta?
 arch_arg="" # arch argument
 name_arg="" # name argument
 extra_bootstrap_arg="" # extra-bootstrap argument
-end_of_opts="" # Saw end of options [--]
-invalid_args="" # Invalid arguments?
-while [[ $# -gt 0 ]]; do
-  if [[ -z $1 ]]; then # Sanity
-    err "Unexpected empty argument"
-    invalid_args=1
-  elif [[ $1 = '--beta' ]]; then # Known optional argument
-    beta_arg=1
-  elif [[ ${1%=*} = '--extra-bootstrap' ]]; then # Known optional argument
-    if [[ ${1%=*} != $1 ]]; then
-      # Specified as --extra-bootstrap=foo
-      extra_bootstrap_arg="${1#*=}"
-    else
-      # Specified as --extra-bootstrap foo
-      extra_bootstrap_arg="$2"
+
+getopt_temp="$(getopt -o '' --long \
+'beta,extra-bootstrap:,help' \
+-n "$0" -- "$@")"
+eval set -- "$getopt_temp"
+unset getopt_temp
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    (--beta)
+      beta_arg=1
       shift
-    fi
-    if [[ -z $extra_bootstrap_arg ]]; then
-      err "--extra-bootstrap cannot be empty"
-      invalid_args=1
-    fi
-  elif [[ -z $end_of_opts && $1 = '--' ]]; then # -- as end of options
-    end_of_opts=1
-  elif [[ -z $end_of_opts && ${1:0:1} = '-' ]]; then # Some other option-looking-thing
-    err "Unknown option $1"
-    invalid_args=1
-  elif [[ -z $arch_arg ]]; then # Positional argument, no arch
+      ;;
+
+    (--bootstrap)
+      if [ -z "$2" ]; then
+        err "--extra-bootstrap cannot be empty"
+        usage 2
+      fi
+
+      extra_bootstrap_arg="$2"
+      shift 2
+      ;;
+
+    (--help)
+      usage 0
+      ;;
+
+    (--)
+      shift
+      break
+      ;;
+
+    (-*)
+      err "Unknown option $1"
+      usage 2
+      ;;
+
+    (*)
+      break
+      ;;
+  esac
+done
+
+while [ "$#" -gt 0 ]; do
+  if [ -z "$arch_arg" ]; then # Positional argument: architecture
     arch_arg="$1"
-  elif [[ -z $name_arg ]]; then # Name argument
+  elif [ -z "$name_arg" ]; then # Name argument
     name_arg="$1"
   else
     # Some other thing
     err "Unexpected argument: \"$1\""
-    invalid_args=1
+    usage 2
   fi
   shift
 done
 
 # Valid arguments?
-[[ ( $arch_arg = i386 || $arch_arg = amd64 ) && -z $invalid_args ]] || die "Usage: $0 [ --beta ] [ --extra-bootstrap <extra bootstrap file> ] { amd64 | i386 } [ [--] image-name ]"
+[[ ( $arch_arg = i386 || $arch_arg = amd64 ) ]] || usage 2
 
 # Default image name steam-runtime-{arch}-{beta}
 [[ -n $name_arg ]] || name_arg="steam-runtime-${arch_arg}${beta_arg:+-beta}"
