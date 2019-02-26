@@ -19,14 +19,32 @@ ARG proxy
 ##
 ADD ubuntu-precise-core-cloudimg-${arch}-root.tar.gz /
 
-RUN [ "x${proxy}" = "x" ] || ( \
-    echo "configure proxy" \
-    && echo export http_proxy=${proxy} >> /etc/bash.bashrc \
-    && echo export https_proxy=${proxy} >> /etc/bash.bashrc \
-    && echo export ftp_proxy=${proxy} >> /etc/bash.bashrc \
-    && echo Acquire::http::proxy \"${proxy}\"\; > /etc/apt/apt.conf.d/01proxy \
-    && echo Acquire::https::proxy \"${proxy}\"\; >> /etc/apt/apt.conf.d/01proxy \
-    )
+RUN \
+	set -xe; \
+	if [ -n "${proxy}" ]; then \
+		echo "configure proxy"; \
+		echo "export http_proxy=${proxy}" >> /etc/bash.bashrc; \
+		echo "export https_proxy=${proxy}" >> /etc/bash.bashrc; \
+		echo "export ftp_proxy=${proxy}" >> /etc/bash.bashrc; \
+		echo "Acquire::http::proxy \"${proxy}\";" > /etc/apt/apt.conf.d/01proxy; \
+		echo "Acquire::https::proxy \"${proxy}\";" >> /etc/apt/apt.conf.d/01proxy; \
+	fi; \
+	if [ -n "${no_proxy}" ]; then \
+		echo "export no_proxy=${no_proxy}" >> /etc/bash.bashrc; \
+		oldIFS="$IFS"; \
+		IFS=","; \
+		for nope in ${no_proxy}; do \
+			case "$nope" in \
+				(.*) \
+					;; \
+				(*) \
+					echo "Acquire::http::proxy::${nope} \"DIRECT\";" >> /etc/apt/apt.conf.d/01proxy; \
+					echo "Acquire::https::proxy::${nope} \"DIRECT\";" >> /etc/apt/apt.conf.d/01proxy; \
+					;; \
+			esac; \
+		done; \
+		IFS="$oldIFS"; \
+	fi
 
 RUN set -xe \
 	\
@@ -75,6 +93,9 @@ RUN apt-get -y install install-info
 ##
 ## Steam Runtime specific setup
 ##
+
+COPY write-manifest /root/
+RUN /root/write-manifest /
 
 COPY scripts/bootstrap-runtime.sh /root/
 RUN /root/bootstrap-runtime.sh --docker ${beta:+--beta}
