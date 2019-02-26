@@ -94,9 +94,6 @@ RUN apt-get -y install install-info
 ## Steam Runtime specific setup
 ##
 
-COPY write-manifest /root/
-RUN /root/write-manifest /
-
 COPY scripts/bootstrap-runtime.sh /root/
 RUN /root/bootstrap-runtime.sh --docker ${beta:+--beta}
 
@@ -104,5 +101,8 @@ RUN /root/bootstrap-runtime.sh --docker ${beta:+--beta}
 # silly way to conditionally copy a second file.
 COPY ${extra_bootstrap:-scripts/bootstrap-runtime.sh} /root/bootstrap-extra.sh
 RUN [ "x${extra_bootstrap}" = 'x' ] || "/root/bootstrap-extra.sh"
+
+COPY write-manifest /root/
+RUN /root/write-manifest /
 
 CMD [ "/bin/bash", "--login" ]
