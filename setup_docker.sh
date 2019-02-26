@@ -98,6 +98,8 @@ build_docker() # build_docker <imagename> <arch> [beta]
   stat "Building docker image"
   docker_run build --build-arg=arch="$arch" ${beta:+--build-arg=beta=1} \
              ${extra_bootstrap:+"--build-arg=extra_bootstrap=scripts/bootstrap-extra.sh"} \
+             ${proxy:+"--build-arg=proxy=${proxy}"} \
+             ${no_proxy:+"--build-arg=no_proxy=${no_proxy}"} \
              -t "$image" -f "$DOCKERFILE" "$SCRIPT_RELDIR"
 
   stat "Successfully built docker image: $image"
@@ -123,9 +125,11 @@ beta_arg="" # --beta?
 arch_arg="" # arch argument
 name_arg="" # name argument
 extra_bootstrap_arg="" # extra-bootstrap argument
+proxy="${http_proxy:-}"
+no_proxy="${no_proxy:-}"
 
 getopt_temp="$(getopt -o '' --long \
-'beta,extra-bootstrap:,help' \
+'beta,extra-bootstrap:,help,proxy:,no-proxy:' \
 -n "$0" -- "$@")"
 eval set -- "$getopt_temp"
 unset getopt_temp
@@ -144,6 +148,16 @@ while [ "$#" -gt 0 ]; do
       fi
 
       extra_bootstrap_arg="$2"
+      shift 2
+      ;;
+
+    (--proxy)
+      proxy="$2"
+      shift 2
+      ;;
+
+    (--no-proxy)
+      no_proxy="${no_proxy:+"${no_proxy},"}$2"
       shift 2
       ;;
 
