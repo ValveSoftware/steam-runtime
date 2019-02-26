@@ -94,6 +94,9 @@ RUN apt-get -y install install-info
 ## Steam Runtime specific setup
 ##
 
+COPY write-manifest /root/
+RUN /root/write-manifest /
+
 COPY scripts/bootstrap-runtime.sh /root/
 RUN /root/bootstrap-runtime.sh --docker ${beta:+--beta}
 
