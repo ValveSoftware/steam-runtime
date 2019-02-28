@@ -31,7 +31,8 @@ except ImportError:
 	from urllib import (urlopen, urlretrieve)
 
 destdir="newpkg"
-arches=["amd64", "i386"]
+#arches=["amd64", "i386"]
+arches=["amd64"]
 
 # The top level directory
 top = sys.path[0]
