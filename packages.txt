@@ -18,6 +18,7 @@ nss libnss3
 pango1.0 libpango-1.0-0 libpangocairo-1.0-0 libpangoft2-1.0-0
 pcre3 libpcre3
 pixman libpixman-1-0
+libpng libpng12-0
 libselinux libselinux1
 libthai libthai0
 libx11 libx11-6 libx11-xcb1
