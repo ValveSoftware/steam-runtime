@@ -105,7 +105,7 @@ class AptSource:
 			maybe_debug = ''
 
 		return [
-			"%s/dists/%s/%s/%sbinary-%s/Packages" % (
+			"%s/dists/%s/%s/%sbinary-%s/Packages.gz" % (
 				self.url, self.suite, component,
 				maybe_debug, arch)
 			for component in self.components
@@ -342,7 +342,12 @@ def list_binaries(apt_sources, dbgsym=False):
 					arch, description, url))
 
 				try:
-					url_file_handle = BytesIO(urlopen(url).read())
+					# Python 2 does not catch a 404 here
+					url_file_handle = gzip.GzipFile(
+                                                fileobj=BytesIO(
+                                                        urlopen(url).read()
+                                                )
+                                        )
 				except Exception as e:
 					if dbgsym:
 						print(e)
