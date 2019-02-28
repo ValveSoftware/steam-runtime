@@ -117,7 +117,7 @@ usage () {
     say=err
   fi
 
-  "$say" "Usage: $0 [--beta] [--extra-bootstrap FILE] -- {amd64|i386} [IMAGE]"
+  "$say" "Usage: $0 [--beta] [--extra-bootstrap FILE] [--proxy=URI] [--no-proxy=HOSTNAME[,HOSTNAME...]] -- {amd64|i386} [IMAGE]"
   exit "$1"
 }
 
