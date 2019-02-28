@@ -141,7 +141,7 @@ while [ "$#" -gt 0 ]; do
       shift
       ;;
 
-    (--bootstrap)
+    (--extra-bootstrap)
       if [ -z "$2" ]; then
         err "--extra-bootstrap cannot be empty"
         usage 2
