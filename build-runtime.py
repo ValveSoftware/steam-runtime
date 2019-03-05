@@ -158,6 +158,10 @@ def parse_args():
 		help='include architecture',
 		action='append', dest='architectures', default=[],
 	)
+	parser.add_argument(
+		'--dump-options', action='store_true',
+		help=argparse.SUPPRESS,		# deliberately undocumented
+	)
 
 	args = parser.parse_args()
 
@@ -791,6 +795,20 @@ else:
 	version = time.strftime('snapshot-%Y%m%d-%H%M%SZ', time.gmtime())
 
 name_version = '%s_%s' % (name, version)
+
+if args.dump_options:
+	dump = vars(args)
+	dump['name'] = name
+	dump['version'] = version
+	dump['name_version'] = name_version
+	dump['reference_timestamp'] = reference_timestamp
+	dump['apt_sources'] = []
+	for source in apt_sources:
+		dump['apt_sources'].append(str(source))
+	import json
+	json.dump(dump, sys.stdout, indent=4, sort_keys=True)
+	sys.stdout.write('\n')
+	sys.exit(0)
 
 tmpdir = tempfile.mkdtemp(prefix='build-runtime-')
 
