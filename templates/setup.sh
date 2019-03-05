@@ -11,10 +11,11 @@ set -o pipefail
 pin_newer_runtime_libs ()
 {
     # Set separator to newline just for this function
-    local IFS=$(echo -en "\n\b")
+    local IFS
+    IFS=$(echo -en '\n\b')
 
     # First argument is the runtime path
-    steam_runtime_path=$(realpath $1)
+    steam_runtime_path=$(realpath "$1")
 
     if [[ ! -d "$steam_runtime_path" ]]; then return; fi
 
@@ -31,11 +32,11 @@ pin_newer_runtime_libs ()
         # If line starts with a leading / and contains :, it's a new path prefix
         if [[ "$ldconfig_output" =~ ^/.*: ]]
         then
-            library_path_prefix=$(echo $ldconfig_output | cut -d: -f1)
+            library_path_prefix=$(echo "$ldconfig_output" | cut -d: -f1)
         else
             # Otherwise it's a soname symlink -> library pair, build a full path to the soname link
             leftside=${ldconfig_output% -> *}
-            soname=$(echo $leftside | tr -d '[:space:]')
+            soname=$(echo "$leftside" | tr -d '[:space:]')
             soname_fullpath=$library_path_prefix/$soname
 
             # Left side better be a symlink
@@ -44,7 +45,7 @@ pin_newer_runtime_libs ()
             # Left-hand side of soname symlink should be *.so.%d
             if [[ ! $soname_fullpath =~ .*\.so.[[:digit:]]+$ ]]; then continue; fi
 
-            final_library=$(readlink -f $soname_fullpath)
+            final_library=$(readlink -f "$soname_fullpath")
 
             # Target library must be named *.so.%d.%d.%d
             if [[ ! $final_library =~ .*\.so.[[:digit:]]+.[[:digit:]]+.[[:digit:]]+$ ]]; then continue; fi
@@ -53,10 +54,10 @@ pin_newer_runtime_libs ()
             if [[ ! -f $final_library ]]; then continue; fi
 
             # Save into bitness-specific associative array with only SONAME as left-hand
-            if [[ $(file -L $final_library) == *"32-bit"* ]]
+            if [[ $(file -L "$final_library") == *"32-bit"* ]]
             then
                 host_libraries_32[$soname]=$soname_fullpath
-            elif [[ $(file -L $final_library) == *"64-bit"* ]]
+            elif [[ $(file -L "$final_library") == *"64-bit"* ]]
             then
                 host_libraries_64[$soname]=$soname_fullpath
             fi
@@ -73,7 +74,7 @@ pin_newer_runtime_libs ()
 
         soname_symlink=$find_output
 
-        final_library=$(readlink -f $soname_symlink)
+        final_library=$(readlink -f "$soname_symlink")
 
         # Target library must be named *.so.%d.%d.%d
         if [[ ! $final_library =~ .*\.so.([[:digit:]]+).([[:digit:]]+).([[:digit:]]+)$ ]]; then continue; fi
@@ -93,14 +94,14 @@ pin_newer_runtime_libs ()
         soname=$(basename "$soname_symlink")
 
         # If we had entries in our arrays, get them
-        if [[ $(file -L $final_library) == *"32-bit"* ]]
+        if [[ $(file -L "$final_library") == *"32-bit"* ]]
         then
             if [ ! -z ${host_libraries_32[$soname]+isset} ]
             then
                 host_soname_symlink=${host_libraries_32[$soname]}
             fi
             bitness="32"
-        elif [[ $(file -L $final_library) == *"64-bit"* ]]
+        elif [[ $(file -L "$final_library") == *"64-bit"* ]]
         then
             if [ ! -z ${host_libraries_64[$soname]+isset} ]
             then
@@ -112,7 +113,7 @@ pin_newer_runtime_libs ()
         # Do we have a host library found for the same SONAME?
         if [[ ! -f $host_soname_symlink || $bitness == "unknown" ]]; then continue; fi
 
-        host_library=$(readlink -f $host_soname_symlink)
+        host_library=$(readlink -f "$host_soname_symlink")
 
         if [[ ! -f $host_library ]]; then continue; fi
 
@@ -160,7 +161,7 @@ pin_newer_runtime_libs ()
 
 
         if [[ $runtime_version_newer == "yes" ]]; then
-            echo Found newer runtime version for $bitness-bit $soname. Host: $h_lib_major.$h_lib_minor.$h_lib_third Runtime: $r_lib_major.$r_lib_minor.$r_lib_third
+            echo "Found newer runtime version for $bitness-bit $soname. Host: $h_lib_major.$h_lib_minor.$h_lib_third Runtime: $r_lib_major.$r_lib_minor.$r_lib_third"
             ln -s "$final_library" "$steam_runtime_path/pinned_libs_$bitness/$soname"
             # Keep track of the exact version name we saw on the system at pinning time to check later
             echo "$host_soname_symlink" > "$steam_runtime_path/pinned_libs_$bitness/system_$soname"
@@ -173,10 +174,11 @@ pin_newer_runtime_libs ()
 check_pins ()
 {
     # Set separator to newline just for this function
-    local IFS=$(echo -en "\n\b")
+    local IFS
+    IFS=$(echo -en '\n\b')
 
     # First argument is the runtime path
-    steam_runtime_path=$(realpath $1)
+    steam_runtime_path=$(realpath "$1")
 
     if [[ ! -d "$steam_runtime_path" ]]; then return; fi
 
@@ -196,7 +198,7 @@ check_pins ()
             host_library=$(tail -1 "$pin")
 
             # Follow the host SONAME symlink we saved in the first line of the pin entry
-            host_actual_library=$(readlink -f $host_sonamesymlink)
+            host_actual_library=$(readlink -f "$host_sonamesymlink")
 
             # It might not exist anymore if it got uninstalled or upgraded to a different major version
             if [[ ! -f $host_actual_library ]]
@@ -205,7 +207,7 @@ check_pins ()
             fi
 
             # We should end up at the same lib we saved in the second line
-            if [[ $host_actual_library != $host_library  ]]
+            if [[ "$host_actual_library" != "$host_library" ]]
             then
                 # Mismatch, it could have gotten upgraded
                 pins_need_redoing="yes"
