@@ -1,4 +1,5 @@
 #!/bin/bash
+# Copyright 2012-2019 Valve Software
 # Copyright 2019 Collabora Ltd.
 #
 # SPDX-License-Identifier: MIT
@@ -9,14 +10,216 @@ set -o pipefail
 
 pin_newer_runtime_libs ()
 {
-    echo "TODO: update pins for $1" >&2
-    exit 1
+    # Set separator to newline just for this function
+    local IFS=$(echo -en "\n\b")
+
+    # First argument is the runtime path
+    steam_runtime_path=`realpath $1`
+
+    if [[ ! -d "$steam_runtime_path" ]]; then return; fi
+
+    # Associative array; indices are the SONAME, values are final path
+    declare -A host_libraries_32
+    declare -A host_libraries_64
+
+    rm -rf "$steam_runtime_path/pinned_libs_32"
+    rm -rf "$steam_runtime_path/pinned_libs_64"
+
+    # First, grab the list of system libraries from ldconfig and put them in the arrays
+    for ldconfig_output in `/sbin/ldconfig -XNv 2> /dev/null`
+    do
+        # If line starts with a leading / and contains :, it's a new path prefix
+        if [[ "$ldconfig_output" =~ ^/.*: ]]
+        then
+            library_path_prefix=`echo $ldconfig_output | cut -d: -f1`
+        else
+            # Otherwise it's a soname symlink -> library pair, build a full path to the soname link
+            leftside=${ldconfig_output% -> *}
+            soname=`echo $leftside | tr -d '[:space:]'`
+            soname_fullpath=$library_path_prefix/$soname
+
+            # Left side better be a symlink
+            if [[ ! -L $soname_fullpath ]]; then continue; fi
+
+            # Left-hand side of soname symlink should be *.so.%d
+            if [[ ! $soname_fullpath =~ .*\.so.[[:digit:]]+$ ]]; then continue; fi
+
+            final_library=`readlink -f $soname_fullpath`
+
+            # Target library must be named *.so.%d.%d.%d
+            if [[ ! $final_library =~ .*\.so.[[:digit:]]+.[[:digit:]]+.[[:digit:]]+$ ]]; then continue; fi
+
+            # If it doesn't exist, skip as well
+            if [[ ! -f $final_library ]]; then continue; fi
+
+            # Save into bitness-specific associative array with only SONAME as left-hand
+            if [[ `file -L $final_library` == *"32-bit"* ]]
+            then
+                host_libraries_32[$soname]=$soname_fullpath
+            elif [[ `file -L $final_library` == *"64-bit"* ]]
+            then
+                host_libraries_64[$soname]=$soname_fullpath
+            fi
+        fi
+    done
+
+    mkdir "$steam_runtime_path/pinned_libs_32"
+    mkdir "$steam_runtime_path/pinned_libs_64"
+
+    for find_output in `find "$steam_runtime_path" -type l | grep \\\.so`
+    do
+        # Left-hand side of soname symlink should be *.so.%d
+        if [[ ! $find_output =~ .*\.so.[[:digit:]]+$ ]]; then continue; fi
+
+        soname_symlink=$find_output
+
+        final_library=`readlink -f $soname_symlink`
+
+        # Target library must be named *.so.%d.%d.%d
+        if [[ ! $final_library =~ .*\.so.([[:digit:]]+).([[:digit:]]+).([[:digit:]]+)$ ]]; then continue; fi
+
+        # This pattern strips leading zeroes, which could otherwise cause bash to interpret the value as binary/octal below
+        r_lib_major=$((10#${BASH_REMATCH[1]}))
+        r_lib_minor=$((10#${BASH_REMATCH[2]}))
+        r_lib_third=$((10#${BASH_REMATCH[3]}))
+
+        # If it doesn't exist, skip as well
+        if [[ ! -f $final_library ]]; then continue; fi
+
+        host_library=""
+        host_soname_symlink=""
+        bitness="unknown"
+
+        soname=$(basename "$soname_symlink")
+
+        # If we had entries in our arrays, get them
+        if [[ `file -L $final_library` == *"32-bit"* ]]
+        then
+            if [ ! -z ${host_libraries_32[$soname]+isset} ]
+            then
+                host_soname_symlink=${host_libraries_32[$soname]}
+            fi
+            bitness="32"
+        elif [[ `file -L $final_library` == *"64-bit"* ]]
+        then
+            if [ ! -z ${host_libraries_64[$soname]+isset} ]
+            then
+                host_soname_symlink=${host_libraries_64[$soname]}
+            fi
+            bitness="64"
+        fi
+
+        # Do we have a host library found for the same SONAME?
+        if [[ ! -f $host_soname_symlink || $bitness == "unknown" ]]; then continue; fi
+
+        host_library=`readlink -f $host_soname_symlink`
+
+        if [[ ! -f $host_library ]]; then continue; fi
+
+        #echo $soname ${host_libraries[$soname]} $r_lib_major $r_lib_minor $r_lib_third
+
+        # Pretty sure the host library already matches, but we need the rematch anyway
+        if [[ ! $host_library =~ .*\.so.([[:digit:]]+).([[:digit:]]+).([[:digit:]]+)$ ]]; then continue; fi
+
+        h_lib_major=$((10#${BASH_REMATCH[1]}))
+        h_lib_minor=$((10#${BASH_REMATCH[2]}))
+        h_lib_third=$((10#${BASH_REMATCH[3]}))
+
+        runtime_version_newer="no"
+
+        if [[ $h_lib_major -lt $r_lib_major ]]; then
+            runtime_version_newer="yes"
+        fi
+
+        if [[ $h_lib_major -eq $r_lib_major && $h_lib_minor -lt $r_lib_minor ]]; then
+            runtime_version_newer="yes"
+        fi
+
+        if [[ $h_lib_major -eq $r_lib_major && $h_lib_minor -eq $r_lib_minor && $h_lib_third -lt $r_lib_third ]]; then
+            runtime_version_newer="yes"
+        fi
+
+        # There's a set of libraries that have to work together to yield a working dock
+        # We're reasonably convinced our set works well, and only pinning a handful would
+        # induce a mismatch and break the dock, so always pin all of these for Steam (32-bit)
+        if [[ $bitness == "32" ]]
+        then
+            if [[     "$soname" == "libgtk-x11-2.0.so.0"  || \
+                    "$soname" == "libdbusmenu-gtk.so.4"  || \
+                    "$soname" == "libdbusmenu-glib.so.4" || \
+                    "$soname" == "libdbus-1.so.3" ]]
+            then
+                runtime_version_newer="yes"
+            fi
+        fi
+
+        if [[ "$soname" == "libSDL2-2.0.so.0" ]]
+        then
+            runtime_version_newer="yes"
+        fi
+
+
+        if [[ $runtime_version_newer == "yes" ]]; then
+            echo Found newer runtime version for $bitness-bit $soname. Host: $h_lib_major.$h_lib_minor.$h_lib_third Runtime: $r_lib_major.$r_lib_minor.$r_lib_third
+            ln -s "$final_library" "$steam_runtime_path/pinned_libs_$bitness/$soname"
+            # Keep track of the exact version name we saw on the system at pinning time to check later
+            echo "$host_soname_symlink" > "$steam_runtime_path/pinned_libs_$bitness/system_$soname"
+            echo "$host_library" >> "$steam_runtime_path/pinned_libs_$bitness/system_$soname"
+            touch "$steam_runtime_path/pinned_libs_$bitness/has_pins"
+        fi
+    done
 }
 
 check_pins ()
 {
-    echo "TODO: check pins for $1" >&2
-    exit 1
+    # Set separator to newline just for this function
+    local IFS=$(echo -en "\n\b")
+
+    # First argument is the runtime path
+    steam_runtime_path=`realpath $1`
+
+    if [[ ! -d "$steam_runtime_path" ]]; then return; fi
+
+    pins_need_redoing="no"
+
+    # If we had the runtime previously unpacked but never ran the pin code, do it now
+    if [[ ! -d "$steam_runtime_path/pinned_libs_32" ]]
+    then
+        pins_need_redoing="yes"
+    fi
+
+    if [[ -f "$steam_runtime_path/pinned_libs_32/has_pins" || -f "$steam_runtime_path/pinned_libs_64/has_pins" ]]
+    then
+        for pin in "$steam_runtime_path"/pinned_libs_*/system_*
+        do
+            host_sonamesymlink=`head -1 "$pin"`
+            host_library=`tail -1 "$pin"`
+
+            # Follow the host SONAME symlink we saved in the first line of the pin entry
+            host_actual_library=`readlink -f $host_sonamesymlink`
+
+            # It might not exist anymore if it got uninstalled or upgraded to a different major version
+            if [[ ! -f $host_actual_library ]]
+            then
+                pins_need_redoing="yes"
+            fi
+
+            # We should end up at the same lib we saved in the second line
+            if [[ $host_actual_library != $host_library  ]]
+            then
+                # Mismatch, it could have gotten upgraded
+                pins_need_redoing="yes"
+            fi
+        done
+    fi
+
+    if [[ $pins_need_redoing == "yes" ]]
+    then
+        echo Pins potentially out-of-date, rebuilding...
+        pin_newer_runtime_libs "$steam_runtime_path"
+    else
+        echo Pins up-to-date!
+    fi
 }
 
 usage ()
