@@ -14,14 +14,35 @@ pin_newer_runtime_libs ()
     local IFS
     IFS=$(echo -en '\n\b')
 
+    local steam_runtime_path
+
     # First argument is the runtime path
     steam_runtime_path=$(realpath "$1")
 
     if [[ ! -d "$steam_runtime_path" ]]; then return; fi
 
     # Associative array; indices are the SONAME, values are final path
-    declare -A host_libraries_32
-    declare -A host_libraries_64
+    local -A host_libraries_32
+    local -A host_libraries_64
+
+    local bitness
+    local final_library
+    local find_output
+    local h_lib_major
+    local h_lib_minor
+    local h_lib_third
+    local host_library
+    local host_soname_symlink
+    local ldconfig_output
+    local leftside
+    local library_path_prefix
+    local r_lib_major
+    local r_lib_minor
+    local r_lib_third
+    local runtime_version_newer
+    local soname
+    local soname_fullpath
+    local soname_symlink
 
     rm -rf "$steam_runtime_path/pinned_libs_32"
     rm -rf "$steam_runtime_path/pinned_libs_64"
@@ -176,6 +197,12 @@ check_pins ()
     # Set separator to newline just for this function
     local IFS
     IFS=$(echo -en '\n\b')
+
+    local host_actual_library
+    local host_library
+    local host_sonamesymlink
+    local pins_need_redoing
+    local steam_runtime_path
 
     # First argument is the runtime path
     steam_runtime_path=$(realpath "$1")
