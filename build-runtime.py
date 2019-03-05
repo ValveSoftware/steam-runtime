@@ -159,6 +159,11 @@ def parse_args():
 		action='append', dest='architectures', default=[],
 	)
 	parser.add_argument(
+		'--packages-from',
+		help='Include packages listed in the given file',
+		action='append', default=[],
+	)
+	parser.add_argument(
 		'--dump-options', action='store_true',
 		help=argparse.SUPPRESS,		# deliberately undocumented
 	)
@@ -188,6 +193,9 @@ def parse_args():
 
 	if not args.architectures:
 		args.architectures = ['amd64', 'i386']
+
+	if not args.packages_from:
+		args.packages_from = ['packages.txt']
 
 	return args
 
@@ -850,13 +858,14 @@ binary_pkgs = set()
 
 print("Creating Steam Runtime in %s" % args.output)
 
-with open("packages.txt") as f:
-	for line in f:
-		if line[0] != '#':
-			toks = line.split()
-			if len(toks) > 1:
-				source_pkgs.add(toks[0])
-				binary_pkgs.update(toks[1:])
+for packages_from in args.packages_from:
+	with open(packages_from) as f:
+		for line in f:
+			if line[0] != '#':
+				toks = line.split()
+				if len(toks) > 1:
+					source_pkgs.add(toks[0])
+					binary_pkgs.update(toks[1:])
 
 # remove development packages for end-user runtime
 if not args.debug:

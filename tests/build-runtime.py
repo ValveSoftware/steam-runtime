@@ -39,6 +39,7 @@ class TestBuildRuntime(unittest.TestCase):
         ])
         o = json.loads(j, encoding='utf-8')
         self.assertEqual(o['architectures'], ['amd64', 'i386'])
+        self.assertEqual(o['packages_from'], ['packages.txt'])
 
     def test_architectures(self):
         j = subprocess.check_output([
@@ -50,6 +51,20 @@ class TestBuildRuntime(unittest.TestCase):
         ])
         o = json.loads(j, encoding='utf-8')
         self.assertEqual(o['architectures'], ['mips', 'mipsel'])
+
+    def test_packages_from(self):
+        j = subprocess.check_output([
+            BUILD_RUNTIME,
+            '--archive=runtime/',
+            '--dump-options',
+            '--packages-from', '/tmp/packages.txt',
+            '--packages-from', 'foobar.txt',
+        ])
+        o = json.loads(j, encoding='utf-8')
+        self.assertEqual(
+            o['packages_from'],
+            ['/tmp/packages.txt', 'foobar.txt'],
+        )
 
     def tearDown(self):
         # type: () -> None
