@@ -232,7 +232,7 @@ def install_sources(apt_sources, sourcelist):
 					SourcePackage(apt_source, stanza))
 
 	skipped = 0
-	unpacked = []
+	unpacked = {}
 	manifest_lines = set()
 
 	# Walk through the Sources file and process any requested packages.
@@ -286,7 +286,7 @@ def install_sources(apt_sources, sourcelist):
 				if args.verbose or re.match(r'dpkg-source: warning: ',line):
 					print(line, end='')
 
-			unpacked.append((p, sp.stanza['Version'], sp.stanza))
+			unpacked[(p, sp.stanza['Version'])] = sp.stanza
 			manifest_lines.add(
 				'%s\t%s\t%s\n' % (
 					p, sp.stanza['Version'],
@@ -310,11 +310,11 @@ def install_sources(apt_sources, sourcelist):
 		) as stanza_writer:
 			done_one = False
 
-			for source in sorted(unpacked):
+			for key, stanza in sorted(unpacked.items()):
 				if done_one:
 					stanza_writer.write(b'\n')
 
-				source[2].dump(stanza_writer)
+				stanza.dump(stanza_writer)
 				done_one = True
 
 	if skipped > 0:
