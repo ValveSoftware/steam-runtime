@@ -66,7 +66,10 @@ pin_newer_runtime_libs ()
             # Left-hand side of soname symlink should be *.so.%d
             if [[ ! $soname_fullpath =~ .*\.so.[[:digit:]]+$ ]]; then continue; fi
 
-            final_library=$(readlink -f "$soname_fullpath")
+            if ! final_library=$(readlink -f "$soname_fullpath")
+            then
+                continue
+            fi
 
             # Target library must be named *.so.%d.%d.%d
             if [[ ! $final_library =~ .*\.so.[[:digit:]]+.[[:digit:]]+.[[:digit:]]+$ ]]; then continue; fi
@@ -95,7 +98,10 @@ pin_newer_runtime_libs ()
 
         soname_symlink=$find_output
 
-        final_library=$(readlink -f "$soname_symlink")
+        if ! final_library=$(readlink -f "$soname_symlink")
+        then
+            continue
+        fi
 
         # Target library must be named *.so.%d.%d.%d
         if [[ ! $final_library =~ .*\.so.([[:digit:]]+).([[:digit:]]+).([[:digit:]]+)$ ]]; then continue; fi
@@ -231,7 +237,10 @@ check_pins ()
             host_library=$(tail -1 "$pin")
 
             # Follow the host SONAME symlink we saved in the first line of the pin entry
-            host_actual_library=$(readlink -f "$host_sonamesymlink")
+            if ! host_actual_library=$(readlink -f "$host_sonamesymlink")
+            then
+                pins_need_redoing="yes"
+            fi
 
             # It might not exist anymore if it got uninstalled or upgraded to a different major version
             if [[ ! -f $host_actual_library ]]
