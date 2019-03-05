@@ -31,7 +31,6 @@ except ImportError:
 	from urllib import (urlopen, urlretrieve)
 
 destdir="newpkg"
-arches=["amd64", "i386"]
 
 # The top level directory
 top = sys.path[0]
@@ -154,6 +153,11 @@ def parse_args():
 	parser.add_argument(
 		'--split', default=None,
 		help='Also generate an archive split into 50M parts')
+	parser.add_argument(
+		'--architecture', '--arch',
+		help='include architecture',
+		action='append', dest='architectures', default=[],
+	)
 
 	args = parser.parse_args()
 
@@ -177,6 +181,9 @@ def parse_args():
 		parser.error(
 			'Argument to --output, %r, must not already exist'
 			% args.output)
+
+	if not args.architectures:
+		args.architectures = ['amd64', 'i386']
 
 	return args
 
@@ -327,7 +334,7 @@ def list_binaries(apt_sources, dbgsym=False):
 	else:
 		description = 'binaries'
 
-	for arch in arches:
+	for arch in args.architectures:
 		by_name = {}
 
 		# Load the Packages files so we can find the location of each
@@ -538,7 +545,7 @@ def install_symbols(dbgsym_by_arch, binarylist, manifest):
 # to their relative equivalent
 #
 def fix_symlinks ():
-	for arch in arches:
+	for arch in args.architectures:
 		for dir, subdirs, files in os.walk(os.path.join(args.output, arch)):
 			for name in files:
 				filepath=os.path.join(dir,name)
@@ -561,7 +568,7 @@ def fix_symlinks ():
 # symbols
 #
 def fix_debuglinks ():
-	for arch in arches:
+	for arch in args.architectures:
 		for dir, subdirs, files in os.walk(os.path.join(args.output, arch, "usr/lib/debug")):
 			if ".build-id" in subdirs:
 				subdirs.remove(".build-id")		# don't recurse into .build-id directory we are creating
