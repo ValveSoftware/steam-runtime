@@ -171,18 +171,24 @@ pin_newer_runtime_libs ()
                     "$soname" == "libdbusmenu-glib.so.4" || \
                     "$soname" == "libdbus-1.so.3" ]]
             then
-                runtime_version_newer="yes"
+                runtime_version_newer="forced"
             fi
         fi
 
         if [[ "$soname" == "libSDL2-2.0.so.0" ]]
         then
-            runtime_version_newer="yes"
+            runtime_version_newer="forced"
         fi
 
 
         if [[ $runtime_version_newer == "yes" ]]; then
             echo "Found newer runtime version for $bitness-bit $soname. Host: $h_lib_major.$h_lib_minor.$h_lib_third Runtime: $r_lib_major.$r_lib_minor.$r_lib_third"
+        elif [[ $runtime_version_newer == "forced" ]]; then
+            echo "Forced use of runtime version for $bitness-bit $soname. Host: $h_lib_major.$h_lib_minor.$h_lib_third Runtime: $r_lib_major.$r_lib_minor.$r_lib_third"
+        fi
+
+        if [[ $runtime_version_newer == "yes" \
+              || $runtime_version_newer == "forced" ]]; then
             ln -s "$final_library" "$steam_runtime_path/pinned_libs_$bitness/$soname"
             # Keep track of the exact version name we saw on the system at pinning time to check later
             echo "$host_soname_symlink" > "$steam_runtime_path/pinned_libs_$bitness/system_$soname"
