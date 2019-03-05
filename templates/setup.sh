@@ -240,12 +240,14 @@ check_pins ()
             if ! host_actual_library=$(readlink -f "$host_sonamesymlink")
             then
                 pins_need_redoing="yes"
+                break
             fi
 
             # It might not exist anymore if it got uninstalled or upgraded to a different major version
             if [[ ! -f $host_actual_library ]]
             then
                 pins_need_redoing="yes"
+                break
             fi
 
             # We should end up at the same lib we saved in the second line
@@ -253,6 +255,7 @@ check_pins ()
             then
                 # Mismatch, it could have gotten upgraded
                 pins_need_redoing="yes"
+                break
             fi
         done
     fi
