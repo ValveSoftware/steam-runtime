@@ -354,10 +354,10 @@ def list_binaries(apt_sources, dbgsym=False):
 				try:
 					# Python 2 does not catch a 404 here
 					url_file_handle = gzip.GzipFile(
-                                                fileobj=BytesIO(
-                                                        urlopen(url).read()
-                                                )
-                                        )
+						fileobj=BytesIO(
+							urlopen(url).read()
+						)
+					)
 				except Exception as e:
 					if dbgsym:
 						print(e)
