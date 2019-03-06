@@ -1,7 +1,7 @@
 #!/bin/bash
 
-COLOR_OFF="\033[0m"
-COLOR_ON="\033[1;93m"
+COLOR_OFF='\033[0m'
+COLOR_ON='\033[1;93m'
 
 set -eu
 
@@ -30,6 +30,9 @@ bootstrap_container()
   # Load proxy settings, if any
   if [ -f /etc/profile.d/steamrtproj.sh ]; then
     # Read in our envar proxy settings (needed for wget).
+    # This is a file inside the container so we can't follow the 'source'
+    # for shellcheck:
+    # shellcheck disable=SC1091
     source /etc/profile.d/steamrtproj.sh
   fi
 
@@ -183,8 +186,8 @@ heredoc
   update-alternatives --set cpp-bin /usr/bin/cpp-4.8
 
   # Allow members of sudo group sudo to run in runtime without password prompt
-  echo -e "\n${COLOR_ON}Allow members of sudo group to run sudo in runtime without prompting for password...${COLOR_OFF}"
-  echo -e "# Allow members of group sudo to execute any command\n%sudo   ALL= NOPASSWD: ALL\n" > /etc/sudoers.d/nopassword
+  echo -e "\\n${COLOR_ON}Allow members of sudo group to run sudo in runtime without prompting for password...${COLOR_OFF}"
+  echo -e "# Allow members of group sudo to execute any command\\n%sudo   ALL= NOPASSWD: ALL\\n" > /etc/sudoers.d/nopassword
   chmod 440 /etc/sudoers.d/nopassword
 
   # Remove downloaded packages: we won't need to install them again

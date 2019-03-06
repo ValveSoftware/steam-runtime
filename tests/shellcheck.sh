@@ -14,6 +14,7 @@ fi
 
 n=0
 for shell_script in \
+        scripts/*.sh \
         tests/*.sh \
         templates/*.sh \
         ; do
