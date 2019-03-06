@@ -23,7 +23,7 @@ if [ "${STEAM_RUNTIME_PREFER_HOST_LIBRARIES-}" != "0" ]; then
         # If line starts with a leading / and contains :, it's a new path prefix
         if [[ "$line" =~ ^/.*: ]]
         then
-            library_path_prefix=`echo $line | cut -d: -f1`
+            library_path_prefix=$(echo $line | cut -d: -f1)
 
             host_library_paths=$host_library_paths$library_path_prefix:
         fi
