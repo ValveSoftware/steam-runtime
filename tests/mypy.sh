@@ -12,6 +12,7 @@ export MYPYPATH="${PYTHONPATH:=$(pwd)}"
 
 i=0
 for script in \
+    debian/tests/*.py \
     tests/*.py \
 ; do
     i=$((i + 1))

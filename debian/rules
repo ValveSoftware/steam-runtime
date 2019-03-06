@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+
+build:
+	@echo "This is not really a Debian package. Don't build it."
+	@false
+
+clean:
+	@:
+
+binary-arch: build
+binary-indep: build
+binary: binary-indep binary-arch
+build-arch: build
+build-indep: build

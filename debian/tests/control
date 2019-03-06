@@ -1,0 +1,7 @@
+Tests: setup-chroot.py
+Depends: bsdutils, debootstrap, python3, python3-debian, schroot, sudo
+Restrictions: allow-stderr, breaks-testbed, isolation-machine, needs-root
+
+Tests: setup-docker.py
+Depends: docker.io, gnupg (>= 2) | gnupg2, gpgv (>= 2) | gpgv, python3, python3-debian, sudo, wget
+Restrictions: allow-stderr, breaks-testbed, isolation-machine, needs-root

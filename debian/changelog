@@ -1,0 +1,6 @@
+steam-runtime (0) UNRELEASED; urgency=medium
+
+  * This is not a real Debian package. It's only here as a way to
+    provide automated tests in autopkgtest format.
+
+ -- Simon McVittie <smcv@collabora.com>  Wed, 06 Mar 2019 11:51:41 +0000
