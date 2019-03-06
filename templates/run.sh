@@ -3,7 +3,7 @@
 # This is a script which runs programs in the Steam runtime
 
 # The top level of the runtime tree
-TOP=$(cd "${0%/*}" && echo ${PWD})
+TOP=$(cd "${0%/*}" && pwd)
 
 # Make sure we have something to run
 if [ "$1" = "" ]; then
