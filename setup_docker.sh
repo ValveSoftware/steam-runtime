@@ -52,7 +52,8 @@ docker_haveimage() {
   showcmd sudo docker inspect "$1"
   # Echo y/n based on docker return, so we don't interpret the sudo command failing as the
   # docker-inspect returning negatively
-  local ret=$(sudo sh -c "$(sh_quote docker inspect "$1") &>/dev/null && echo y || echo n")
+  local ret
+  ret=$(sudo sh -c "$(sh_quote docker inspect "$1") &>/dev/null && echo y || echo n")
   [[ -n $ret ]] || die "sudo failure"
   [[ $ret = y ]] || return 1
 }
