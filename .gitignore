@@ -35,3 +35,4 @@ newpkg/
 /unofficial-steam-runtime-sdk-chroot-*.deb822.gz
 /unofficial-steam-runtime-sdk-chroot-*.tar.gz
 /unofficial-steam-runtime-sdk-chroot-*.txt
+*.pyc

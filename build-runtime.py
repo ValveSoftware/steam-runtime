@@ -31,7 +31,6 @@ except ImportError:
 	from urllib import (urlopen, urlretrieve)
 
 destdir="newpkg"
-arches=["amd64", "i386"]
 
 # The top level directory
 top = sys.path[0]
@@ -104,7 +103,7 @@ class AptSource:
 			maybe_debug = ''
 
 		return [
-			"%s/dists/%s/%s/%sbinary-%s/Packages" % (
+			"%s/dists/%s/%s/%sbinary-%s/Packages.gz" % (
 				self.url, self.suite, component,
 				maybe_debug, arch)
 			for component in self.components
@@ -154,6 +153,20 @@ def parse_args():
 	parser.add_argument(
 		'--split', default=None,
 		help='Also generate an archive split into 50M parts')
+	parser.add_argument(
+		'--architecture', '--arch',
+		help='include architecture',
+		action='append', dest='architectures', default=[],
+	)
+	parser.add_argument(
+		'--packages-from',
+		help='Include packages listed in the given file',
+		action='append', default=[],
+	)
+	parser.add_argument(
+		'--dump-options', action='store_true',
+		help=argparse.SUPPRESS,		# deliberately undocumented
+	)
 
 	args = parser.parse_args()
 
@@ -177,6 +190,12 @@ def parse_args():
 		parser.error(
 			'Argument to --output, %r, must not already exist'
 			% args.output)
+
+	if not args.architectures:
+		args.architectures = ['amd64', 'i386']
+
+	if not args.packages_from:
+		args.packages_from = ['packages.txt']
 
 	return args
 
@@ -213,7 +232,7 @@ def install_sources(apt_sources, sourcelist):
 					SourcePackage(apt_source, stanza))
 
 	skipped = 0
-	unpacked = []
+	unpacked = {}
 	manifest_lines = set()
 
 	# Walk through the Sources file and process any requested packages.
@@ -267,7 +286,7 @@ def install_sources(apt_sources, sourcelist):
 				if args.verbose or re.match(r'dpkg-source: warning: ',line):
 					print(line, end='')
 
-			unpacked.append((p, sp.stanza['Version'], sp.stanza))
+			unpacked[(p, sp.stanza['Version'])] = sp.stanza
 			manifest_lines.add(
 				'%s\t%s\t%s\n' % (
 					p, sp.stanza['Version'],
@@ -291,11 +310,11 @@ def install_sources(apt_sources, sourcelist):
 		) as stanza_writer:
 			done_one = False
 
-			for source in sorted(unpacked):
+			for key, stanza in sorted(unpacked.items()):
 				if done_one:
 					stanza_writer.write(b'\n')
 
-				source[2].dump(stanza_writer)
+				stanza.dump(stanza_writer)
 				done_one = True
 
 	if skipped > 0:
@@ -327,7 +346,7 @@ def list_binaries(apt_sources, dbgsym=False):
 	else:
 		description = 'binaries'
 
-	for arch in arches:
+	for arch in args.architectures:
 		by_name = {}
 
 		# Load the Packages files so we can find the location of each
@@ -341,7 +360,12 @@ def list_binaries(apt_sources, dbgsym=False):
 					arch, description, url))
 
 				try:
-					url_file_handle = BytesIO(urlopen(url).read())
+					# Python 2 does not catch a 404 here
+					url_file_handle = gzip.GzipFile(
+						fileobj=BytesIO(
+							urlopen(url).read()
+						)
+					)
 				except Exception as e:
 					if dbgsym:
 						print(e)
@@ -538,7 +562,7 @@ def install_symbols(dbgsym_by_arch, binarylist, manifest):
 # to their relative equivalent
 #
 def fix_symlinks ():
-	for arch in arches:
+	for arch in args.architectures:
 		for dir, subdirs, files in os.walk(os.path.join(args.output, arch)):
 			for name in files:
 				filepath=os.path.join(dir,name)
@@ -561,7 +585,7 @@ def fix_symlinks ():
 # symbols
 #
 def fix_debuglinks ():
-	for arch in arches:
+	for arch in args.architectures:
 		for dir, subdirs, files in os.walk(os.path.join(args.output, arch, "usr/lib/debug")):
 			if ".build-id" in subdirs:
 				subdirs.remove(".build-id")		# don't recurse into .build-id directory we are creating
@@ -785,6 +809,20 @@ else:
 
 name_version = '%s_%s' % (name, version)
 
+if args.dump_options:
+	dump = vars(args)
+	dump['name'] = name
+	dump['version'] = version
+	dump['name_version'] = name_version
+	dump['reference_timestamp'] = reference_timestamp
+	dump['apt_sources'] = []
+	for source in apt_sources:
+		dump['apt_sources'].append(str(source))
+	import json
+	json.dump(dump, sys.stdout, indent=4, sort_keys=True)
+	sys.stdout.write('\n')
+	sys.exit(0)
+
 tmpdir = tempfile.mkdtemp(prefix='build-runtime-')
 
 if args.output is None:
@@ -820,13 +858,14 @@ binary_pkgs = set()
 
 print("Creating Steam Runtime in %s" % args.output)
 
-with open("packages.txt") as f:
-	for line in f:
-		if line[0] != '#':
-			toks = line.split()
-			if len(toks) > 1:
-				source_pkgs.add(toks[0])
-				binary_pkgs.update(toks[1:])
+for packages_from in args.packages_from:
+	with open(packages_from) as f:
+		for line in f:
+			if line[0] != '#':
+				toks = line.split()
+				if len(toks) > 1:
+					source_pkgs.add(toks[0])
+					binary_pkgs.update(toks[1:])
 
 # remove development packages for end-user runtime
 if not args.debug:

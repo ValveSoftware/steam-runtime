@@ -93,8 +93,26 @@ class TapTest:
 
 
 if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--packages-from', metavar='.../packages.txt',
+        help=('Assume build-runtime.py was told to include packages '
+              'listed in the given file'),
+        action='append', default=[],
+    )
+    parser.add_argument(
+        'manifests', metavar='*.deb822.gz', nargs='*',
+        help='Manifest files produced by build-runtime.py',
+    )
+    args = parser.parse_args()
+
+    if not args.packages_from:
+        args.packages_from = ['packages.txt']
+
     # Don't fail if invoked without arguments
-    if not sys.argv[1:]:
+    if not args.manifests:
         print('1..0 # SKIP No manifest files provided')
         sys.exit(0)
 
@@ -104,18 +122,21 @@ if __name__ == '__main__':
     binary_pkgs = set()
     packages_txt_binary_sources = {}
 
-    with open("packages.txt") as reader:
-        for line in reader:
-            if line[0] != '#':
-                toks = line.split()
-                if len(toks) > 1:
-                    source_pkgs.add(toks[0])
-                    binary_pkgs.update(toks[1:])
+    for packages_from in args.packages_from:
+        with open(packages_from) as reader:
+            for line in reader:
+                if line[0] != '#':
+                    toks = line.split()
+                    if len(toks) > 1:
+                        source_pkgs.add(toks[0])
+                        binary_pkgs.update(toks[1:])
 
-                    for p in toks[1:]:
-                        packages_txt_binary_sources[p] = toks[0]
-                        # Automatic dbgsym packages are also OK
-                        packages_txt_binary_sources[p + '-dbgsym'] = toks[0]
+                        for p in toks[1:]:
+                            packages_txt_binary_sources[p] = toks[0]
+                            # Automatic dbgsym packages are also OK
+                            packages_txt_binary_sources[
+                                p + '-dbgsym'
+                            ] = toks[0]
 
     last = None
 
@@ -123,7 +144,7 @@ if __name__ == '__main__':
     source_lists = set()
     sdk_package_lists = set()
 
-    for f in sys.argv[1:]:
+    for f in args.manifests:
         assert f.endswith('.deb822.gz')
 
         if '-sdk-chroot-' in f:

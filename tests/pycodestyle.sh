@@ -17,7 +17,7 @@ fi
 echo "1..2"
 
 if "${PYCODESTYLE}" \
-    --ignore=W191,E211,E225,E231,E501 \
+    --ignore=W191,E211,E225,E231,E501,W503 \
     build-runtime.py \
     >&2; then
     echo "ok 1 - $PYCODESTYLE reported no issues"
