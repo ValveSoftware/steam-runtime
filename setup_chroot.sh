@@ -73,6 +73,25 @@ prebuild_chroot()
 	fi
 }
 
+copy_apt_settings ()
+{
+	local sysroot="$1"
+
+	if [ "$1/" -ef / ]; then
+		echo "Internal error: sysroot "$1" is the same file as the real root" >&2
+		exit 1
+	fi
+
+	# Copy over proxy settings from host machine
+	echo -e "\\n${COLOR_ON}Adding proxy info to chroot (if set)...${COLOR_OFF}"
+	set +o pipefail
+	env | grep -i "_proxy=" | grep -v PERSISTENT_HISTORY_LAST | xargs -i echo export {} | sudo tee "$sysroot/etc/profile.d/steamrtproj.sh"
+	env | grep -i "_proxy=" | grep -v PERSISTENT_HISTORY_LAST | xargs -i echo export {} | sudo tee -a "$sysroot/etc/environment"
+	set -o pipefail
+	sudo rm -rf "$sysroot/etc/apt/apt.conf"
+	if [ -f /etc/apt/apt.conf ]; then sudo cp "/etc/apt/apt.conf" "$sysroot/etc/apt"; fi
+}
+
 build_chroot()
 {
 	# build_chroot {--amd64 | --i386} [setup options...]
@@ -116,14 +135,7 @@ build_chroot()
 	echo -e "\\n${COLOR_ON}Bootstrap the chroot...${COLOR_OFF}"
 	sudo -E debootstrap --arch="${pkg}" --include=wget --keyring="${SCRIPT_DIR}/ubuntu-archive-keyring.gpg" precise "${CHROOT_DIR}/${CHROOT_NAME}" http://archive.ubuntu.com/ubuntu/
 
-	# Copy over proxy settings from host machine
-	echo -e "\\n${COLOR_ON}Adding proxy info to chroot (if set)...${COLOR_OFF}"
-	set +o pipefail
-	env | grep -i "_proxy=" | grep -v PERSISTENT_HISTORY_LAST | xargs -i echo export {} | sudo tee ${CHROOT_DIR}/${CHROOT_NAME}/etc/profile.d/steamrtproj.sh
-	env | grep -i "_proxy=" | grep -v PERSISTENT_HISTORY_LAST | xargs -i echo export {} | sudo tee -a ${CHROOT_DIR}/${CHROOT_NAME}/etc/environment
-	set -o pipefail
-	sudo rm -rf "${CHROOT_DIR}/${CHROOT_NAME}/etc/apt/apt.conf"
-	if [ -f /etc/apt/apt.conf ]; then sudo cp "/etc/apt/apt.conf" "${CHROOT_DIR}/${CHROOT_NAME}/etc/apt"; fi  
+	copy_apt_settings "${CHROOT_DIR}/${CHROOT_NAME}"
 
 	echo -e "\\n${COLOR_ON}Running ${BOOTSTRAP_SCRIPT}$(printf ' %q' "$@")...${COLOR_OFF}"
 
