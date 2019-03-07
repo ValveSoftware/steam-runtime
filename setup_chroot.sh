@@ -156,6 +156,62 @@ build_chroot()
 	rm -f "/tmp/${TMPNAME}"
 }
 
+untar_chroot ()
+{
+	# untar_chroot {--amd64 | --i386} TARBALL
+	# Unpack a sysroot tarball for the specified architecture.
+
+	case "$1" in
+		"--i386" )
+			pkg="i386"
+			personality="linux32"
+			;;
+		"--amd64" )
+			pkg="amd64"
+			personality="linux"
+			;;
+		* )
+			echo "Error: Unrecognized argument: $1"
+			exit 1
+			;;
+	esac
+
+	shift
+
+	local tarball="$1"
+
+	CHROOT_NAME="${CHROOT_PREFIX}${pkg}"
+	local sysroot="${CHROOT_DIR}/${CHROOT_NAME}"
+
+	# blow away existing directories and recreate empty ones
+	echo -e "\\n${COLOR_ON}Creating $sysroot..."
+	sudo rm -rf "$sysroot"
+	sudo mkdir -p "$sysroot"
+
+	# Create our schroot .conf file
+	echo -e "\\n${COLOR_ON}Creating /etc/schroot/chroot.d/${CHROOT_NAME}.conf...${COLOR_OFF}"
+	printf '[%s]\ndescription=%s\ndirectory=%s\npersonality=%s\ngroups=sudo\nroot-groups=sudo\npreserve-environment=true\ntype=directory\n' "${CHROOT_NAME}" "${tarball##*/}" "${sysroot}" "${personality}" | sudo tee "/etc/schroot/chroot.d/${CHROOT_NAME}.conf"
+
+	# Create our chroot
+	echo -e "\\n${COLOR_ON}Unpacking the chroot...${COLOR_OFF}"
+	sudo tar --auto-compress -C "$sysroot" -xf "$tarball"
+
+	copy_apt_settings "$sysroot"
+
+	# We don't run $BOOTSTRAP_SCRIPT here, so reimplement
+	# --extra-apt-source.
+	if [ -n "${extra_apt_sources+set}" ]; then
+		for line in "${extra_apt_sources[@]}"; do
+			printf '%s\n' "$line"
+		done > "$sysroot/etc/apt/sources.list.d/steamrt-extra.list"
+	fi
+
+	if [ -n "$(sudo find "$sysroot" -xdev '(' -uid +99 -o -gid +99 ')' -ls)" ]; then
+		echo -e "\\n${COLOR_ON}Warning: these files might have incorrect uid mapping${COLOR_OFF}" >&2
+		sudo find "$sysroot" -xdev '(' -uid +99 -o -gid +99 ')' -ls >&2
+	fi
+}
+
 # http://stackoverflow.com/questions/64786/error-handling-in-bash
 function cleanup()
 {
@@ -178,7 +234,7 @@ usage()
 		exec >&2
 	fi
 
-	echo "Usage: $0 [--beta | --suite SUITE] [--extra-apt-source 'deb http://MIRROR SUITE COMPONENT...'] [--output-dir <DIRNAME>] --i386 | --amd64"
+	echo "Usage: $0 [--beta | --suite SUITE] [--extra-apt-source 'deb http://MIRROR SUITE COMPONENT...'] [--output-dir <DIRNAME>] [--tarball TARBALL] --i386 | --amd64"
 	exit "$1"
 }
 
@@ -186,14 +242,16 @@ main()
 {
 	local getopt_temp
 	getopt_temp="$(getopt -o '' --long \
-	'amd64,beta,extra-apt-source:,i386,output-dir:,suite:,help' \
+	'amd64,beta,extra-apt-source:,i386,output-dir:,suite:,tarball:,help' \
 	-n "$0" -- "$@")"
 	eval set -- "$getopt_temp"
 	unset getopt_temp
 
 	local -a arch_arguments=()
 	local -a setup_arguments=()
-	local chroot_prefix_has_suite=""
+	local suite=scout
+	local suite_suffix=
+	local tarball=
 
 	while [ "$#" -gt 0 ]; do
 		case "$1" in
@@ -204,8 +262,7 @@ main()
 
 			(--beta)
 				setup_arguments+=(--beta)
-				CHROOT_PREFIX="${CHROOT_PREFIX}scout_beta_"
-				chroot_prefix_has_suite=yes
+				suite_suffix=_beta
 				shift
 				;;
 
@@ -224,9 +281,13 @@ main()
 				;;
 
 			(--suite)
+				suite="$2"
 				setup_arguments+=(--suite "$2")
-				CHROOT_PREFIX="${CHROOT_PREFIX}${2}_"
-				chroot_prefix_has_suite=yes
+				shift 2
+				;;
+
+			(--tarball)
+				tarball="$2"
 				shift 2
 				;;
 
@@ -247,19 +308,44 @@ main()
 		esac
 	done
 
-	if [ -z "$chroot_prefix_has_suite" ]; then
-		CHROOT_PREFIX="${CHROOT_PREFIX}scout_"
-	fi
+	CHROOT_PREFIX="${CHROOT_PREFIX}${suite}${suite_suffix}_"
+
+	case "$suite" in
+		(scout*)
+			# We still support doing this the hard way for scout
+			;;
+
+		(demoman*|engineer*|heavy*|medic*|pyro*|sniper*|soldier*|spy*)
+			# The other TF2 class names are reserved for future Steam Runtime
+			# versions, which will almost certainly be based on a suite newer
+			# than Ubuntu 12.04 'precise', and will almost certainly break
+			# assumptions made by scripts/bootstrap-runtime.sh. Require
+			# a pre-prepared sysroot tarball instead.
+			if [ -z "$tarball" ]; then
+				echo "This script cannot bootstrap chroots for future runtime versions." >&2
+				echo "Use --tarball to provide a pre-prepared sysroot." >&2
+				usage 2
+			fi
+			;;
+	esac
 
 	if [ -z "${arch_arguments+set}" ]; then
 		usage 2
+	fi
+
+	if [ "${arch_arguments[1]+set}" ] && [ -n "$tarball" ]; then
+		echo "Only one of --amd64 or --i386 can be combined with --tarball" >&2
 	fi
 
 	# Building root(s)
 	prebuild_chroot "${arch_arguments[@]}"
 	trap cleanup EXIT
 	for var in "${arch_arguments[@]}"; do
-		build_chroot "$var" ${setup_arguments+"${setup_arguments[@]}"}
+		if [ -n "$tarball" ]; then
+			untar_chroot "$var" "$tarball"
+		else
+			build_chroot "$var" ${setup_arguments+"${setup_arguments[@]}"}
+		fi
 	done
 	trap - EXIT
 
