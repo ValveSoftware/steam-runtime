@@ -7,7 +7,7 @@ libdatrie libdatrie1
 dbus libdbus-1-3
 expat libexpat1
 libffi libffi6
-fontconfig fontconfig libfontconfig1
+fontconfig libfontconfig1
 freetype libfreetype6
 gcc-4.9 libgcc1
 glib2.0 libglib2.0-0
