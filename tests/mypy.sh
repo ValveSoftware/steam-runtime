@@ -12,6 +12,7 @@ export MYPYPATH="${PYTHONPATH:=$(pwd)}"
 
 i=0
 for script in \
+    debian/tests/*.py \
     tests/*.py \
 ; do
     i=$((i + 1))
@@ -21,7 +22,7 @@ for script in \
             --python-executable="${PYTHON:=python3}" \
             --follow-imports=skip \
             --ignore-missing-imports \
-            $script; then
+            "$script"; then
         echo "ok $i - $script"
     else
         echo "not ok $i - $script # TODO mypy issues reported"
