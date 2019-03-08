@@ -27,7 +27,13 @@ if [[ $(tput colors 2>/dev/null || echo 0) -gt 0 ]]; then
   COLOR_CLEAR=$'\e[0m'
 fi
 
-sh_quote() { local quoted="$(printf '%q ' "$@")"; [[ $# -eq 0 ]] || echo $quoted; }
+sh_quote ()
+{
+  if [ $# -gt 0 ]; then
+    printf '%q ' "$@"
+  fi
+}
+
 err()      { echo >&2 "${COLOR_ERR}!!${COLOR_CLEAR} $*"; }
 stat()     { echo >&2 "${COLOR_STAT}::${COLOR_CLEAR} $*"; }
 showcmd()  { echo >&2 "+ ${COLOR_CMD}$(sh_quote "$@")${COLOR_CLEAR}"; }
@@ -46,7 +52,8 @@ docker_haveimage() {
   showcmd sudo docker inspect "$1"
   # Echo y/n based on docker return, so we don't interpret the sudo command failing as the
   # docker-inspect returning negatively
-  local ret=$(sudo sh -c "$(sh_quote docker inspect "$1") &>/dev/null && echo y || echo n")
+  local ret
+  ret=$(sudo sh -c "$(sh_quote docker inspect "$1") &>/dev/null && echo y || echo n")
   [[ -n $ret ]] || die "sudo failure"
   [[ $ret = y ]] || return 1
 }
