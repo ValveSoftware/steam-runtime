@@ -123,14 +123,14 @@ pin_newer_runtime_libs ()
         # If we had entries in our arrays, get them
         if [[ $(file -L "$final_library") == *"32-bit"* ]]
         then
-            if [ ! -z ${host_libraries_32[$soname]+isset} ]
+            if [ ! -z "${host_libraries_32[$soname]+isset}" ]
             then
                 host_soname_symlink=${host_libraries_32[$soname]}
             fi
             bitness="32"
         elif [[ $(file -L "$final_library") == *"64-bit"* ]]
         then
-            if [ ! -z ${host_libraries_64[$soname]+isset} ]
+            if [ ! -z "${host_libraries_64[$soname]+isset}" ]
             then
                 host_soname_symlink=${host_libraries_64[$soname]}
             fi
