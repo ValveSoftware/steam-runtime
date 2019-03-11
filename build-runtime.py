@@ -902,10 +902,17 @@ if args.archive is not None:
 			if e.errno != errno.EEXIST:
 				raise
 
+	ext = '.tar.' + args.compression
+
 	if args.compression == 'none':
 		ext = '.tar'
-	else:
-		ext = '.tar.' + args.compression
+		compressor_args = ['cat']
+	elif args.compression == 'xz':
+		compressor_args = ['xz', '-v']
+	elif args.compression == 'gz':
+		compressor_args = ['gzip', '-nc']
+	elif args.compression == 'bz2':
+		compressor_args = ['bzip2', '-c']
 
 	if os.path.isdir(args.archive):
 		archive = os.path.join(args.archive, name_version + ext)
@@ -917,14 +924,14 @@ if args.archive is not None:
 	print("Creating archive %s..." % archive)
 
 	with open(archive, 'wb') as archive_writer, waiting(subprocess.Popen(
-		['xz', '-v'],
+		compressor_args,
 		stdin=subprocess.PIPE,
 		stdout=archive_writer,
-	)) as xz, closing(tarfile.open(
+	)) as compressor, closing(tarfile.open(
 		archive,
 		mode='w|',
 		format=tarfile.GNU_FORMAT,
-		fileobj=xz.stdin,
+		fileobj=compressor.stdin,
 	)) as archiver:
 		members = []
 
