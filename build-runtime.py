@@ -40,6 +40,32 @@ SPLIT_MEGABYTES = 50
 MIN_PARTS = 3
 
 
+def mkdir_p(path):
+	"""
+	Like os.makedirs(path, exist_ok=True), but compatible
+	with Python 2.
+	"""
+	if not os.path.isdir(path):
+		os.makedirs(path)
+
+
+def hard_link_or_copy(source, dest):
+	"""
+	Copy source to dest, optimizing by creating a hard-link instead
+	of a full copy if possible.
+	"""
+	try:
+		os.remove(dest)
+	except OSError as e:
+		if e.errno != errno.ENOENT:
+			raise
+
+	try:
+		os.link(source, dest)
+	except OSError:
+		shutil.copyfile(source, dest)
+
+
 def str2bool (b):
 	return b.lower() in ("yes", "true", "t", "1")
 
@@ -232,7 +258,8 @@ def install_sources(apt_sources, sourcelist):
 					SourcePackage(apt_source, stanza))
 
 	skipped = 0
-	unpacked = {}
+	failed = False
+	included = {}
 	manifest_lines = set()
 
 	# Walk through the Sources file and process any requested packages.
@@ -248,16 +275,16 @@ def install_sources(apt_sources, sourcelist):
 			#
 			# Create the destination directory if necessary
 			#
-			dir = os.path.join(top, destdir, "source", p)
-			if not os.access(dir, os.W_OK):
-				os.makedirs(dir)
+			cache_dir = os.path.join(top, destdir, "source", p)
+			if not os.access(cache_dir, os.W_OK):
+				os.makedirs(cache_dir)
 
 			#
 			# Download each file
 			#
 			for file in sp.stanza['files']:
 				check_path_traversal(file['name'])
-				file_path = os.path.join(dir, file['name'])
+				file_path = os.path.join(cache_dir, file['name'])
 				file_url = "%s/%s/%s" % (
 					sp.apt_source.url,
 					sp.stanza['directory'],
@@ -269,28 +296,40 @@ def install_sources(apt_sources, sourcelist):
 					else:
 						skipped += 1
 
-			#
-			# Unpack the source package into the output directory
-			#
-			dest_dir = os.path.join(args.output, "source", p)
-			if os.access(dest_dir, os.W_OK):
-				shutil.rmtree(dest_dir)
-			os.makedirs(dest_dir)
-			dsc_file = os.path.join(
-				dir,
-				sp.stanza['files'][0]['name']
-			)
-			ver = sp.stanza['files'][0]['name'].split('-')[0]
-			process = subprocess.Popen(["dpkg-source", "-x", "--no-copy", dsc_file, os.path.join(dest_dir,ver)], stdout=subprocess.PIPE, universal_newlines=True)
-			for line in iter(process.stdout.readline, ""):
-				if args.verbose or re.match(r'dpkg-source: warning: ',line):
-					print(line, end='')
+			for file in sp.stanza['files']:
+				if args.strict:
+					hasher = hashlib.md5()
 
-			unpacked[(p, sp.stanza['Version'])] = sp.stanza
+					with open(
+						os.path.join(cache_dir, file['name']),
+						'rb'
+					) as bin_reader:
+						blob = bin_reader.read(4096)
+
+						while blob:
+							hasher.update(blob)
+							blob = bin_reader.read(4096)
+
+						if hasher.hexdigest() != file['md5sum']:
+							print('ERROR: %s has unexpected content' % file['name'])
+							failed = True
+
+				# Copy the source package into the output directory
+				# (optimizing the copy as a hardlink if possible)
+				mkdir_p(os.path.join(args.output, 'source'))
+				hard_link_or_copy(
+					os.path.join(cache_dir, file['name']),
+					os.path.join(
+						args.output, 'source', file['name']))
+
+			included[(p, sp.stanza['Version'])] = sp.stanza
 			manifest_lines.add(
 				'%s\t%s\t%s\n' % (
 					p, sp.stanza['Version'],
 					sp.stanza['files'][0]['name']))
+
+	if failed:
+		sys.exit(1)
 
 	# sources.txt: Tab-separated table of source packages, their
 	# versions, and the corresponding .dsc file.
@@ -310,7 +349,7 @@ def install_sources(apt_sources, sourcelist):
 		) as stanza_writer:
 			done_one = False
 
-			for key, stanza in sorted(unpacked.items()):
+			for key, stanza in sorted(included.items()):
 				if done_one:
 					stanza_writer.write(b'\n')
 
