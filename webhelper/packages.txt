@@ -21,7 +21,7 @@ pixman libpixman-1-0
 libpng libpng12-0
 libselinux libselinux1
 libthai libthai0
-libx11 libx11-6 libx11-xcb1
+libx11 libx11-6 libx11-xcb1 libx11-data
 libxau libxau6
 libxcb libxcb1 libxcb-render0 libxcb-shm0
 libxcomposite libxcomposite1
