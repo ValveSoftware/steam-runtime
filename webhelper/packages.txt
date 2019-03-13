@@ -35,4 +35,5 @@ libxrandr libxrandr2
 libxrender libxrender1
 libxss libxss1
 libxtst libxtst6
+sqlite3 libsqlite3-0
 zlib zlib1g
