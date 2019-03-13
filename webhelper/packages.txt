@@ -9,7 +9,7 @@ expat libexpat1
 libffi libffi6
 fontconfig libfontconfig1
 freetype libfreetype6
-gcc-4.9 libgcc1
+gcc-4.9 gcc-4.9-base libgcc1
 glib2.0 libglib2.0-0
 graphite2 libgraphite2-3
 harfbuzz libharfbuzz0b
