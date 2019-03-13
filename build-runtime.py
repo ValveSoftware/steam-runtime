@@ -1068,10 +1068,13 @@ timestamps = {}
 for source in apt_sources:
 	with closing(urlopen(source.release_url)) as release_file:
 		release_info = deb822.Deb822(release_file)
-		timestamps[source] = calendar.timegm(time.strptime(
-			release_info['date'],
-			'%a, %d %b %Y %H:%M:%S %Z',
-		))
+		try:
+			timestamps[source] = calendar.timegm(time.strptime(
+				release_info['date'],
+				'%a, %d %b %Y %H:%M:%S %Z',
+			))
+		except ValueError:
+			timestamps[source] = 0
 
 if 'SOURCE_DATE_EPOCH' in os.environ:
 	reference_timestamp = int(os.environ['SOURCE_DATE_EPOCH'])
@@ -1307,14 +1310,16 @@ if args.archive is not None:
 			'w'
 		) as writer:
 			for apt_source in apt_sources:
-				writer.write(
-					time.strftime(
-						'# as of %Y-%m-%d %H:%M:%S\n',
-						time.gmtime(
-							timestamps[apt_source]
+				if timestamps[apt_source] > 0:
+					writer.write(
+						time.strftime(
+							'# as of %Y-%m-%d %H:%M:%S\n',
+							time.gmtime(
+								timestamps[apt_source]
+							)
 						)
 					)
-				)
+
 				writer.write('%s\n' % apt_source)
 
 		shutil.copy(
