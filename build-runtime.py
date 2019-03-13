@@ -261,7 +261,15 @@ def parse_args():
 		args.architectures = ['amd64', 'i386']
 
 	if not args.packages_from and not args.metapackages:
-		args.packages_from = ['packages.txt']
+		args.metapackages = ['steamrt-libs', 'steamrt-legacy']
+
+		if args.debug:
+			args.metapackages.append('steamrt-libdevel')
+			args.metapackages.append('steamrt-libdevel-non-multiarch')
+			# Not really a metapackage, but we want it in the
+			# debug tarball only; container/chroot/Docker
+			# environments get libgl1-mesa-dev instead
+			args.metapackages.append('dummygl-dev')
 
 	return args
 
