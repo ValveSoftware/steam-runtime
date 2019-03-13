@@ -21,14 +21,21 @@ from debian.debian_support import Version
 import argparse
 
 try:
+	import typing
+except ImportError:
+	pass
+else:
+	typing		# noqa
+
+try:
 	from io import BytesIO
 except ImportError:
-	from cStringIO import StringIO as BytesIO
+	from cStringIO import StringIO as BytesIO		# type: ignore
 
 try:
 	from urllib.request import (urlopen, urlretrieve)
 except ImportError:
-	from urllib import (urlopen, urlretrieve)
+	from urllib import (urlopen, urlretrieve)		# type: ignore
 
 destdir="newpkg"
 
@@ -104,12 +111,14 @@ class AptSource:
 			' '.join(self.components),
 		)
 
-	@property
+	@property		# type: ignore
 	def release_url(self):
+		# type: () -> str
 		return '%s/dists/%s/Release' % (self.url, self.suite)
 
-	@property
+	@property		# type: ignore
 	def sources_urls(self):
+		# type: () -> typing.List[str]
 		if self.kind != 'deb-src':
 			return []
 
@@ -120,6 +129,7 @@ class AptSource:
 		]
 
 	def get_packages_urls(self, arch, dbgsym=False):
+		# type: (str, bool) -> typing.List[str]
 		if self.kind != 'deb':
 			return []
 
@@ -951,7 +961,7 @@ def waiting(popen):
 
 
 def normalize_tar_entry(entry):
-	# type: (TarInfo) -> TarInfo
+	# type: (tarfile.TarInfo) -> tarfile.TarInfo
 	if args.verbose:
 		print(entry.name)
 
@@ -1137,7 +1147,7 @@ if not args.debug:
 	binaries_from_lists -= {x for x in binaries_from_lists if re.search('-dbg$|-dev$|-multidev$',x)}
 
 # {('libfoo2', 'amd64'): Binary for libfoo2_1.2-3_amd64}
-manifest = {}
+manifest = {}		# type: typing.Dict[typing.Tuple[str, str], Binary]
 
 binaries_by_arch = list_binaries(apt_sources)
 
