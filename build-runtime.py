@@ -114,6 +114,15 @@ class AptSource:
 	@property		# type: ignore
 	def release_url(self):
 		# type: () -> str
+
+		if self.suite.endswith('/') and not self.components:
+			suite = self.suite
+
+			if suite == './':
+				suite = ''
+
+			return '%s/%sRelease' % (self.url, suite)
+
 		return '%s/dists/%s/Release' % (self.url, self.suite)
 
 	@property		# type: ignore
@@ -121,6 +130,14 @@ class AptSource:
 		# type: () -> typing.List[str]
 		if self.kind != 'deb-src':
 			return []
+
+		if self.suite.endswith('/') and not self.components:
+			suite = self.suite
+
+			if suite == './':
+				suite = ''
+
+			return ['%s/%sSources.gz' % (self.url, suite)]
 
 		return [
 			"%s/dists/%s/%s/source/Sources.gz" % (
@@ -137,6 +154,14 @@ class AptSource:
 			maybe_debug = 'debug/'
 		else:
 			maybe_debug = ''
+
+		if self.suite.endswith('/') and not self.components:
+			suite = self.suite
+
+			if suite == './':
+				suite = ''
+
+			return ['%s/%sPackages.gz' % (self.url, suite)]
 
 		return [
 			"%s/dists/%s/%s/%sbinary-%s/Packages.gz" % (
