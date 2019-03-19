@@ -21,14 +21,21 @@ from debian.debian_support import Version
 import argparse
 
 try:
+	import typing
+except ImportError:
+	pass
+else:
+	typing		# noqa
+
+try:
 	from io import BytesIO
 except ImportError:
-	from cStringIO import StringIO as BytesIO
+	from cStringIO import StringIO as BytesIO		# type: ignore
 
 try:
 	from urllib.request import (urlopen, urlretrieve)
 except ImportError:
-	from urllib import (urlopen, urlretrieve)
+	from urllib import (urlopen, urlretrieve)		# type: ignore
 
 destdir="newpkg"
 
@@ -104,14 +111,33 @@ class AptSource:
 			' '.join(self.components),
 		)
 
-	@property
+	@property		# type: ignore
 	def release_url(self):
+		# type: () -> str
+
+		if self.suite.endswith('/') and not self.components:
+			suite = self.suite
+
+			if suite == './':
+				suite = ''
+
+			return '%s/%sRelease' % (self.url, suite)
+
 		return '%s/dists/%s/Release' % (self.url, self.suite)
 
-	@property
+	@property		# type: ignore
 	def sources_urls(self):
+		# type: () -> typing.List[str]
 		if self.kind != 'deb-src':
 			return []
+
+		if self.suite.endswith('/') and not self.components:
+			suite = self.suite
+
+			if suite == './':
+				suite = ''
+
+			return ['%s/%sSources.gz' % (self.url, suite)]
 
 		return [
 			"%s/dists/%s/%s/source/Sources.gz" % (
@@ -120,6 +146,7 @@ class AptSource:
 		]
 
 	def get_packages_urls(self, arch, dbgsym=False):
+		# type: (str, bool) -> typing.List[str]
 		if self.kind != 'deb':
 			return []
 
@@ -127,6 +154,14 @@ class AptSource:
 			maybe_debug = 'debug/'
 		else:
 			maybe_debug = ''
+
+		if self.suite.endswith('/') and not self.components:
+			suite = self.suite
+
+			if suite == './':
+				suite = ''
+
+			return ['%s/%sPackages.gz' % (self.url, suite)]
 
 		return [
 			"%s/dists/%s/%s/%sbinary-%s/Packages.gz" % (
@@ -185,6 +220,11 @@ def parse_args():
 		action='append', dest='architectures', default=[],
 	)
 	parser.add_argument(
+		'--metapackage',
+		help='Include the given package and its dependencies',
+		action='append', dest='metapackages', default=[],
+	)
+	parser.add_argument(
 		'--packages-from',
 		help='Include packages listed in the given file',
 		action='append', default=[],
@@ -220,7 +260,7 @@ def parse_args():
 	if not args.architectures:
 		args.architectures = ['amd64', 'i386']
 
-	if not args.packages_from:
+	if not args.packages_from and not args.metapackages:
 		args.packages_from = ['packages.txt']
 
 	return args
@@ -376,9 +416,31 @@ class Binary:
 			self.source = source
 			self.source_version = self.version
 
+		self.dependency_names = set()
 
-def list_binaries(apt_sources, dbgsym=False):
-	by_arch = {}
+		for field in ('Depends', 'Pre-Depends'):
+			value = stanza.get(field, '')
+			deps = value.split(',')
+
+			for d in deps:
+				# ignore alternatives
+				d = d.split('|')[0]
+				# ignore version number
+				d = d.split('(')[0]
+				d = d.strip()
+
+				if d:
+					self.dependency_names.add(d)
+
+
+def list_binaries(
+	apt_sources,		# type: typing.List[AptSource]
+	dbgsym=False		# type: bool
+):
+	# type: (...) -> typing.Dict[str, typing.Dict[str, typing.List[Binary]]]
+
+	# {'amd64': {'libc6': [<Binary>, ...]}}
+	by_arch = {}		# type: typing.Dict[str, typing.Dict[str, typing.List[Binary]]]
 
 	if dbgsym:
 		description = 'debug symbols'
@@ -386,7 +448,7 @@ def list_binaries(apt_sources, dbgsym=False):
 		description = 'binaries'
 
 	for arch in args.architectures:
-		by_name = {}
+		by_name = {}		# type: typing.Dict[str, typing.List[Binary]]
 
 		# Load the Packages files so we can find the location of each
 		# binary package
@@ -425,11 +487,210 @@ def list_binaries(apt_sources, dbgsym=False):
 	return by_arch
 
 
-def install_binaries(binaries_by_arch, binarylist, manifest):
+def ignore_metapackage_dependency(name):
+	"""
+	Return True if @name should not be installed in Steam Runtime
+	tarballs, even if it's depended on by the metapackage.
+	"""
+	return name in (
+		# Must be provided by host system
+		'libc6',
+		'libgl1-mesa-dri',
+		'libgl1-mesa-glx',
+
+		# Provided by host system alongside Mesa if needed
+		'libtxc-dxtn-s2tc0',
+
+		# Actually a virtual package
+		'libcggl',
+
+		# Experimental
+		'libcasefold-dev',
+	)
+
+
+def accept_transitive_dependency(name):
+	"""
+	Return True if @name should be included in the Steam Runtime
+	tarball whenever it is depended on a package depended on by
+	the metapackage, but should not be a direct dependency of the
+	metapackage.
+	"""
+	return name in (
+		'gcc-4.6-base',
+		'gcc-4.8-base',
+		'gcc-4.9-base',
+		'gcc-5-base',
+		'libx11-data',
+	)
+
+
+def ignore_transitive_dependency(name):
+	"""
+	Return True if @name should not be included in the Steam Runtime
+	tarball or directly depended on by the metapackage, even though
+	packages in the Steam Runtime might have dependencies on it.
+	"""
+	return name in (
+		# Must be provided by host system
+		'libc6',
+		'libgl1-mesa-dri',
+		'libgl1-mesa-glx',
+
+		# Assumed to be provided by host system if needed
+		'ca-certificates',
+		'fontconfig',
+		'fontconfig-config',
+		'gconf2-common',
+		'iso-codes',
+		'libasound2-data',
+		'libatk1.0-data',
+		'libavahi-common-data',
+		'libdb5.1',
+		'libdconf0',
+		'libdrm-intel1',
+		'libdrm-radeon1',
+		'libdrm-nouveau1a',
+		'libdrm2',
+		'libgdk-pixbuf2.0-common',
+		'libglapi-mesa',
+		'libllvm3.0',
+		'libopenal-data',
+		'libthai-data',
+		'libthai0',
+		'libtxc-dxtn-s2tc0',
+		'passwd',
+		'shared-mime-info',
+		'sound-theme-freedesktop',
+		'x11-common',
+
+		# Depended on by packages that are present for historical
+		# reasons
+		'libcggl',
+		'libstdc++6-4.6-dev',
+		'zenity-common',
+
+		# Only exists for packaging/dependency purposes
+		'debconf',
+		'libjpeg8',		# transitions to libjpeg-turbo8
+		'multiarch-support',
+
+		# Used for development in Steam Runtime, but not in
+		# chroots/containers that satisfy dependencies
+		'dummygl-dev',
+	)
+
+
+def expand_metapackages(binaries_by_arch, metapackages):
+	sources_from_apt = set()
+	binaries_from_apt = {}
+	error = False
+
+	for arch, arch_binaries in sorted(binaries_by_arch.items()):
+		binaries_from_apt[arch] = set()
+
+		for metapackage in metapackages:
+			if metapackage not in arch_binaries:
+				print('ERROR: Metapackage %s not found in Packages files' % metapackage)
+				error = True
+				continue
+
+			binary = max(
+				arch_binaries[metapackage],
+				key=lambda b: Version(b.stanza['Version']))
+			sources_from_apt.add(binary.source)
+			binaries_from_apt[arch].add(metapackage)
+
+			for d in binary.dependency_names:
+				if not ignore_metapackage_dependency(d):
+					binaries_from_apt[arch].add(d)
+
+	for arch, arch_binaries in sorted(binaries_by_arch.items()):
+		for library in sorted(binaries_from_apt[arch]):
+			if library not in arch_binaries:
+				print('ERROR: Package %s not found in Packages files' % library)
+				error = True
+				continue
+
+			binary = max(
+				arch_binaries[library],
+				key=lambda b: Version(b.stanza['Version']))
+
+			for d in binary.dependency_names:
+				if accept_transitive_dependency(d):
+					binaries_from_apt[arch].add(d)
+
+	for arch, arch_binaries in sorted(binaries_by_arch.items()):
+		for library in sorted(binaries_from_apt[arch]):
+			if library not in arch_binaries:
+				print('ERROR: Package %s not found in Packages files' % library)
+				error = True
+				continue
+
+			binary = max(
+				arch_binaries[library],
+				key=lambda b: Version(b.stanza['Version']))
+			sources_from_apt.add(binary.source)
+
+			for d in binary.dependency_names:
+				if library.endswith(('-dev', '-dbg', '-multidev')):
+					# When building a -debug runtime we
+					# disregard transitive dependencies of
+					# development-only packages
+					pass
+				elif d in binaries_from_apt[arch]:
+					pass
+				elif ignore_metapackage_dependency(d):
+					pass
+				elif ignore_transitive_dependency(d):
+					pass
+				else:
+					print('ERROR: %s depends on %s but the metapackages do not' % (library, d))
+					error = True
+
+	if error and args.strict:
+		sys.exit(1)
+
+	return sources_from_apt, binaries_from_apt
+
+
+def check_consistency(
+	binaries_from_apt,		# type: typing.Dict[str, typing.Set[str]]
+	binaries_from_lists,		# type: typing.Set[str]
+):
+	for arch, binaries in sorted(binaries_from_apt.items()):
+		for b in sorted(binaries - binaries_from_lists):
+			print('Installing %s only because of --metapackage' % b)
+		for b in sorted(binaries_from_lists - binaries):
+			print('Installing %s only because of --packages-from' % b)
+
+	for arch, binaries in sorted(binaries_from_apt.items()):
+		for name in sorted(binaries):
+			if name in binaries_from_lists:
+				pass
+			elif ignore_metapackage_dependency(name):
+				pass
+			elif ignore_transitive_dependency(name):
+				pass
+			elif name in args.metapackages:
+				pass
+			else:
+				print('WARNING: Binary package %s on %s depended on by %s but not in %s' % (name, arch, args.metapackages, args.packages_from))
+
+		for name in sorted(binaries_from_lists):
+			if name in binaries:
+				pass
+			elif ignore_transitive_dependency(name):
+				pass
+			else:
+				print('WARNING: Binary package %s in %s but not depended on by %s on %s' % (name, args.packages_from, args.metapackages, arch))
+
+
+def install_binaries(binaries_by_arch, binarylists, manifest):
 	skipped = 0
 
 	for arch, arch_binaries in sorted(binaries_by_arch.items()):
-		installset = binarylist.copy()
+		installset = binarylists[arch].copy()
 
 		#
 		# Create the destination directory if necessary
@@ -725,7 +986,7 @@ def waiting(popen):
 
 
 def normalize_tar_entry(entry):
-	# type: (TarInfo) -> TarInfo
+	# type: (tarfile.TarInfo) -> tarfile.TarInfo
 	if args.verbose:
 		print(entry.name)
 
@@ -807,10 +1068,13 @@ timestamps = {}
 for source in apt_sources:
 	with closing(urlopen(source.release_url)) as release_file:
 		release_info = deb822.Deb822(release_file)
-		timestamps[source] = calendar.timegm(time.strptime(
-			release_info['date'],
-			'%a, %d %b %Y %H:%M:%S %Z',
-		))
+		try:
+			timestamps[source] = calendar.timegm(time.strptime(
+				release_info['date'],
+				'%a, %d %b %Y %H:%M:%S %Z',
+			))
+		except ValueError:
+			timestamps[source] = 0
 
 if 'SOURCE_DATE_EPOCH' in os.environ:
 	reference_timestamp = int(os.environ['SOURCE_DATE_EPOCH'])
@@ -892,8 +1156,8 @@ if args.debug_url:
 		os.path.join(args.output, 'README.txt'))
 
 # Process packages.txt to get the list of source and binary packages
-source_pkgs = set()
-binary_pkgs = set()
+sources_from_lists = set()		# type: typing.Set[str]
+binaries_from_lists = set()		# type: typing.Set[str]
 
 print("Creating Steam Runtime in %s" % args.output)
 
@@ -903,21 +1167,35 @@ for packages_from in args.packages_from:
 			if line[0] != '#':
 				toks = line.split()
 				if len(toks) > 1:
-					source_pkgs.add(toks[0])
-					binary_pkgs.update(toks[1:])
+					sources_from_lists.add(toks[0])
+					binaries_from_lists.update(toks[1:])
 
 # remove development packages for end-user runtime
 if not args.debug:
-	binary_pkgs -= {x for x in binary_pkgs if re.search('-dbg$|-dev$|-multidev$',x)}
+	binaries_from_lists -= {x for x in binaries_from_lists if re.search('-dbg$|-dev$|-multidev$',x)}
+
+# {('libfoo2', 'amd64'): Binary for libfoo2_1.2-3_amd64}
+manifest = {}		# type: typing.Dict[typing.Tuple[str, str], Binary]
+
+binaries_by_arch = list_binaries(apt_sources)
+
+sources_from_apt, binaries_from_apt = expand_metapackages(
+	binaries_by_arch, args.metapackages)
+
+if args.packages_from and args.metapackages:
+	check_consistency(binaries_from_apt, binaries_from_lists)
+
+binary_pkgs = {}
+source_pkgs = set(sources_from_lists)
+
+for arch in binaries_by_arch:
+	binary_pkgs[arch] = binaries_from_apt[arch] | binaries_from_lists
+	source_pkgs |= sources_from_apt
+
+install_binaries(binaries_by_arch, binary_pkgs, manifest)
 
 if args.source:
 	install_sources(apt_sources, source_pkgs)
-
-# {('libfoo2', 'amd64'): Binary for libfoo2_1.2-3_amd64}
-manifest = {}
-
-binaries_by_arch = list_binaries(apt_sources)
-install_binaries(binaries_by_arch, binary_pkgs, manifest)
 
 if args.symbols:
 	dbgsym_by_arch = list_binaries(apt_sources, dbgsym=True)
@@ -1032,14 +1310,16 @@ if args.archive is not None:
 			'w'
 		) as writer:
 			for apt_source in apt_sources:
-				writer.write(
-					time.strftime(
-						'# as of %Y-%m-%d %H:%M:%S\n',
-						time.gmtime(
-							timestamps[apt_source]
+				if timestamps[apt_source] > 0:
+					writer.write(
+						time.strftime(
+							'# as of %Y-%m-%d %H:%M:%S\n',
+							time.gmtime(
+								timestamps[apt_source]
+							)
 						)
 					)
-				)
+
 				writer.write('%s\n' % apt_source)
 
 		shutil.copy(
