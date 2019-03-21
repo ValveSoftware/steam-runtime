@@ -1358,6 +1358,12 @@ if args.archive is not None:
 					name_version + '.sources.deb822.gz'),
 			)
 
+		shutil.copy(
+			os.path.join(args.output, 'version.txt'),
+			os.path.join(
+				archive_dir, name_version + '.version.txt'),
+		)
+
 	if archive_dir is not None and version != 'latest':
 		print("Creating symlink %s_latest%s..." % (name, ext))
 		symlink = os.path.join(archive_dir, name + '_latest' + ext)
