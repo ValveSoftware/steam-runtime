@@ -1232,11 +1232,20 @@ if args.archive is not None:
 		compressor_args = ['bzip2', '-c']
 
 	if os.path.isdir(args.archive):
-		archive = os.path.join(args.archive, name_version + ext)
+		archive_basename = name_version
 		archive_dir = args.archive
+		archive = os.path.join(archive_dir, archive_basename + ext)
+		make_latest_symlink = (version != 'latest')
+	elif args.archive.endswith('.*'):
+		archive_basename = os.path.basename(args.archive[:-2])
+		archive_dir = os.path.dirname(args.archive)
+		archive = os.path.join(archive_dir, archive_basename + ext)
+		make_latest_symlink = False
 	else:
 		archive = args.archive
+		archive_basename = None
 		archive_dir = None
+		make_latest_symlink = False
 
 	print("Creating archive %s..." % archive)
 
@@ -1306,7 +1315,7 @@ if args.archive is not None:
 		with open(
 			os.path.join(
 				archive_dir,
-				name_version + '.sources.list'),
+				archive_basename + '.sources.list'),
 			'w'
 		) as writer:
 			for apt_source in apt_sources:
@@ -1325,18 +1334,18 @@ if args.archive is not None:
 		shutil.copy(
 			os.path.join(args.output, 'manifest.txt'),
 			os.path.join(
-				archive_dir, name_version + '.manifest.txt'),
+				archive_dir, archive_basename + '.manifest.txt'),
 		)
 		shutil.copy(
 			os.path.join(args.output, 'built-using.txt'),
 			os.path.join(
-				archive_dir, name_version + '.built-using.txt'),
+				archive_dir, archive_basename + '.built-using.txt'),
 		)
 		shutil.copy(
 			os.path.join(args.output, 'manifest.deb822.gz'),
 			os.path.join(
 				archive_dir,
-				name_version + '.manifest.deb822.gz'),
+				archive_basename + '.manifest.deb822.gz'),
 		)
 		if args.source:
 			shutil.copy(
@@ -1346,7 +1355,7 @@ if args.archive is not None:
 					'sources.txt'),
 				os.path.join(
 					archive_dir,
-					name_version + '.sources.txt'),
+					archive_basename + '.sources.txt'),
 			)
 			shutil.copy(
 				os.path.join(
@@ -1355,16 +1364,16 @@ if args.archive is not None:
 					'sources.deb822.gz'),
 				os.path.join(
 					archive_dir,
-					name_version + '.sources.deb822.gz'),
+					archive_basename + '.sources.deb822.gz'),
 			)
 
 		shutil.copy(
 			os.path.join(args.output, 'version.txt'),
 			os.path.join(
-				archive_dir, name_version + '.version.txt'),
+				archive_dir, archive_basename + '.version.txt'),
 		)
 
-	if archive_dir is not None and version != 'latest':
+	if make_latest_symlink:
 		print("Creating symlink %s_latest%s..." % (name, ext))
 		symlink = os.path.join(archive_dir, name + '_latest' + ext)
 

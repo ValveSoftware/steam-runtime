@@ -42,11 +42,17 @@ Steam client, use a command like:
 
     ./build-runtime.py --archive=$(pwd)/steam-runtime.tar.xz
 
-or to output a tarball and metadata files with automatically-generated
+To output a tarball and metadata files with automatically-generated
 names in a directory, specify the name of an existing directory, or a
 directory to be created with a `/` suffix:
 
     ./build-runtime.py --archive=$(pwd)/archives/
+
+or to force a particular basename to be used for the tar archive and all
+associated metadata files, end with `.*`, which will usually need to be
+quoted to protect it from shell interpretation:
+
+    ./build-runtime.py --archive="$(pwd)/archives/steam-runtime.*"
 
 The archive will unpack into a directory named `steam-runtime`.
 
