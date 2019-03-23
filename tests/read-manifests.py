@@ -182,7 +182,11 @@ if __name__ == '__main__':
                 encoding='utf-8',
             ):
                 binary = Binary(binary_stanza, binary_version_marker='+srt')
-                if binary.name not in packages_txt_binary_sources:
+
+                if binary.source == 'steamrt':
+                    # Ignore steamrt metapackage
+                    pass
+                elif binary.name not in packages_txt_binary_sources:
                     test.not_ok(
                         'Runtime %s contains %s, not listed in packages.txt'
                         % (f, binary.name))
