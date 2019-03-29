@@ -1212,13 +1212,6 @@ subprocess.check_call([
 ])
 
 if args.archive is not None:
-	if args.archive.endswith('/'):
-		try:
-			os.makedirs(args.archive, 0o755)
-		except OSError as e:
-			if e.errno != errno.EEXIST:
-				raise
-
 	ext = '.tar.' + args.compression
 
 	if args.compression == 'none':
@@ -1231,7 +1224,7 @@ if args.archive is not None:
 	elif args.compression == 'bz2':
 		compressor_args = ['bzip2', '-c']
 
-	if os.path.isdir(args.archive):
+	if os.path.isdir(args.archive) or args.archive.endswith('/'):
 		archive_basename = name_version
 		archive_dir = args.archive
 		archive = os.path.join(archive_dir, archive_basename + ext)
@@ -1246,6 +1239,12 @@ if args.archive is not None:
 		archive_basename = None
 		archive_dir = None
 		make_latest_symlink = False
+
+	try:
+		os.makedirs(os.path.dirname(archive) or '.', 0o755)
+	except OSError as e:
+		if e.errno != errno.EEXIST:
+			raise
 
 	print("Creating archive %s..." % archive)
 
