@@ -273,7 +273,11 @@ def download_file(file_url, file_path):
 	except OSError:
 		pass
 
-	urlretrieve(file_url, file_path)
+	try:
+		urlretrieve(file_url, file_path)
+	except Exception as e:
+		sys.stderr.write('Error downloading %s:\n' % file_url)
+		raise
 	return True
 
 
@@ -308,6 +312,12 @@ def install_sources(apt_sources, sourcelist):
 	# of completeness and download all of them.
 	for sp in source_packages:
 		p = sp.stanza['package']
+
+		# Skip packages with Extra-Source-Only: yes.
+		# These don't necessarily appear in the package pool.
+		if sp.stanza.get('Extra-Source-Only', 'no') == 'yes':
+			continue
+
 		if p in sourcelist:
 			if args.verbose:
 				print("DOWNLOADING SOURCE: %s" % p)
@@ -1073,7 +1083,7 @@ for source in apt_sources:
 				release_info['date'],
 				'%a, %d %b %Y %H:%M:%S %Z',
 			))
-		except ValueError:
+		except (KeyError, ValueError):
 			timestamps[source] = 0
 
 if 'SOURCE_DATE_EPOCH' in os.environ:
