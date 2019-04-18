@@ -97,10 +97,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--packages-from', metavar='.../packages.txt',
-        help=('Assume build-runtime.py was told to include packages '
-              'listed in the given file'),
-        action='append', default=[],
+        # Ignored for backwards compat
+        '--packages-from', help=argparse.SUPPRESS,
     )
     parser.add_argument(
         'manifests', metavar='*.deb822.gz', nargs='*',
@@ -108,35 +106,12 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    if not args.packages_from:
-        args.packages_from = ['packages.txt']
-
     # Don't fail if invoked without arguments
     if not args.manifests:
         print('1..0 # SKIP No manifest files provided')
         sys.exit(0)
 
     test = TapTest()
-
-    source_pkgs = set()
-    binary_pkgs = set()
-    packages_txt_binary_sources = {}
-
-    for packages_from in args.packages_from:
-        with open(packages_from) as reader:
-            for line in reader:
-                if line[0] != '#':
-                    toks = line.split()
-                    if len(toks) > 1:
-                        source_pkgs.add(toks[0])
-                        binary_pkgs.update(toks[1:])
-
-                        for p in toks[1:]:
-                            packages_txt_binary_sources[p] = toks[0]
-                            # Automatic dbgsym packages are also OK
-                            packages_txt_binary_sources[
-                                p + '-dbgsym'
-                            ] = toks[0]
 
     last = None
 
@@ -182,25 +157,6 @@ if __name__ == '__main__':
                 encoding='utf-8',
             ):
                 binary = Binary(binary_stanza, binary_version_marker='+srt')
-
-                if binary.source == 'steamrt':
-                    # Ignore steamrt metapackage
-                    pass
-                elif binary.name not in packages_txt_binary_sources:
-                    test.not_ok(
-                        'Runtime %s contains %s, not listed in packages.txt'
-                        % (f, binary.name))
-                elif packages_txt_binary_sources[binary.name] != binary.source:
-                    test.not_ok(
-                        'packages.txt thinks %s is built by source %s, '
-                        'but %s_%s_%s was built by %s_%s'
-                        % (
-                            binary.name,
-                            packages_txt_binary_sources[binary.name],
-                            binary.name, binary.version, binary.arch,
-                            binary.source, binary.source_version))
-                else:
-                    test.ok('%s in packages.txt' % binary.name)
 
                 if (
                     binary.source not in sources

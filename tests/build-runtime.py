@@ -39,7 +39,10 @@ class TestBuildRuntime(unittest.TestCase):
         ])
         o = json.loads(j, encoding='utf-8')
         self.assertEqual(o['architectures'], ['amd64', 'i386'])
-        self.assertEqual(o['packages_from'], ['packages.txt'])
+        self.assertEqual(o['packages_from'], [])
+        self.assertEqual(
+            sorted(o['metapackages']),
+            sorted(['steamrt-libs', 'steamrt-legacy']))
 
     def test_architectures(self):
         j = subprocess.check_output([
