@@ -1073,7 +1073,7 @@ for source in apt_sources:
 				release_info['date'],
 				'%a, %d %b %Y %H:%M:%S %Z',
 			))
-		except ValueError:
+		except (KeyError, ValueError):
 			timestamps[source] = 0
 
 if 'SOURCE_DATE_EPOCH' in os.environ:
