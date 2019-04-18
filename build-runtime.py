@@ -273,7 +273,11 @@ def download_file(file_url, file_path):
 	except OSError:
 		pass
 
-	urlretrieve(file_url, file_path)
+	try:
+		urlretrieve(file_url, file_path)
+	except Exception as e:
+		sys.stderr.write('Error downloading %s:\n' % file_url)
+		raise
 	return True
 
 
