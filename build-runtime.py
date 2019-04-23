@@ -539,6 +539,7 @@ def accept_transitive_dependency(name):
 		'gcc-4.8-base',
 		'gcc-4.9-base',
 		'gcc-5-base',
+		'libelf1',
 		'libx11-data',
 	)
 
