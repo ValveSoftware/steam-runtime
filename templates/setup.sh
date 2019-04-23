@@ -181,10 +181,34 @@ pin_newer_runtime_libs ()
             fi
         fi
 
-        if [[ "$soname" == "libSDL2-2.0.so.0" ]]
-        then
-            runtime_version_newer="forced"
-        fi
+        case "$soname" in
+            (libSDL2-2.0.so.0)
+                # We know the Steam Runtime has an up-to-date SDL2.
+                runtime_version_newer="forced"
+                ;;
+
+            (libcurl.so.4)
+                # libcurl in the Steam Runtime is internally identified
+                # as libcurl.so.4, but with a symlink at libcurl.so.3
+                # as a result of some unfortunate ABI weirdness back in
+                # 2007. It also has Debian-specific symbol versioning as a
+                # result of the versioned symbols introduced as a
+                # Debian-specific change in 2005-2006, which were preserved
+                # across the rename from libcurl.so.3 to libcurl.so.4, not
+                # matching the versioned symbols that upstream subsequently
+                # added to libcurl.so.4; as a result, a system libcurl.so.4
+                # probably isn't going to be a drop-in replacement for our
+                # libcurl.
+                #
+                # Debian/Ubuntu subsequently (in 2018) switched to a SONAME
+                # and versioning that match upstream, but the Steam Runtime
+                # is based on a version that is older than that, so anything
+                # built against the Steam Runtime will expect the old SONAME
+                # and versioned symbols; make sure we use the Steam Runtime
+                # version.
+                runtime_version_newer="forced"
+                ;;
+        esac
 
 
         if [[ $runtime_version_newer == "yes" ]]; then
@@ -200,6 +224,21 @@ pin_newer_runtime_libs ()
             echo "$host_soname_symlink" > "$steam_runtime_path/pinned_libs_$bitness/system_$soname"
             echo "$host_library" >> "$steam_runtime_path/pinned_libs_$bitness/system_$soname"
             touch "$steam_runtime_path/pinned_libs_$bitness/has_pins"
+        fi
+    done
+
+    for bitness in 32 64; do
+        if [ -L "$steam_runtime_path/pinned_libs_$bitness/libcurl.so.4" ]; then
+            # The version of libcurl.so.4 in the Steam Runtime is actually
+            # binary-compatible with the older libcurl.so.3 in Debian/Ubuntu,
+            # so pin it under both names.
+            ln -fns libcurl.so.4 "$steam_runtime_path/pinned_libs_$bitness/libcurl.so.3"
+        fi
+
+        if [ -L "$steam_runtime_path/pinned_libs_$bitness/libcurl-gnutls.so.4" ]; then
+            # Similarly, libcurl-gnutls.so.4 is actually binary-compatible
+            # with libcurl-gnutls.so.3, so pin it under both names.
+            ln -fns libcurl-gnutls.so.4 "$steam_runtime_path/pinned_libs_$bitness/libcurl-gnutls.so.3"
         fi
     done
 }
