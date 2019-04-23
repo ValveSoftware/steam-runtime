@@ -147,13 +147,9 @@ class AptSource:
 
 	def get_packages_urls(self, arch, dbgsym=False):
 		# type: (str, bool) -> typing.List[str]
+
 		if self.kind != 'deb':
 			return []
-
-		if dbgsym:
-			maybe_debug = 'debug/'
-		else:
-			maybe_debug = ''
 
 		if self.suite.endswith('/') and not self.components:
 			suite = self.suite
@@ -163,12 +159,23 @@ class AptSource:
 
 			return ['%s/%sPackages.gz' % (self.url, suite)]
 
-		return [
-			"%s/dists/%s/%s/%sbinary-%s/Packages.gz" % (
-				self.url, self.suite, component,
-				maybe_debug, arch)
-			for component in self.components
-		]
+		ret = []		# type: typing.List[str]
+
+		for component in self.components:
+			ret.append(
+				"%s/dists/%s/%s/binary-%s/Packages.gz" % (
+					self.url, self.suite, component,
+					arch)
+			)
+
+			if dbgsym:
+				ret.append(
+					"%s/dists/%s/%s/debug/binary-%s/Packages.gz" % (
+						self.url, self.suite,
+						component, arch)
+				)
+
+		return ret
 
 
 def parse_args():
