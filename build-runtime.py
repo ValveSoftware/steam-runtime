@@ -1036,14 +1036,9 @@ if args.verbose:
 	for property, value in sorted(vars(args).items()):
 		print("\t", property, ": ", value)
 
-if args.debug:
-	component = 'debug'
-else:
-	component = 'main'
-
 apt_sources = [
-	AptSource('deb', args.repo, args.suite, (component,)),
-	AptSource('deb-src', args.repo, args.suite, (component,)),
+	AptSource('deb', args.repo, args.suite, ('main',)),
+	AptSource('deb-src', args.repo, args.suite, ('main',)),
 ]
 
 for line in args.extra_apt_sources:
