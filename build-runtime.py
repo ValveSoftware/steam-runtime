@@ -290,7 +290,7 @@ def download_file(file_url, file_path):
 
 	try:
 		urlretrieve(file_url, file_path)
-	except Exception as e:
+	except Exception:
 		sys.stderr.write('Error downloading %s:\n' % file_url)
 		raise
 	return True
@@ -633,51 +633,69 @@ def expand_metapackages(binaries_by_arch, metapackages):
 
 	for arch, arch_binaries in sorted(binaries_by_arch.items()):
 		for library in sorted(binaries_from_apt[arch]):
-			if library not in arch_binaries:
-				print('ERROR: Package %s not found in Packages files' % library)
+			if not _recurse_dependency(
+				arch_binaries,
+				library,
+				binaries_from_apt[arch],
+				sources_from_apt,
+			):
 				error = True
-				continue
-
-			binary = max(
-				arch_binaries[library],
-				key=lambda b: Version(b.stanza['Version']))
-
-			for d in binary.dependency_names:
-				if accept_transitive_dependency(d):
-					binaries_from_apt[arch].add(d)
-
-	for arch, arch_binaries in sorted(binaries_by_arch.items()):
-		for library in sorted(binaries_from_apt[arch]):
-			if library not in arch_binaries:
-				print('ERROR: Package %s not found in Packages files' % library)
-				error = True
-				continue
-
-			binary = max(
-				arch_binaries[library],
-				key=lambda b: Version(b.stanza['Version']))
-			sources_from_apt.add(binary.source)
-
-			for d in binary.dependency_names:
-				if library.endswith(('-dev', '-dbg', '-multidev')):
-					# When building a -debug runtime we
-					# disregard transitive dependencies of
-					# development-only packages
-					pass
-				elif d in binaries_from_apt[arch]:
-					pass
-				elif ignore_metapackage_dependency(d):
-					pass
-				elif ignore_transitive_dependency(d):
-					pass
-				else:
-					print('ERROR: %s depends on %s but the metapackages do not' % (library, d))
-					error = True
 
 	if error and args.strict:
 		sys.exit(1)
 
 	return sources_from_apt, binaries_from_apt
+
+
+def _recurse_dependency(
+	arch_binaries,			# type: typing.Dict[str, typing.List[Binary]]
+	library,			# type: str
+	binaries_from_apt,		# type: typing.Set[str]
+	sources_from_apt		# type: typing.Set[str]
+):
+	if library not in arch_binaries:
+		print('ERROR: Package %s not found in Packages files' % library)
+		return False
+
+	binary = max(
+		arch_binaries[library],
+		key=lambda b: Version(b.stanza['Version']))
+	sources_from_apt.add(binary.source)
+	error = False
+
+	for d in binary.dependency_names:
+		if accept_transitive_dependency(d):
+			if d not in binaries_from_apt:
+				binaries_from_apt.add(d)
+				if not _recurse_dependency(
+					arch_binaries,
+					d,
+					binaries_from_apt,
+					sources_from_apt,
+				):
+					error = True
+		elif library.endswith(('-dev', '-dbg', '-multidev')):
+			# When building a -debug runtime we
+			# disregard transitive dependencies of
+			# development-only packages
+			pass
+		elif d in binaries_from_apt:
+			pass
+		elif ignore_metapackage_dependency(d):
+			pass
+		elif ignore_transitive_dependency(d):
+			pass
+		else:
+			print('ERROR: %s depends on %s but the metapackages do not' % (library, d))
+			_recurse_dependency(
+				arch_binaries,
+				d,
+				binaries_from_apt,
+				sources_from_apt,
+			)
+			error = True
+
+	return not error
 
 
 def check_consistency(
