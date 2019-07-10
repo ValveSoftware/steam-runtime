@@ -11,6 +11,16 @@ if [ "$1" = "" ]; then
     exit 1
 fi
 
+if [ -z ${SYSTEM_ZENITY} ]; then
+    # Prefer host zenity binary if available
+    export SYSTEM_ZENITY="$(which zenity 2>/dev/null)"
+    if [ -z ${SYSTEM_ZENITY} ]; then
+        export STEAM_ZENITY="zenity"
+    else
+        export STEAM_ZENITY="${SYSTEM_ZENITY}"
+    fi
+fi
+
 # Note that we put the Steam runtime first
 # If ldd on a program shows any library in the system path, then that program
 # may not run in the Steam runtime.
