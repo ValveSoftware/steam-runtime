@@ -948,7 +948,7 @@ def fix_debuglinks ():
 						linkdir = os.path.join(args.output, arch, "usr/lib/debug/.build-id", m.group(1))
 						if not os.access(linkdir, os.W_OK):
 							os.makedirs(linkdir)
-						link = os.path.join(linkdir,m.group(2))
+						link = os.path.join(linkdir, m.group(2) + '.debug')
 						if args.verbose:
 							print("SYMLINKING symbol file %s to %s" % (link, os.path.relpath(os.path.join(dir,file),linkdir)))
 						if os.path.lexists(link):
