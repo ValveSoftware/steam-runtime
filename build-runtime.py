@@ -598,7 +598,6 @@ def ignore_transitive_dependency(name):
 		'libdrm-radeon1',
 		'libdrm-nouveau1a',
 		'libdrm2',
-		'libgdk-pixbuf2.0-common',
 		'libglapi-mesa',
 		'libllvm3.0',
 		'libopenal-data',
@@ -609,6 +608,10 @@ def ignore_transitive_dependency(name):
 		'shared-mime-info',
 		'sound-theme-freedesktop',
 		'x11-common',
+
+		# Non-essential: only contains localizations
+		'libgdk-pixbuf2.0-common',
+		'libjson-glib-1.0-common',
 
 		# Depended on by packages that are present for historical
 		# reasons
