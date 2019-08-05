@@ -520,8 +520,18 @@ def ignore_metapackage_dependency(name):
 	return name in (
 		# Must be provided by host system
 		'libc6',
+		'libegl-mesa0',
+		'libegl1-mesa',
+		'libegl1-mesa-drivers',
 		'libgl1-mesa-dri',
 		'libgl1-mesa-glx',
+		'libgles1-mesa',
+		'libgles2-mesa',
+		'libglx-mesa0',
+		'mesa-opencl-icd',
+		'mesa-va-drivers',
+		'mesa-vdpau-drivers',
+		'mesa-vulkan-drivers',
 
 		# Provided by host system alongside Mesa if needed
 		'libtxc-dxtn-s2tc0',
@@ -560,8 +570,18 @@ def ignore_transitive_dependency(name):
 	return name in (
 		# Must be provided by host system
 		'libc6',
+		'libegl-mesa0',
+		'libegl1-mesa',
+		'libegl1-mesa-drivers',
 		'libgl1-mesa-dri',
 		'libgl1-mesa-glx',
+		'libgles1-mesa',
+		'libgles2-mesa',
+		'libglx-mesa0',
+		'mesa-opencl-icd',
+		'mesa-va-drivers',
+		'mesa-vdpau-drivers',
+		'mesa-vulkan-drivers',
 
 		# Assumed to be provided by host system if needed
 		'ca-certificates',
