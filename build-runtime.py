@@ -899,6 +899,16 @@ def install_deb (basename, deb, dest_dir):
 	#
 	os.chdir(top)
 	subprocess.check_call(['dpkg-deb', '-x', deb, dest_dir])
+	try:
+		shutil.rmtree(
+			os.path.join(
+				dest_dir, 'usr', 'share', 'doc',
+				'nvidia-cg-toolkit', 'examples',
+			)
+		)
+	except OSError as e:
+		if e.errno != errno.ENOENT:
+			raise
 
 
 def install_symbols(dbgsym_by_arch, binarylist, manifest):
