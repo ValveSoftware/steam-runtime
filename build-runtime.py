@@ -827,18 +827,33 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 		if installset and args.strict:
 			raise SystemExit('Not all binary packages were found')
 
-		# Combine directories used by libsteam-runtime-tools so
-		# the amd64 and i386 versions are adjacent
-		for pattern in (
-			'usr/lib/steamrt',
-			'usr/libexec/steam-runtime-tools-*',
-		):
+		# Combine basically all directories, except for {usr/,}{s,}bin
+		# which collides (see
+		# templates/scripts/check-runtime-conflicts.sh) and installed
+		# which is only metadata anyway
+		for pattern in ('*', 'usr/*'):
 			for dir in glob.glob(os.path.join(args.output, arch, pattern)):
+				if dir.endswith(('/bin', '/sbin', '/usr')):
+					# Don't merge bin, sbin - they
+					# will definitely collide.
+					# Don't merge all of usr - we merge its
+					# subdirectories instead, because we
+					# want to skip usr/bin and usr/sbin.
+					continue
+
 				for (dirpath, dirnames, filenames) in os.walk(dir):
 					relative_path = os.path.relpath(
 						dirpath,
 						os.path.join(args.output, arch),
 					)
+
+					for member in dirnames:
+						merged = os.path.join(
+							args.output,
+							relative_path,
+							member,
+						)
+						mkdir_p(merged)
 
 					for member in filenames:
 						source = os.path.join(
@@ -856,8 +871,8 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 							mkdir_p(os.path.dirname(merged))
 							shutil.move(source, merged)
 
-				# Replace amd64/usr/lib/steamrt with a symlink
-				# to ../../usr/lib/steamrt, etc.
+				# Replace amd64/usr/lib with a symlink to
+				# ../usr/lib, etc.
 				relative_path = os.path.relpath(
 					dir,
 					os.path.join(args.output, arch),
