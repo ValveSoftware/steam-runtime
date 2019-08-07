@@ -16,8 +16,15 @@ fi
 
 echo "1..2"
 
+# E117: over-indented
+# W191: indentation contains tabs
+# E211: whitespace before ‘(‘
+# E225: missing whitespace around operator
+# E231: missing whitespace after ‘,’, ‘;’, or ‘:’
+# E501: line too long (82 > 79 characters)
+# W503: line break before binary operator
 if "${PYCODESTYLE}" \
-    --ignore=W191,E211,E225,E231,E501,W503 \
+    --ignore=E117,W191,E211,E225,E231,E501,W503 \
     build-runtime.py \
     >&2; then
     echo "ok 1 - $PYCODESTYLE reported no issues"
