@@ -1287,7 +1287,7 @@ if args.archive is not None:
 		compressor_args = ['bzip2', '-c']
 
 	if os.path.isdir(args.archive) or args.archive.endswith('/'):
-		archive_basename = name_version
+		archive_basename = name_version		# type: typing.Optional[str]
 		archive_dir = args.archive
 		archive = os.path.join(archive_dir, archive_basename + ext)
 		make_latest_symlink = (version != 'latest')
@@ -1371,6 +1371,7 @@ if args.archive is not None:
 		))
 
 	if archive_dir is not None:
+		assert archive_basename is not None
 		print("Copying manifest files to %s..." % archive_dir)
 
 		with open(
