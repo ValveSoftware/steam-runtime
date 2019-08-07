@@ -8,6 +8,7 @@ import errno
 import os
 import re
 import sys
+import glob
 import gzip
 import hashlib
 import shutil
@@ -71,6 +72,17 @@ def hard_link_or_copy(source, dest):
 		os.link(source, dest)
 	except OSError:
 		shutil.copyfile(source, dest)
+
+
+def warn_if_different(
+	path1,		# type: str
+	path2		# type: str
+):
+	# type: (...) -> None
+	# Deliberately ignoring exit status
+	subprocess.call([
+		'diff', '--brief', '--', path1, path2,
+	])
 
 
 def str2bool (b):
@@ -814,6 +826,54 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 
 		if installset and args.strict:
 			raise SystemExit('Not all binary packages were found')
+
+		# Combine directories used by libsteam-runtime-tools so
+		# the amd64 and i386 versions are adjacent
+		for pattern in (
+			'usr/lib/steamrt',
+			'usr/libexec/steam-runtime-tools-*',
+		):
+			for dir in glob.glob(os.path.join(args.output, arch, pattern)):
+				for (dirpath, dirnames, filenames) in os.walk(dir):
+					relative_path = os.path.relpath(
+						dirpath,
+						os.path.join(args.output, arch),
+					)
+
+					for member in filenames:
+						source = os.path.join(
+							dirpath,
+							member,
+						)
+						merged = os.path.join(
+							args.output,
+							relative_path,
+							member,
+						)
+						if os.path.exists(merged):
+							warn_if_different(source, merged)
+						else:
+							mkdir_p(os.path.dirname(merged))
+							shutil.move(source, merged)
+
+				# Replace amd64/usr/lib/steamrt with a symlink
+				# to ../../usr/lib/steamrt, etc.
+				relative_path = os.path.relpath(
+					dir,
+					os.path.join(args.output, arch),
+				)
+				merged = os.path.join(
+					args.output,
+					relative_path,
+				)
+				shutil.rmtree(dir)
+				os.symlink(
+					os.path.join(
+						'../' * (relative_path.count('/') + 1),
+						relative_path,
+					),
+					dir,
+				)
 
 	if skipped > 0:
 		print("Skipped downloading %i file(s) that were already present." % skipped)
