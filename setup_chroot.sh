@@ -7,6 +7,7 @@ BOOTSTRAP_SCRIPT="$SCRIPT_DIR/scripts/bootstrap-runtime.sh"
 LOGFILE="$(mktemp --tmpdir steam-runtime-setup-chroot-XXX.log)"
 CHROOT_PREFIX="steamrt_"
 CHROOT_DIR="/var/chroots"
+CHROOT_NAME=""
 
 # exit on any script line that fails
 set -o errexit
@@ -34,6 +35,8 @@ sh_quote ()
 
 prebuild_chroot()
 {
+	local name
+
 	# install some packages
 	echo -e "\\n${COLOR_ON}Installing debootstrap schroot...${COLOR_OFF}"
 	sudo -E apt-get install -y debootstrap schroot
@@ -55,7 +58,13 @@ prebuild_chroot()
 
 	STEAM_RUNTIME_SPEW_WARNING=
 	for var in "$@"; do
-		dirname="${CHROOT_DIR}/${CHROOT_PREFIX}${var/--/}"
+		if [ -n "$CHROOT_NAME" ]; then
+			name="$CHROOT_NAME"
+		else
+			name="${CHROOT_PREFIX}${var/--/}"
+		fi
+
+		dirname="${CHROOT_DIR}/${CHROOT_NAME}"
 		if [ -d "${dirname}" ]; then
 			tput setaf 3
 			STEAM_RUNTIME_SPEW_WARNING=1
@@ -120,22 +129,28 @@ build_chroot()
 	shift
 	# Remaining arguments are for $BOOTSTRAP_SCRIPT
 
-	CHROOT_NAME=${CHROOT_PREFIX}${pkg}
+	local name
+
+	if [ -n "$CHROOT_NAME" ]; then
+		name="$CHROOT_NAME"
+	else
+		name="${CHROOT_PREFIX}${pkg}"
+	fi
 
 	# blow away existing directories and recreate empty ones
-	echo -e "\\n${COLOR_ON}Creating ${CHROOT_DIR}/${CHROOT_NAME}..."
-	sudo rm -rf "${CHROOT_DIR}/${CHROOT_NAME}"
-	sudo mkdir -p "${CHROOT_DIR}/${CHROOT_NAME}"
+	echo -e "\\n${COLOR_ON}Creating ${CHROOT_DIR}/${name}..."
+	sudo rm -rf "${CHROOT_DIR}/${name}"
+	sudo mkdir -p "${CHROOT_DIR}/${name}"
 
 	# Create our schroot .conf file
-	echo -e "\\n${COLOR_ON}Creating /etc/schroot/chroot.d/${CHROOT_NAME}.conf...${COLOR_OFF}"
-	printf '[%s]\ndescription=Ubuntu 12.04 Precise for %s\ndirectory=%s/%s\npersonality=%s\ngroups=sudo\nroot-groups=sudo\npreserve-environment=true\ntype=directory\n' "${CHROOT_NAME}" "${pkg}" "${CHROOT_DIR}" "${CHROOT_NAME}" "${personality}" | sudo tee "/etc/schroot/chroot.d/${CHROOT_NAME}.conf"
+	echo -e "\\n${COLOR_ON}Creating /etc/schroot/chroot.d/${name}.conf...${COLOR_OFF}"
+	printf '[%s]\ndescription=Ubuntu 12.04 Precise for %s\ndirectory=%s/%s\npersonality=%s\ngroups=sudo\nroot-groups=sudo\npreserve-environment=true\ntype=directory\n' "${name}" "${pkg}" "${CHROOT_DIR}" "${name}" "${personality}" | sudo tee "/etc/schroot/chroot.d/${name}.conf"
 
 	# Create our chroot
 	echo -e "\\n${COLOR_ON}Bootstrap the chroot...${COLOR_OFF}"
-	sudo -E debootstrap --arch="${pkg}" --include=wget --keyring="${SCRIPT_DIR}/ubuntu-archive-keyring.gpg" precise "${CHROOT_DIR}/${CHROOT_NAME}" http://archive.ubuntu.com/ubuntu/
+	sudo -E debootstrap --arch="${pkg}" --include=wget --keyring="${SCRIPT_DIR}/ubuntu-archive-keyring.gpg" precise "${CHROOT_DIR}/${name}" http://archive.ubuntu.com/ubuntu/
 
-	copy_apt_settings "${CHROOT_DIR}/${CHROOT_NAME}"
+	copy_apt_settings "${CHROOT_DIR}/${name}"
 
 	echo -e "\\n${COLOR_ON}Running ${BOOTSTRAP_SCRIPT}$(printf ' %q' "$@")...${COLOR_OFF}"
 
@@ -148,11 +163,11 @@ build_chroot()
 	TMPNAME="${TMPNAME%.*}-$$.sh"
 	cp -f "$BOOTSTRAP_SCRIPT" "/tmp/${TMPNAME}"
 	chmod +x "/tmp/${TMPNAME}"
-	schroot --chroot ${CHROOT_NAME} -d /tmp --user root -- "/tmp/${TMPNAME}" --chroot "$@"
+	schroot --chroot ${name} -d /tmp --user root -- "/tmp/${TMPNAME}" --chroot "$@"
 	rm -f "/tmp/${TMPNAME}"
 	cp -f "$SCRIPT_DIR/write-manifest" "/tmp/${TMPNAME}"
 	chmod +x "/tmp/${TMPNAME}"
-	schroot --chroot ${CHROOT_NAME} -d /tmp --user root -- "/tmp/${TMPNAME}" /
+	schroot --chroot ${name} -d /tmp --user root -- "/tmp/${TMPNAME}" /
 	rm -f "/tmp/${TMPNAME}"
 }
 
@@ -179,9 +194,15 @@ untar_chroot ()
 	shift
 
 	local tarball="$1"
+	local name
 
-	CHROOT_NAME="${CHROOT_PREFIX}${pkg}"
-	local sysroot="${CHROOT_DIR}/${CHROOT_NAME}"
+	if [ -n "$CHROOT_NAME" ]; then
+		name="$CHROOT_NAME"
+	else
+		name="${CHROOT_PREFIX}${pkg}"
+	fi
+
+	local sysroot="${CHROOT_DIR}/${name}"
 
 	# blow away existing directories and recreate empty ones
 	echo -e "\\n${COLOR_ON}Creating $sysroot..."
@@ -189,8 +210,8 @@ untar_chroot ()
 	sudo mkdir -p "$sysroot"
 
 	# Create our schroot .conf file
-	echo -e "\\n${COLOR_ON}Creating /etc/schroot/chroot.d/${CHROOT_NAME}.conf...${COLOR_OFF}"
-	printf '[%s]\ndescription=%s\ndirectory=%s\npersonality=%s\ngroups=sudo\nroot-groups=sudo\npreserve-environment=true\ntype=directory\n' "${CHROOT_NAME}" "${tarball##*/}" "${sysroot}" "${personality}" | sudo tee "/etc/schroot/chroot.d/${CHROOT_NAME}.conf"
+	echo -e "\\n${COLOR_ON}Creating /etc/schroot/chroot.d/${name}.conf...${COLOR_OFF}"
+	printf '[%s]\ndescription=%s\ndirectory=%s\npersonality=%s\ngroups=sudo\nroot-groups=sudo\npreserve-environment=true\ntype=directory\n' "${name}" "${tarball##*/}" "${sysroot}" "${personality}" | sudo tee "/etc/schroot/chroot.d/${name}.conf"
 
 	# Create our chroot
 	echo -e "\\n${COLOR_ON}Unpacking the chroot...${COLOR_OFF}"
@@ -234,7 +255,7 @@ usage()
 		exec >&2
 	fi
 
-	echo "Usage: $0 [--beta | --suite SUITE] [--extra-apt-source 'deb http://MIRROR SUITE COMPONENT...'] [--output-dir <DIRNAME>] [--tarball TARBALL] --i386 | --amd64"
+	echo "Usage: $0 [--beta | --suite SUITE] [--name NAME] [--extra-apt-source 'deb http://MIRROR SUITE COMPONENT...'] [--output-dir <DIRNAME>] [--tarball TARBALL] --i386 | --amd64"
 	exit "$1"
 }
 
@@ -242,7 +263,7 @@ main()
 {
 	local getopt_temp
 	getopt_temp="$(getopt -o '' --long \
-	'amd64,beta,extra-apt-source:,i386,output-dir:,suite:,tarball:,help' \
+	'amd64,beta,extra-apt-source:,i386,name:,output-dir:,suite:,tarball:,help' \
 	-n "$0" -- "$@")"
 	eval set -- "$getopt_temp"
 	unset getopt_temp
@@ -264,6 +285,11 @@ main()
 				setup_arguments+=(--beta)
 				suite_suffix=_beta
 				shift
+				;;
+
+			(--name)
+				CHROOT_NAME="$2"
+				shift 2
 				;;
 
 			(--extra-apt-source)
@@ -335,6 +361,12 @@ main()
 
 	if [ "${arch_arguments[1]+set}" ] && [ -n "$tarball" ]; then
 		echo "Only one of --amd64 or --i386 can be combined with --tarball" >&2
+		usage 2
+	fi
+
+	if [ "${arch_arguments[1]+set}" ] && [ -n "$CHROOT_NAME" ]; then
+		echo "Only one of --amd64 or --i386 can be combined with --name" >&2
+		usage 2
 	fi
 
 	# Building root(s)
