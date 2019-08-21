@@ -1014,23 +1014,22 @@ def install_symbols(dbgsym_by_arch, binarylist, manifest):
 # to their relative equivalent
 #
 def fix_symlinks ():
-	for arch in args.architectures:
-		for dir, subdirs, files in os.walk(os.path.join(args.output, arch)):
-			for name in files:
-				filepath=os.path.join(dir,name)
-				if os.path.islink(filepath):
-					target = os.readlink(filepath)
-					if os.path.isabs(target):
-						#
-						# compute the target of the symlink based on the 'root' of the architecture's runtime
-						#
-						target2 = os.path.join(args.output, arch, target[1:])
+	for dir, subdirs, files in os.walk(args.output):
+		for name in files:
+			filepath=os.path.join(dir,name)
+			if os.path.islink(filepath):
+				target = os.readlink(filepath)
+				if os.path.isabs(target):
+					#
+					# compute the target of the symlink based on the 'root' of the runtime
+					#
+					target2 = os.path.join(args.output, target[1:])
 
-						#
-						# Set the new relative target path
-						#
-						os.unlink(filepath)
-						os.symlink(os.path.relpath(target2,dir), filepath)
+					#
+					# Set the new relative target path
+					#
+					os.unlink(filepath)
+					os.symlink(os.path.relpath(target2,dir), filepath)
 
 
 # Creates the usr/lib/debug/.build-id/xx/xxxxxxxxx.debug symlink tree for all the debug
