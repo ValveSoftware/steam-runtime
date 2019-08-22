@@ -409,7 +409,7 @@ main ()
                     arch=i386
                     ;;
             esac
-            echo "$top/$arch/bin:$top/$arch/usr/bin"
+            echo "$top/$arch/bin:$top/$arch/usr/bin:$top/usr/bin"
             ;;
 
         (setup)
