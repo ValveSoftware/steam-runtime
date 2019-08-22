@@ -47,6 +47,11 @@ ONE_MEGABYTE = 1024 * 1024
 SPLIT_MEGABYTES = 50
 MIN_PARTS = 3
 
+ARCHITECTURES = {
+	'amd64': 'x86_64-linux-gnu',
+	'i386': 'i386-linux-gnu',
+}
+
 
 def mkdir_p(path):
 	"""
@@ -277,7 +282,7 @@ def parse_args():
 			% args.output)
 
 	if not args.architectures:
-		args.architectures = ['amd64', 'i386']
+		args.architectures = sorted(ARCHITECTURES.keys())
 
 	if not args.packages_from and not args.metapackages:
 		args.metapackages = ['steamrt-libs', 'steamrt-legacy']
@@ -888,6 +893,26 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 						relative_path,
 					),
 					dir,
+				)
+
+		for pattern in ('bin/{}-*', 'usr/bin/{}-*'):
+			for exe in glob.glob(
+				os.path.join(
+					args.output, arch,
+					pattern.format(ARCHITECTURES[arch]),
+				)
+			):
+				# Populate OUTPUT/usr/bin with symlinks
+				# to OUTPUT/amd64/[usr/]bin/x86_64-linux-gnu-*
+				# and OUTPUT/i386/[usr/]bin/i386-linux-gnu-*
+				mkdir_p(os.path.join(args.output, 'usr', 'bin'))
+				relative_path = os.path.relpath(exe, args.output)
+				os.symlink(
+					os.path.join('..', '..', relative_path),
+					os.path.join(
+						args.output, 'usr', 'bin',
+						os.path.basename(exe),
+					)
 				)
 
 	if skipped > 0:
