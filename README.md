@@ -27,9 +27,30 @@ Included in this repository are scripts for building local copies of the Steam R
 Testing or shipping with the runtime
 ------------------------------------
 
-Steam ships with a copy of the Steam Runtime and all Steam Applications are launched within the runtime environment. For some scenarios, you may want to test an application with a different build of the runtime. You can use the **build-runtime.py** script to download various flavors of the runtime.
+Steam ships with a copy of the Steam Runtime and all Steam Applications
+are launched within the runtime environment. For some scenarios, you
+may want to test an application with a different build of the runtime.
 
-To get a Steam Runtime in a directory, run a command like:
+### Downloading a Steam Runtime
+
+Current and past versions of the Steam Runtime are available from
+<http://repo.steampowered.com/steamrt-images-scout/snapshots/>.
+Beta builds, newer than the one included with Steam, are sometimes
+available from the same location. The versioned directory names correspond
+to the `version.txt` found in official Steam Runtime builds, typically
+`ubuntu12_32/steam-runtime/version.txt` in a Steam installation.
+The file `steam-runtime.tar.xz` in each directory contains the Steam
+Runtime. It unpacks into a directory named `steam-runtime/`.
+
+Each directory also contains various other archive and metadata files,
+and a `sources/` subdirectory with source code for all the packages that
+went into this Steam Runtime release.
+
+### Building your own Steam Runtime variant
+
+For advanced use, you can use the **build-runtime.py** script to build
+your own runtime. To get a Steam Runtime in a directory, run a command
+like:
 
     ./build-runtime.py --output=$(pwd)/runtime
 
@@ -61,6 +82,8 @@ is required.
 
 Run `./build-runtime.py --help` for more options.
 
+### Using a Steam Runtime
+
 Once the runtime is downloaded (and unpacked into a directory, if you used
 an archive), you can use the **run.sh** script to launch any program
 within that runtime environment.
@@ -75,9 +98,78 @@ To launch Steam itself (and any Steam applications) within your runtime, set the
 Building in the runtime
 -----------------------
 
-To prevent libraries from development and build machines 'leaking' into your applications, you should build within a Steam Runtime chroot environment. **setup_chroot.sh** will create a Steam Runtime chroot on your machine. This chroot environment contains development libraries and tools that match the Steam Runtime.
+To prevent libraries from development and build machines 'leaking'
+into your applications, you should build within a Steam Runtime chroot
+environment or container.
 
-You will need the 'schroot' tool installed as well as root access through sudo. Run either "setup-chroot.sh --i386" or "setup-chroot.sh --amd64" depending on whether you want to build a 32-bit or 64-bit application.
+To obtain one, first find an appropriate directory in
+<http://repo.steampowered.com/steamrt-images-scout/snapshots/>.
+The versioned directory names correspond to the
+`version.txt` found in official Steam Runtime builds, typically
+`ubuntu12_32/steam-runtime/version.txt` in a Steam installation: you
+should usually choose a build environment whose version matches the
+Steam Runtime bundled with the current Steam release, or a slightly
+older version.
+
+To build 64-bit software, download the files named
+`com.valvesoftware.SteamRuntime.Sdk-amd64,i386-scout-sysroot.tar.gz` and
+`com.valvesoftware.SteamRuntime.Sdk-amd64,i386-scout-sysroot.Dockerfile`. To
+build legacy 32-bit software, instead download
+`com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz` and
+`com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.Dockerfile`.
+
+Each directory also contains various other archive and metadata files,
+and a `sources/` subdirectory with source code for all the packages that
+went into this Steam Runtime release.
+
+### Using Docker
+
+The recommended way to build for the Steam Runtime is in a Docker
+container. Put the `-sysroot.tar.gz` and `-sysroot.Dockerfile` files
+in an otherwise empty directory, `cd` into that directory, and import
+them into Docker with a command like:
+
+    sudo docker build \
+    -f com.valvesoftware.SteamRuntime.Sdk-amd64,i386-scout-sysroot.Dockerfile \
+    -t steamrt_scout_amd64:latest \
+    .
+
+or for a 32-bit environment,
+
+    sudo docker build \
+    -f com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.Dockerfile \
+    -t steamrt_scout_i386:latest \
+    .
+
+Both containers can co-exist side by side. 32 bit steam-runtime libraries
+are installed into the i386 root, and 64 bit steam-runtime libraries
+are installed into the amd64 root. You can keep old versions of the
+container around by tagging them with a version instead of `latest`,
+for example `steamrt_scout_amd64:0.20190913.0`.
+
+For historical reasons, it is also possible to run `setup_docker.sh`.
+This will download an Ubuntu 12.04 container and convert it into a Steam
+Runtime environment. The result does not match the official sysroot
+tarball and is not guaranteed to match any specific/identifiable version
+of the Steam Runtime, so this approach is not recommended.
+
+### Using schroot
+
+Alternatively, you can use Debian's schroot tool (this is likely to work
+best on Debian or Ubuntu machines). `setup_chroot.sh` will create a
+Steam Runtime chroot on your machine. This chroot environment contains
+the same development libraries and tools as the Docker container. You will
+need the 'schroot' tool installed, as well as root access through sudo.
+
+For a 64-bit environment, use a command like:
+
+    ./setup_chroot.sh --amd64 \
+    --tarball ~/Downloads/com.valvesoftware.SteamRuntime.Sdk-amd64,i386-scout-sysroot.tar.gz
+
+or for a 32-bit environment,
+
+    ./setup_chroot.sh --i386 \
+    --tarball ~/Downloads/com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
 
 Both roots can co-exist side by side. 32 bit steam-runtime libraries are installed into the i386 root, and 64 bit steam-runtime libraries are installed into the amd64 root. 
 
@@ -91,15 +183,24 @@ Then the next time the root is entered, this path will be available inside the r
 
 The setup script can be re-run to re-create the schroot environment.
 
+For historical reasons, it is possible to run `setup_chroot.sh` without
+using the `--tarball` option. This will download a minimal Ubuntu 12.04
+environment and convert it into a Steam Runtime environment. The result
+is not guaranteed to match the official sysroot tarballs, and whether
+it succeeds is heavily dependent on the operating system on which you
+are running the tool, so this approach is no longer recommended.
+
 Default Tools
 -------------
 
 By default, a build environment is created that contains:
 
-* gcc-4.6 
+* gcc-4.6
 * gcc-4.8 (default)
+* gcc-5
 * clang-3.4
 * clang-3.6
+* clang-3.8
 
 Switching default compilers can be done by entering the chroot environment:
 
