@@ -195,10 +195,12 @@ Default Tools
 
 By default, a build environment is created that contains:
 
-* gcc-4.6 
+* gcc-4.6
 * gcc-4.8 (default)
+* gcc-5
 * clang-3.4
 * clang-3.6
+* clang-3.8
 
 Switching default compilers can be done by entering the chroot environment:
 
