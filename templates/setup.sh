@@ -182,11 +182,6 @@ pin_newer_runtime_libs ()
         fi
 
         case "$soname" in
-            (libSDL2-2.0.so.0)
-                # We know the Steam Runtime has an up-to-date SDL2.
-                runtime_version_newer="forced"
-                ;;
-
             (libcurl.so.4)
                 # libcurl in the Steam Runtime is internally identified
                 # as libcurl.so.4, but with a symlink at libcurl.so.3
