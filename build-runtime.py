@@ -301,6 +301,8 @@ def parse_args():
 def download_file(file_url, file_path):
 	try:
 		if os.path.getsize(file_path) > 0:
+			if args.verbose:
+				print("Skipping download of existing file: %s" % file_path)
 			return False
 	except OSError:
 		pass
@@ -373,10 +375,7 @@ def install_sources(apt_sources, sourcelist):
 					file['name']
 				)
 				if not download_file(file_url, file_path):
-					if args.verbose:
-						print("Skipping download of existing deb source file(s): %s" % file_path)
-					else:
-						skipped += 1
+					skipped += 1
 
 			for file in sp.stanza['files']:
 				if args.strict:
@@ -807,10 +806,7 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 					os.path.basename(newest.stanza['Filename']),
 				)
 				if not download_file(file_url, dest_deb):
-					if args.verbose:
-						print("Skipping download of existing deb: %s" % dest_deb)
-					else:
-						skipped += 1
+					skipped += 1
 				install_deb(
 					os.path.splitext(
 						os.path.basename(
@@ -1018,10 +1014,7 @@ def install_symbols(dbgsym_by_arch, binarylist, manifest):
 						dbgsym.stanza['Filename'])
 				)
 				if not download_file(file_url, dest_deb):
-					if args.verbose:
-						print("Skipping download of existing symbol deb: %s", dest_deb)
-					else:
-						skipped += 1
+					skipped += 1
 				install_deb(
 					os.path.splitext(
 						os.path.basename(
