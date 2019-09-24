@@ -308,6 +308,8 @@ def download_file(file_url, file_path):
 		pass
 
 	try:
+		if args.verbose:
+			print("Downloading %s to %s" % (file_url, file_path))
 		urlretrieve(file_url, file_path)
 	except Exception:
 		sys.stderr.write('Error downloading %s:\n' % file_url)
@@ -916,6 +918,8 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 
 
 def install_deb (basename, deb, dest_dir):
+	if args.verbose:
+		print('Unpacking %s into %s' % (deb, dest_dir))
 	check_path_traversal(basename)
 	installtag_dir=os.path.join(dest_dir, "installed")
 	if not os.access(installtag_dir, os.W_OK):
