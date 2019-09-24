@@ -520,6 +520,13 @@ def list_binaries(
 				for stanza in deb822.Packages.iter_paragraphs(
 					url_file_handle
 				):
+					if stanza['Architecture'] not in ('all', arch):
+						print('Found %s package %s in %s Packages file' % (
+							stanza['Architecture'],
+							stanza['Package'],
+							arch,
+						))
+						continue
 					p = stanza['Package']
 					binary = Binary(apt_source, stanza)
 					by_name.setdefault(p, []).append(
