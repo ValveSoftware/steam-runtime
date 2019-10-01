@@ -301,11 +301,15 @@ def parse_args():
 def download_file(file_url, file_path):
 	try:
 		if os.path.getsize(file_path) > 0:
+			if args.verbose:
+				print("Skipping download of existing file: %s" % file_path)
 			return False
 	except OSError:
 		pass
 
 	try:
+		if args.verbose:
+			print("Downloading %s to %s" % (file_url, file_path))
 		urlretrieve(file_url, file_path)
 	except Exception:
 		sys.stderr.write('Error downloading %s:\n' % file_url)
@@ -373,10 +377,7 @@ def install_sources(apt_sources, sourcelist):
 					file['name']
 				)
 				if not download_file(file_url, file_path):
-					if args.verbose:
-						print("Skipping download of existing deb source file(s): %s" % file_path)
-					else:
-						skipped += 1
+					skipped += 1
 
 			for file in sp.stanza['files']:
 				if args.strict:
@@ -519,6 +520,13 @@ def list_binaries(
 				for stanza in deb822.Packages.iter_paragraphs(
 					url_file_handle
 				):
+					if stanza['Architecture'] not in ('all', arch):
+						print('Found %s package %s in %s Packages file' % (
+							stanza['Architecture'],
+							stanza['Package'],
+							arch,
+						))
+						continue
 					p = stanza['Package']
 					binary = Binary(apt_source, stanza)
 					by_name.setdefault(p, []).append(
@@ -807,10 +815,7 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 					os.path.basename(newest.stanza['Filename']),
 				)
 				if not download_file(file_url, dest_deb):
-					if args.verbose:
-						print("Skipping download of existing deb: %s" % dest_deb)
-					else:
-						skipped += 1
+					skipped += 1
 				install_deb(
 					os.path.splitext(
 						os.path.basename(
@@ -920,6 +925,8 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 
 
 def install_deb (basename, deb, dest_dir):
+	if args.verbose:
+		print('Unpacking %s into %s' % (deb, dest_dir))
 	check_path_traversal(basename)
 	installtag_dir=os.path.join(dest_dir, "installed")
 	if not os.access(installtag_dir, os.W_OK):
@@ -1018,10 +1025,7 @@ def install_symbols(dbgsym_by_arch, binarylist, manifest):
 						dbgsym.stanza['Filename'])
 				)
 				if not download_file(file_url, dest_deb):
-					if args.verbose:
-						print("Skipping download of existing symbol deb: %s", dest_deb)
-					else:
-						skipped += 1
+					skipped += 1
 				install_deb(
 					os.path.splitext(
 						os.path.basename(
