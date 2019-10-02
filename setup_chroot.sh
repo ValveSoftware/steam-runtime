@@ -64,7 +64,7 @@ prebuild_chroot()
 			name="${CHROOT_PREFIX}${var/--/}"
 		fi
 
-		dirname="${CHROOT_DIR}/${CHROOT_NAME}"
+		dirname="${CHROOT_DIR}/${name}"
 		if [ -d "${dirname}" ]; then
 			tput setaf 3
 			STEAM_RUNTIME_SPEW_WARNING=1
