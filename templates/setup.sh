@@ -167,19 +167,6 @@ pin_newer_runtime_libs ()
             runtime_version_newer="yes"
         fi
 
-        if [[ $h_lib_major -eq $r_lib_major && $h_lib_minor -eq $r_lib_minor && $h_lib_third -eq $r_lib_third ]]; then
-            # They're all equal. Normally, we tie-break by preferring the
-            # host OS version, on the assumption that the host OS might
-            # have fixes we don't; but there are a few libraries in the
-            # Steam Runtime that we particularly care about, and for these
-            # we prefer ours.
-            case "$soname" in
-                (libSDL2-2.0.so.0)
-                    runtime_version_newer="prefer_equal"
-                    ;;
-            esac
-        fi
-
         # There's a set of libraries that have to work together to yield a working dock
         # We're reasonably convinced our set works well, and only pinning a handful would
         # induce a mismatch and break the dock, so always pin all of these for Steam (32-bit)
@@ -221,13 +208,12 @@ pin_newer_runtime_libs ()
 
         if [[ $runtime_version_newer == "yes" ]]; then
             echo "Found newer runtime version for $bitness-bit $soname. Host: $h_lib_major.$h_lib_minor.$h_lib_third Runtime: $r_lib_major.$r_lib_minor.$r_lib_third"
-        elif [[ $runtime_version_newer == "prefer_equal" ]]; then
-            echo "Preferring equal runtime version for $bitness-bit $soname. Host: $h_lib_major.$h_lib_minor.$h_lib_third Runtime: $r_lib_major.$r_lib_minor.$r_lib_third"
         elif [[ $runtime_version_newer == "forced" ]]; then
             echo "Forced use of runtime version for $bitness-bit $soname. Host: $h_lib_major.$h_lib_minor.$h_lib_third Runtime: $r_lib_major.$r_lib_minor.$r_lib_third"
         fi
 
-        if [[ $runtime_version_newer != "no" ]]; then
+        if [[ $runtime_version_newer == "yes" \
+              || $runtime_version_newer == "forced" ]]; then
             ln -s "$final_library" "$steam_runtime_path/pinned_libs_$bitness/$soname"
             # Keep track of the exact version name we saw on the system at pinning time to check later
             echo "$host_soname_symlink" > "$steam_runtime_path/pinned_libs_$bitness/system_$soname"
