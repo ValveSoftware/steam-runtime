@@ -87,7 +87,7 @@ copy_apt_settings ()
 	local sysroot="$1"
 
 	if [ "$1/" -ef / ]; then
-		echo "Internal error: sysroot "$1" is the same file as the real root" >&2
+		echo "Internal error: sysroot $1 is the same file as the real root" >&2
 		exit 1
 	fi
 
