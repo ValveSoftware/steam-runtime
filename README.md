@@ -145,7 +145,7 @@ Both containers can co-exist side by side. 32 bit steam-runtime libraries
 are installed into the i386 root, and 64 bit steam-runtime libraries
 are installed into the amd64 root. You can keep old versions of the
 container around by tagging them with a version instead of `latest`,
-for example `steamrt_scout_amd64:0.20190913.0`.
+for example `steamrt_scout_amd64:0.20191024.0`.
 
 For historical reasons, it is also possible to run `setup_docker.sh`.
 This will download an Ubuntu 12.04 container and convert it into a Steam
@@ -199,13 +199,13 @@ unpack it (preserving directory structure), and use its `files/`
 directory as the schroot or container's `/usr/lib/debug`.
 
 For example, with Docker, you might unpack the tarball in
-`/tmp/scout-dbgsym-0.20190711.3` and use something like:
+`/tmp/scout-dbgsym-0.20191024.0` and use something like:
 
     sudo docker run \
     --rm \
     --init \
     -v /home:/home \
-    -v /tmp/scout-dbgsym-0.20190711.3/files:/usr/lib/debug \
+    -v /tmp/scout-dbgsym-0.20191024.0/files:/usr/lib/debug \
     -e HOME=/home/user \
     -u $(id -u):$(id -g) \
     -h $(hostname) \
@@ -319,8 +319,9 @@ detached debug symbols.
 ### Getting the debug symbols for the Steam Runtime
 
 Look in `~/.steam/root/ubuntu12_32/steam-runtime/version.txt` to see
-which Steam Runtime you have. At the time of writing, the public stable
-release is version 0.20190711.3.
+which Steam Runtime you have. These instructions assume you are using
+at least version 0.20190716.1. At the time of writing, the public stable
+release is version 0.20191024.0.
 
 Look in <http://repo.steampowered.com/steamrt-images-scout/snapshots/>
 for a corresponding version of the Steam Runtime container builds.
@@ -328,22 +329,12 @@ for a corresponding version of the Steam Runtime container builds.
 Download
 `com.valvesoftware.SteamRuntime.Sdk-amd64,i386-scout-debug.tar.gz` from
 the matching build. Create a directory, for example
-`/tmp/scout-dbgsym-0.20190711.3`, and untar the debug symbols tarball
+`/tmp/scout-dbgsym-0.20191024.0`, and untar the debug symbols tarball
 into that directory.
 
-The `/tmp/scout-dbgsym-0.20190711.3/files` directory is actually the
+The `/tmp/scout-dbgsym-0.20191024.0/files` directory is actually the
 `/usr/lib/debug` from the SDK container, and has most of the debug
 symbols that you will need.
-
-If your Steam Runtime is older than 0.20190716.1, you will need to use
-the `scripts/dbgsym-use-build-id` script, with a command like
-
-    /path/to/dbgsym-use-build-id /tmp/scout-dbgsym-0.20190711.3/files
-
-to create build-ID-based links to any detached debug symbols that had
-legacy path-based names. This step will become unnecessary with the
-0.20190716.1 or newer Steam Runtime, which ran that script while
-they were prepared.
 
 ### Re-running gdb
 
@@ -352,7 +343,7 @@ to tell it to set the new debug symbols directory before loading the
 executable, for example:
 
     gdb -iex \
-    'set debug-file-directory /tmp/scout-debug-0.20190711.3/files:/usr/lib/debug' \
+    'set debug-file-directory /tmp/scout-debug-0.20191024.0/files:/usr/lib/debug' \
     ~/.steam/root/ubuntu12_32/steam 12345
 
 You will get some warnings about CRC mismatches, because gdb can now
