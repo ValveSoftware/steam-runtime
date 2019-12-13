@@ -225,7 +225,9 @@ For both the `steam` binary and games:
 
 For newer runtimes (Steam Runtime 2), we cannot do a flag-day transition
 that makes the Steam client and all games conform to a new ABI, so we
-would have to adopt a more complicated solution.
+would have to adopt a more complicated solution, for example putting the
+[Layered `LD_LIBRARY_PATH` runtime](#layered-ldlp) inside the Flatpak
+container.
 
 Entirely solves:
 
@@ -479,6 +481,476 @@ Does not solve:
   * Security boundary between desktop and Steam client
   * Security boundary between desktop and games
   * Security boundary between Steam client and games
+
+## <a name="layered-ldlp">Layered `LD_LIBRARY_PATH` runtime</a>
+
+(This is theoretical, and has not been deployed in practice.)
+
+    |----------------------------
+    |                    Host system
+    |    steam.sh
+    |     |
+    |  .- \-run.sh- - - - - - - - - -
+    |  .    |            steam-runtime (A)
+    |  .    |
+    |  .    \- steam binary
+    |  .       |
+    |  .  .- - \-unruntime.sh - - - - - - - - - -
+    |  .  .       |       Back to host system!
+    |  .  .       |
+    |  .  .   .- -\-run.sh- - - - - - - - - -
+    |  .  .   .      |     steam-runtime (B)
+    |  .  .   .      |
+    |  .  .   .      \- The game
+
+The Steam client could use an as yet hypothetical `unruntime.sh` to undo
+what `run.sh` did, wrapping a *different* Steam Runtime's `run.sh`,
+which would redo the Steam Runtime setup for the game. Alternatively,
+we could have a command-line option for `run.sh` to undo and redo the
+Steam Runtime environment variables in a single operation, which would
+be functionally equivalent but would make for a more confusing diagram.
+
+Prior art: `pressure-vessel-unruntime` already does this, as a way to
+"escape from" the Steam Runtime environment to run `pressure-vessel-wrap`
+in a more predictable way.
+
+For the `steam` binary:
+
+  * glibc comes from: host system
+  * Graphics driver comes from: host system
+  * Libraries used by graphics driver come from:
+    *newest*(host system, A)
+  * Other libraries come from: *newest*(host system, A),
+    except in a few cases where (A) libraries are preferred
+    due to known incompatibilities between the same SONAME in the
+    (A) Steam Runtime and host systems
+  * User's home directory comes from: host system, unrestricted
+
+For games:
+
+  * glibc comes from: host system
+  * Graphics driver comes from: host system
+  * Libraries used by graphics driver come from:
+    *newest*(host system, B)
+  * Other libraries come from: *newest*(host system, B),
+    except in a few cases where (B) libraries are preferred
+    due to known incompatibilities between the same SONAME in the
+    (B) Steam Runtime and host systems
+  * User's home directory comes from: host system, unrestricted
+
+This decouples the Steam Runtime library stacks A and B, and could be
+used to run the game in an older or newer Steam Runtime than the
+Steam client.
+
+It could also be combined with Flatpak in the obvious way.
+
+For newer runtimes (Steam Runtime 2), we would simply choose A != B.
+
+Entirely solves:
+
+  * Open-source (Mesa) graphics drivers continue to work
+  * Proprietary (NVIDIA) graphics drivers continue to work
+  * Games don't all have to use the same runtime
+  * Steam client can use a newer runtime
+  * New runtimes work on future hardware
+      - The host graphics driver is used, so this is a non-issue
+
+Mostly solves:
+
+  * Old games continue to work
+      - There can be regressions if host system library behaviour changes
+  * i386 games continue to work on i386-capable hosts
+      - The host system must have basic i386 packages
+  * Host system doesn't need uncommon packages installed
+      - It needs i386 glibc and graphics drivers, plus unpredictable
+        library dependencies where the abstraction leaks (particularly
+        around steamwebhelper/CEF)
+
+Only partially solves:
+
+  * Games developed in an impure scout environment continue to work
+      - It is anyone's guess whether they will work
+  * Steam client runs in a predictable environment
+  * New runtimes do not require newest host system
+      - We cannot use a glibc newer than the one on the host system
+      - Backporting newer everything-except-glibc is possible, but is
+        a lot of work when the difference is measured in years
+  * Steam can be installed in a cross-distro way
+      - No better or worse than single-layer `LD_LIBRARY_PATH`
+  * Steam can be installed unprivileged
+      - No better or worse than single-layer `LD_LIBRARY_PATH`
+
+Does not solve:
+
+  * Games run in a predictable, robust environment
+      - Could get broken by just about anything, particularly in
+        development or rolling-release distros
+  * Games that inappropriately bundle libraries work anyway
+  * New runtimes do not require extensive patching
+  * i386 games work on non-i386 hosts
+  * Game data is easy to sync and delete
+  * Steam client cannot accidentally break the system
+  * Games cannot accidentally break the system
+  * Games cannot accidentally break the Steam client
+
+## <a name="pressure-vessel-scout-on-srt2">2018 `LD_LIBRARY_PATH` scout runtime + newer Platform + scout again</a>
+
+(This is theoretical, and has not been deployed in practice.)
+
+    |----------------------------
+    |                    Host system
+    |    steam.sh
+    |     |
+    |  .- \-run.sh- - - - - - - - - -
+    |  .    |            steam-runtime (scout)
+    |  .    |
+    |  .    \- steam binary
+    |  .       |
+    |  .  |----\-pressure-vessel-wrap, bwrap-----
+    |  .  |       |       Steam Runtime 2 Platform
+    |  .  |       |
+    |  .  |   .- -\-run.sh- - - - - - - - - -
+    |  .  |   .      |     steam-runtime (scout)
+    |  .  |   .      |
+    |  .  |   .      \- The game
+
+The libraries used for the Steam binary are the same as in the 2018
+`LD_LIBRARY_PATH` Steam Runtime.
+
+Games run in a container via the pressure-vessel tool:
+
+  * glibc comes from: *newest*(host system, Steam Runtime 2)
+  * Graphics driver comes from: host system
+  * Libraries used by graphics driver come from:
+    *newest*(scout, host system, Steam Runtime 2)
+  * Other libraries come from: *newest*(scout, Steam Runtime 2)
+  * User's home directory comes from one of:
+      - host system, unrestricted
+      - a private directory like ~/.var/app/com.steampowered.App440 per game
+
+"Steam Runtime 2 Platform" refers to an as-yet hypothetical Steam
+Runtime v2. For example, if we based it on an existing Linux
+distribution like Debian 10, or an existing Flatpak runtime like
+org.freedesktop.Platform//18.08, then any game that currently works in
+that environment would work here too.
+
+Entirely solves:
+
+  * Games don't all have to use the same runtime
+       - Not directly, but we can choose between this and other modes like
+         [2018 `LD_LIBRARY_PATH` scout runtime + 2019 pressure-vessel scout Platform](#pressure-vessel-2019)
+         on a per-game basis
+
+Mostly solves:
+
+  * Old games continue to work
+      - Expected to be fewer regressions than with pure scout container
+  * i386 games continue to work on i386-capable hosts
+      - Expected to be fewer regressions than with pure scout container
+  * Open-source (Mesa) graphics drivers continue to work
+  * Proprietary (NVIDIA) graphics drivers continue to work
+  * Games developed in an impure scout environment continue to work
+  * Game data is easy to sync and delete
+      - Only if the private home directory is used
+  * Games cannot accidentally break the system
+      - Only with `--unshare-home`
+  * Games run in a predictable, robust environment
+
+Only partially solves:
+
+  * Steam client runs in a predictable environment
+  * Steam can be installed in a cross-distro way
+  * Steam can be installed unprivileged
+
+Does not solve:
+
+  * Games that inappropriately bundle libraries work anyway
+  * Steam client can use a newer runtime
+  * i386 games work on non-i386 hosts
+  * Steam client cannot accidentally break the system
+  * Games cannot accidentally break the Steam client
+      - Could be solved by more selective sharing in `--unshare-home`
+  * Security boundary between desktop and Steam client
+  * Security boundary between desktop and games
+  * Security boundary between Steam client and games
+
+## Flatpak + pressure-vessel in parallel
+
+(This is theoretical, and has not been deployed in practice.)
+
+    |----------------------------
+    |                    Host system
+    |    flatpak run
+    |     |
+    |  |--\-bwrap------------------|
+    |  |    |        o.fd.P//18.08 |
+    |  |    |                      |
+    |  |    \-steam.sh             |
+    |  |         |                 |
+    |  |      .- \-run.sh- - - - - |
+    |  |      .    |    s-rt scout |
+    |  |      .    |               |
+    |  |      .    \- steam binary |
+    |  |      .         \======IPC===> A portal service
+    |  |---------------------------|     |
+    |                                 |--\-bwrap--------------------|
+    |                                 |     |             A runtime |
+    |                                 |     \- The game             |
+    |                                 |-----------------------------|
+
+For the `steam` binary:
+
+  * glibc comes from: org.freedesktop.Platform runtime
+  * Graphics driver comes from: org.freedesktop.Platform extensions
+      - On systems with NVIDIA proprietary graphics, Flatpak is
+        responsible for installing a user-space driver that matches the
+        kernel driver
+      - On systems with Mesa graphics, the user-space driver used by Flatpak
+        might be older or newer than the one used on the host system
+        (in practice it will usually be newer)
+  * Libraries used by graphics driver come from:
+    *newest*(org.freedesktop.Platform, scout)
+  * Other libraries come from:
+    *newest*(org.freedesktop.Platform, scout),
+    except in a few cases where scout libraries are preferred
+    due to known incompatibilities between the same SONAME in the
+    scout Steam Runtime and host systems
+  * User's home directory comes from: ~/.var/app/com.valvesoftware.Steam
+
+For the game, there are several options for what the runtime could be
+and how it would work. For old (scout) games, it could be:
+
+  * a pure Steam Runtime 1 'scout' container, similar to
+    [2018 `LD_LIBRARY_PATH` scout runtime + 2019 pressure-vessel scout Platform](#pressure-vessel-2019)
+    above, with graphics drivers from the host system or a Flatpak runtime
+    (presumably the same one the Steam client uses)
+  * a Steam Runtime 2 container with the `LD_LIBRARY_PATH`
+    scout runtime inside, similar to
+    [2018 `LD_LIBRARY_PATH` scout runtime + newer Platform + scout again](#pressure-vessel-scout-on-srt2)
+    above, with graphics drivers from the host system or a Flatpak runtime
+  * a Flatpak runtime with the `LD_LIBRARY_PATH`
+    scout runtime inside, similar to
+    [2018 `LD_LIBRARY_PATH` scout runtime + newer Platform + scout again](#pressure-vessel-scout-on-srt2)
+    above, with graphics drivers from the host system or that same
+    Flatpak runtime
+
+and for new (Steam Runtime 2) games, it could be:
+
+  * a pure Steam Runtime 2 container,
+    with graphics drivers from the host system or a Flatpak runtime
+  * a Flatpak runtime with an `LD_LIBRARY_PATH`
+    Steam Runtime 2 runtime inside, analogous to
+    [Layered `LD_LIBRARY_PATH` runtime](#layered-ldlp) above,
+    with graphics drivers from the host system or that same
+    Flatpak runtime
+
+We do not even necessarily have to choose the same option for each game.
+
+Any of these options has some shared properties, regardless of the
+runtime we choose for the game:
+
+Entirely solves:
+
+  * Steam can be installed in a cross-distro way
+  * Steam can be installed unprivileged
+  * Steam client cannot accidentally break the system
+  * Steam client can use a newer runtime
+  * Games don't all have to use the same runtime
+
+Mostly solves:
+
+  * Steam client runs in a predictable environment
+  * Game data is easy to sync and delete
+      - Only if the private home directory is used
+  * Games cannot accidentally break the system
+      - Only with `--unshare-home`
+  * Security boundary between desktop and Steam client
+
+Only partially solves:
+
+  * Host system doesn't need uncommon packages installed
+      - This will need sufficiently capable versions of
+        Flatpak, bubblewrap and/or a portal service, unless the Steam
+        client is given the necessary permissions to execute arbitrary
+        code on the host system in order to start the game containers
+
+### Pure Steam Runtime container for game
+
+    |----------------------------
+    |                    Host system
+    |
+    |  A portal service <===== IPC from Steam client
+    |       |
+    |  |----\-pressure-vessel-wrap, bwrap-----
+    |  |       |      SteamLinuxRuntime/scout or Steam Runtime 2
+    |  |       |
+    |  |       \- The game
+
+  * Graphics driver comes from one of:
+      - host system
+      - some Flatpak runtime
+  * glibc comes from:
+    *newest*(where graphics driver comes from, Steam Runtime)
+  * Libraries used by graphics driver come from:
+    *newest*(where graphics driver comes from, Steam Runtime)
+  * Other libraries come from: Steam Runtime
+  * User's home directory comes from one of:
+      - host system, unrestricted
+      - ~/.var/app/com.valvesoftware.Steam
+      - a private directory like ~/.var/app/com.steampowered.App440 per game
+
+Entirely solves:
+
+  * i386 games work on non-i386 hosts
+      - If the graphics driver comes from the Flatpak runtime
+  * i386 games continue to work on i386-capable hosts
+      - If the graphics driver comes from the Flatpak runtime
+
+Mostly solves:
+
+  * Old games continue to work
+      - If graphics driver comes from the Flatpak runtime
+  * New runtimes do not require newest host system
+  * Open-source (Mesa) graphics drivers continue to work
+  * Proprietary (NVIDIA) graphics drivers continue to work
+  * New runtimes do not require extensive patching
+  * New runtimes work on future hardware
+
+Only partially solves:
+
+  * Games run in a predictable, robust environment
+  * Old games continue to work
+      - If graphics driver comes from the host system
+  * i386 games continue to work on i386-capable hosts
+      - If graphics driver comes from the host system
+
+Does not solve:
+
+  * Games developed in an impure scout environment continue to work
+  * Games that inappropriately bundle libraries work anyway
+  * Security boundary between desktop and games
+  * i386 games work on non-i386 hosts
+      - If the graphics driver comes from the host system
+
+### Steam Runtime 2 container with `LD_LIBRARY_PATH` runtime inside
+
+    |----------------------------
+    |                    Host system
+    |
+    |  A portal service <===== IPC from Steam client
+    |       |
+    |  |----\-pressure-vessel-wrap, bwrap-----
+    |  |       |      Steam Runtime 2
+    |  |       |
+    |  |   |- -\-run.sh - - - - - - - - - - - -
+    |  |   .      |   steam-runtime scout
+    |  |   .      |
+    |  |   .      \- The game
+
+  * Graphics driver comes from one of:
+      - host system
+      - Flatpak runtime extension
+  * glibc comes from:
+      - *newest*(where graphics driver came from, Steam Runtime 2)
+  * Libraries used by graphics driver come from:
+      - *newest*(where graphics driver came from, Steam Runtime 2, scout)
+  * Other libraries come from:
+    *newest*(Steam Runtime 2, scout)
+    (in practice this is Steam Runtime 2, except when a SONAME no longer
+    exists, in which case we use the scout version)
+  * User's home directory comes from one of:
+      - host system, unrestricted
+      - ~/.var/app/com.valvesoftware.Steam
+      - a private directory like ~/.var/app/com.steampowered.App440 per game
+
+Entirely solves:
+
+  * i386 games work on non-i386 hosts
+      - If the graphics driver comes from the Flatpak runtime
+
+Mostly solves:
+
+  * Old games continue to work
+      - Expected to be fewer regressions than with pure scout container
+  * i386 games continue to work on i386-capable hosts
+      - Expected to be fewer regressions than with pure scout container
+  * Games developed in an impure scout environment continue to work
+  * Open-source (Mesa) graphics drivers continue to work
+  * Proprietary (NVIDIA) graphics drivers continue to work
+  * Games run in a predictable, robust environment
+
+Does not solve:
+
+  * Security boundary between desktop and games
+  * Games that inappropriately bundle libraries work anyway
+  * i386 games work on non-i386 hosts
+      - If the graphics driver comes from the host system
+
+### Flatpak runtime container with `LD_LIBRARY_PATH` runtime inside
+
+This assumes that Flatpak can be enhanced to allow the Steam client
+to launch a parallel container with the same Flatpak runtime, and
+the same or stricter sandboxing parameters.
+
+    |----------------------------
+    |                    Host system
+    |
+    |  A portal service <===== IPC from Steam client
+    |       |
+    |  |----\-Flatpak/bwrap--------------------
+    |  |       |      org.freedesktop.Platform//18.08
+    |  |       |
+    |  |   |- -\-run.sh - - - - - - - - - - - -
+    |  |   .      |   Steam Runtime 1 or 2
+    |  |   .      |
+    |  |   .      \- The game
+
+  * glibc comes from: org.freedesktop.Platform
+  * Graphics driver comes from: org.freedesktop.Platform extensions
+  * Libraries used by graphics driver come from:
+    *newest*(org.freedesktop.Platform, Steam Runtime)
+  * Other libraries come from:
+    *newest*(org.freedesktop.Platform, Steam Runtime),
+    except in a few cases where Steam Runtime libraries might be preferred
+    due to known incompatibilities between the same SONAME in the
+    Steam Runtime and org.freedesktop.Platform
+  * User's home directory comes from one of:
+      - host system, unrestricted
+      - ~/.var/app/com.valvesoftware.Steam
+      - a private directory like ~/.var/app/com.steampowered.App440 per game
+
+Entirely solves:
+
+  * i386 games work on non-i386 hosts
+  * i386 games continue to work on i386-capable hosts
+  * Games cannot accidentally break the Steam client
+
+Mostly solves:
+
+  * Old games continue to work
+      - There can be regressions if library behaviour in o.fd.Platform changes
+  * Games developed in an impure scout environment continue to work
+      - We can use the same workarounds as the Flatpak Steam app
+  * Open-source (Mesa) graphics drivers continue to work
+  * Proprietary (NVIDIA) graphics drivers continue to work
+  * Games run in a predictable, robust environment
+      - Could get broken once a year by a new Flatpak Platform, but if so,
+        it will be broken for everyone (easier to diagnose)
+      - Could get broken by updated graphics driver extension
+  * New runtimes do not require newest host system
+  * New runtimes work on future hardware
+
+Only partially solves:
+
+  * Games that inappropriately bundle libraries work anyway
+  * Security boundary between Steam client and games
+      - Dependent on sandboxing parameters
+  * Security boundary between desktop and games
+      - Dependent on sandboxing parameters
+
+Does not solve:
+
+  * New runtimes do not require extensive patching
 
 ## Arch Linux steam-native-runtime
 
