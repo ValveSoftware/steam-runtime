@@ -3,6 +3,10 @@
 This document summarizes actual and potential goals for how the Steam
 client uses the Steam Runtime and containers to run itself and/or games.
 
+For details of how the Steam Runtime works and how that influences which
+of these goals are achieved, see
+[Steam Runtime design models](possible-designs.md).
+
 ## Non-regression requirements
 
 These are things that are already more or less true in the
