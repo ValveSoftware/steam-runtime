@@ -28,19 +28,24 @@ export STEAM_RUNTIME="${TOP}"
 
 host_library_paths=
 
-if [ "${STEAM_RUNTIME_PREFER_HOST_LIBRARIES-}" != "0" ]; then
-    while read -r line; do
-        # If line starts with a leading / and contains :, it's a new path prefix
-        if [[ "$line" =~ ^/.*: ]]
-        then
-            library_path_prefix=$(echo "$line" | cut -d: -f1)
-
-            host_library_paths=$host_library_paths$library_path_prefix:
-        fi
-    done <<< "$(/sbin/ldconfig -XNv 2> /dev/null)"
-
-    host_library_paths="$STEAM_RUNTIME/pinned_libs_32:$STEAM_RUNTIME/pinned_libs_64:$host_library_paths"
+if [[ "${STEAM_RUNTIME_PREFER_HOST_LIBRARIES-}" == "0" ]]; then
+    echo "STEAM_RUNTIME_PREFER_HOST_LIBRARIES=0 is deprecated, and no longer has an effect." >&2
 fi
+
+# Always prefer host libraries over non-pinned Runtime libraries.
+# (In older versions this was conditional, but if we don't do this,
+# it usually breaks Mesa drivers' dependencies.)
+while read -r line; do
+    # If line starts with a leading / and contains :, it's a new path prefix
+    if [[ "$line" =~ ^/.*: ]]
+    then
+        library_path_prefix=$(echo "$line" | cut -d: -f1)
+
+        host_library_paths=$host_library_paths$library_path_prefix:
+    fi
+done <<< "$(/sbin/ldconfig -XNv 2> /dev/null)"
+
+host_library_paths="$STEAM_RUNTIME/pinned_libs_32:$STEAM_RUNTIME/pinned_libs_64:$host_library_paths"
 
 steam_runtime_library_paths="$host_library_paths$STEAM_RUNTIME/lib/i386-linux-gnu:$STEAM_RUNTIME/usr/lib/i386-linux-gnu:$STEAM_RUNTIME/lib/x86_64-linux-gnu:$STEAM_RUNTIME/usr/lib/x86_64-linux-gnu:$STEAM_RUNTIME/lib:$STEAM_RUNTIME/usr/lib"
 
