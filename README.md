@@ -85,16 +85,24 @@ Run `./build-runtime.py --help` for more options.
 ### Using a Steam Runtime
 
 Once the runtime is downloaded (and unpacked into a directory, if you used
-an archive), you can use the **run.sh** script to launch any program
-within that runtime environment.
+an archive), you can set up library pinning by running the **setup.sh** script,
+then you can use the **run.sh** script to launch any program within that 
+runtime environment.
 
-To launch Steam itself (and any Steam applications) within your runtime, set the STEAM_RUNTIME environment variable to point to your runtime directory;
+For example, to get diagnostic information using the same tool used to get
+what appears in Help -> System Information in Steam, if your runtime is in
+'~/rttest', you could run: 
+    
+    ~/rttest/setup.sh
+    ~/rttest/run.sh ~/rttest/usr/bin/steam-runtime-system-info
+
+Or to launch Steam itself (and any Steam applications) within your runtime, 
+set the STEAM_RUNTIME environment variable to point to your runtime directory;
 
     ~/.local/share/Steam$ STEAM_RUNTIME=~/rttest ./steam.sh
     Running Steam on ubuntu 14.04 64-bit 
     STEAM_RUNTIME has been set by the user to: /home/username/rttest
     
-
 Building in the runtime
 -----------------------
 
