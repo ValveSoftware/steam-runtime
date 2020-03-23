@@ -103,13 +103,23 @@ exec 3>"$sysroot/usr/manifest.dpkg"
 
 printf '#Package[:Architecture]\t#Version\t#Source\t#Installed-Size\n' >&3
 
+# ${} escapes here are for dpkg-query, not sh
+# shellcheck disable=SC2016
 dpkg_version="$(in_chroot dpkg-query -W -f '${Version}' dpkg)"
 
 if in_chroot dpkg --compare-versions "$dpkg_version" ge 1.16.2; then
+    # shellcheck disable=SC2016
     in_chroot dpkg-query -W -f \
         '${binary:Package}\t${Version}\t${Source}\t${Installed-Size}\n' \
         | LC_ALL=C sort -u >&3
+    # shellcheck disable=SC2016
+    in_chroot dpkg-query -W -f '${binary:Package}\n' \
+        | LC_ALL=C sort -u \
+        | in_chroot xargs -d '\n' dpkg-query -s \
+        | gzip -9nc \
+        > "$sysroot/usr/manifest.deb822.gz"
 else
+    # shellcheck disable=SC2016
     in_chroot dpkg-query -W -f \
         '${Package}:${Architecture}\t${Version}\t${Source}\t${Installed-Size}\n' \
         | LC_ALL=C sort -u >&3
@@ -119,24 +129,20 @@ exec 3>"$sysroot/usr/manifest.dpkg.built-using"
 
 printf '#Built-Binary\t#Built-Using-Source\t#Built-Using-Version\n' >&3
 
-in_chroot dpkg-query -W -f '$Package\t${Built-Using}\n' | perl -ne '
+# shellcheck disable=SC2016
+in_chroot dpkg-query -W -f '${Package}\t${Built-Using}\n' | perl -ne '
 chomp;
-next unless /^\S+\t.+$/;
+die "Unable to parse dpkg-query output: $_\n" unless /^(\S+)\t(.*)$/;
+next unless $2;
 my $binary = $1;
 my @using = split /,/, $2;
 next unless @using;
 foreach my $using (@using) {
-    $using =~ s/ //;
-    next unless $using =~ /^(\S+)\(=(\S+)\)$/;
+    $using =~ s/ //g;
+    die "Unable to parse Built-Using: $using\n"
+        unless $using =~ /^(\S+)\(=(\S+)\)$/;
     print "$binary\t$1\t$2\n";
 }
 ' | LC_ALL=C sort -u >&3
-
-cut -f1 -s < "$sysroot/usr/manifest.dpkg" \
-| grep -v '^#' \
-| xargs -d '\n' dpkg-query -s \
-> "$sysroot/usr/manifest.deb822"
-
-gzip -9n "$sysroot/usr/manifest.deb822"
 
 # vim:set sw=4 sts=4 et:
