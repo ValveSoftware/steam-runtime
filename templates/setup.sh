@@ -8,16 +8,21 @@ set -e
 set -u
 set -o pipefail
 
-# Is normally setup by steam.sh, but the script can be invoked directly
+# Check if set, which is normally done by steam.sh, but will not be set when invoked directly
 if [ -z ${STEAM_ZENITY+x} ]; then
-    # When invoked directly, we are likely outside of run.sh as well, so only use the host zenity and hope it is present
-    export STEAM_ZENITY="$(which zenity 2>/dev/null)"
+    # We are likely outside of run.sh as well, only use the host zenity
+    export STEAM_ZENITY="$(which zenityzz 2>/dev/null)"
 fi
 
 pin_newer_runtime_libs ()
 {
-    "${STEAM_ZENITY}" --progress --pulsate --no-cancel --width 400 --text="Pins potentially out-of-date, rebuilding..." < /dev/zero &
-    zpid=$!
+    # Is always set at this point, but may be empty if the host lacks zenity
+    if [ -z "${STEAM_ZENITY}" ]; then
+        "${STEAM_ZENITY}" --progress --pulsate --no-cancel --width 400 --text="Pins potentially out-of-date, rebuilding..." < /dev/zero &
+        zpid=$!
+    else
+        zpid=""
+    fi
 
     # Set separator to newline just for this function
     local IFS
@@ -246,7 +251,9 @@ pin_newer_runtime_libs ()
         fi
     done
 
-    kill $zpid
+    if [ -z "${zpid}" ]; then
+        kill $zpid
+    fi
 }
 
 check_pins ()
