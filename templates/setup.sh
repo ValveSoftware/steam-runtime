@@ -251,7 +251,7 @@ pin_newer_runtime_libs ()
         fi
     done
 
-    if [ -z "${zpid}" ]; then
+    if [ -n "${zpid}" ]; then
         kill $zpid
     fi
 }
