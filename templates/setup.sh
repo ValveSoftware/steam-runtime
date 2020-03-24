@@ -11,7 +11,7 @@ set -o pipefail
 # Check if set, which is normally done by steam.sh, but will not be set when invoked directly
 if [ -z ${STEAM_ZENITY+x} ]; then
     # We are likely outside of run.sh as well, only use the host zenity
-    export STEAM_ZENITY="$(which zenityzz 2>/dev/null)"
+    export STEAM_ZENITY="$(which zenity 2>/dev/null)"
 fi
 
 pin_newer_runtime_libs ()
