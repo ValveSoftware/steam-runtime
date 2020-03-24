@@ -17,7 +17,7 @@ fi
 pin_newer_runtime_libs ()
 {
     # Is always set at this point, but may be empty if the host lacks zenity
-    if [ -z "${STEAM_ZENITY}" ]; then
+    if [ -n "${STEAM_ZENITY}" ]; then
         "${STEAM_ZENITY}" --progress --pulsate --no-cancel --width 400 --text="Pins potentially out-of-date, rebuilding..." < /dev/zero &
         zpid=$!
     else
