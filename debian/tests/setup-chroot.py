@@ -10,6 +10,7 @@ import os
 import os.path
 import subprocess
 import sys
+import tempfile
 import unittest
 
 try:
@@ -33,12 +34,26 @@ class TestBuildRuntime(unittest.TestCase):
         pass
 
     def test_default(self):
+        f, log_file = tempfile.mkstemp(prefix="steam-runtime-setup-chroot-")
         # Send stdout to our stderr to avoid interfering with TAP.
         # Use fd 2 directly because pycotap reopens sys.stdout, sys.stderr
         subprocess.check_call([
             SETUP_CHROOT,
             '--amd64',
+            '--logfile', log_file,
         ], stdout=2, stderr=2)
+
+        found = False
+        with os.fdopen(f, "r") as out:
+            line = out.readline()
+            while line and not found:
+                if "deprecated and should not be used anymore" in line:
+                    found = True
+                line = out.readline()
+
+        self.assertTrue(found)
+        os.remove(log_file)
+
         self.assertTrue(
             os.path.exists(
                 '/var/chroots/steamrt_scout_amd64/etc/debian_chroot'))
@@ -98,12 +113,26 @@ class TestBuildRuntime(unittest.TestCase):
             self.assertEqual(untar.wait(), 0)
 
     def test_other(self):
+        f, log_file = tempfile.mkstemp(prefix="steam-runtime-setup-chroot-")
         subprocess.check_call([
             SETUP_CHROOT,
             '--i386',
             '--beta',
             '--output-dir', '/opt',
+            '--logfile', log_file,
         ])
+
+        found = False
+        with os.fdopen(f, "r") as out:
+            line = out.readline()
+            while line and not found:
+                if "deprecated and should not be used anymore" in line:
+                    found = True
+                line = out.readline()
+
+        self.assertTrue(found)
+        os.remove(log_file)
+
         self.assertTrue(
             os.path.exists(
                 '/opt/steamrt_scout_beta_i386/etc/debian_chroot'))

@@ -10,10 +10,12 @@
 #   sudo docker build -f steam-runtime.docker .
 set -eu
 
-# Cloud image script should lvie next to us
+# Cloud image script should live next to us
 SCRIPT_RELDIR="$(dirname "$0")"
 CLOUDIMAGE_SCRIPT="$SCRIPT_RELDIR/docker_fetch_base_cloudimg.sh"
 DOCKERFILE="$SCRIPT_RELDIR/steam-runtime.docker"
+SCRIPT="$(readlink -f "$0")"
+LOGFILE=""
 
 # Output helpers
 COLOR_ERR=""
@@ -124,7 +126,7 @@ usage () {
     say=err
   fi
 
-  "$say" "Usage: $0 [--beta] [--extra-bootstrap FILE] [--proxy=URI] [--no-proxy=HOSTNAME[,HOSTNAME...]] -- {amd64|i386} [IMAGE]"
+  "$say" "Usage: $0 [--beta] [--extra-bootstrap FILE] [--logfile FILE] [--proxy=URI] [--no-proxy=HOSTNAME[,HOSTNAME...]] -- {amd64|i386} [IMAGE]"
   exit "$1"
 }
 
@@ -136,10 +138,13 @@ proxy="${http_proxy:-}"
 no_proxy="${no_proxy:-}"
 
 getopt_temp="$(getopt -o '' --long \
-'beta,extra-bootstrap:,help,proxy:,no-proxy:' \
+'beta,extra-bootstrap:,help,logfile:,proxy:,no-proxy:' \
 -n "$0" -- "$@")"
 eval set -- "$getopt_temp"
 unset getopt_temp
+
+# Create a copy of the arguments
+args=("$@")
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -157,6 +162,11 @@ while [ "$#" -gt 0 ]; do
       extra_bootstrap_arg="$2"
       shift 2
       ;;
+
+		(--logfile)
+			LOGFILE="$2"
+			shift 2
+			;;
 
     (--proxy)
       proxy="$2"
@@ -188,6 +198,22 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
+# Launch ourselves with script so we can time this and get a log file
+if [[ ! -v SETUP_CHROOT_LOGGING_STARTED ]]; then
+  if command -v script >/dev/null; then
+    export SETUP_CHROOT_LOGGING_STARTED=1
+    export SHELL=/bin/bash
+    if [ -z "$LOGFILE" ]; then
+      LOGFILE="$(mktemp --tmpdir steam-runtime-setup-chroot-XXX.log)"
+    fi
+    script --return --command "time $SCRIPT $(sh_quote "${args[@]}")" "${LOGFILE}"
+    exit $?
+  else
+    err "'script' command not found, will not auto-generate a log file"
+    # Continue
+  fi
+fi
+
 while [ "$#" -gt 0 ]; do
   if [ -z "$arch_arg" ]; then # Positional argument: architecture
     arch_arg="$1"
@@ -206,6 +232,9 @@ done
 
 # Default image name steam-runtime-{arch}-{beta}
 [[ -n $name_arg ]] || name_arg="steam-runtime-${arch_arg}${beta_arg:+-beta}"
+
+err "WARNING: $0 is deprecated and should not be used anymore! Instead follow the \"Building in the runtime\" " \
+    "section of the README.md"
 
 # Looks good, proceed
 build_docker "$name_arg" "$arch_arg" "$beta_arg" "$extra_bootstrap_arg"

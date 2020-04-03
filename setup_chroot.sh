@@ -4,7 +4,7 @@ SCRIPT="$(readlink -f "$0")"
 SCRIPTNAME="$(basename "$SCRIPT")"
 SCRIPT_DIR="$(dirname "$SCRIPT")"
 BOOTSTRAP_SCRIPT="$SCRIPT_DIR/scripts/bootstrap-runtime.sh"
-LOGFILE="$(mktemp --tmpdir steam-runtime-setup-chroot-XXX.log)"
+LOGFILE=""
 CHROOT_PREFIX="steamrt_"
 CHROOT_DIR="/var/chroots"
 CHROOT_NAME=""
@@ -251,7 +251,7 @@ usage()
 		exec >&2
 	fi
 
-	echo "Usage: $0 [--beta | --suite SUITE] [--name NAME] [--extra-apt-source 'deb http://MIRROR SUITE COMPONENT...'] [--output-dir <DIRNAME>] [--tarball TARBALL] --i386 | --amd64"
+	echo "Usage: $0 [--beta | --suite SUITE] [--name NAME] [--extra-apt-source 'deb http://MIRROR SUITE COMPONENT...'] [--output-dir <DIRNAME>] [--logfile FILE] [--tarball TARBALL] --i386 | --amd64"
 	exit "$1"
 }
 
@@ -259,7 +259,7 @@ main()
 {
 	local getopt_temp
 	getopt_temp="$(getopt -o '' --long \
-	'amd64,beta,extra-apt-source:,i386,name:,output-dir:,suite:,tarball:,help' \
+	'amd64,beta,extra-apt-source:,i386,name:,output-dir:,logfile:,suite:,tarball:,help' \
 	-n "$0" -- "$@")"
 	eval set -- "$getopt_temp"
 	unset getopt_temp
@@ -269,6 +269,9 @@ main()
 	local suite=scout
 	local suite_suffix=
 	local tarball=
+
+	# Create a copy of the arguments
+	local args=("$@")
 
 	while [ "$#" -gt 0 ]; do
 		case "$1" in
@@ -295,6 +298,11 @@ main()
 
 			(--help)
 				usage 0
+				;;
+
+			(--logfile)
+				LOGFILE="$2"
+				shift 2
 				;;
 
 			(--output-dir)
@@ -330,11 +338,34 @@ main()
 		esac
 	done
 
+	# Launch ourselves with script so we can time this and get a log file
+	if [[ ! -v SETUP_CHROOT_LOGGING_STARTED ]]; then
+		if command -v script >/dev/null; then
+			export SETUP_CHROOT_LOGGING_STARTED=1
+			export SHELL=/bin/bash
+			if [ -z "$LOGFILE" ]; then
+				LOGFILE="$(mktemp --tmpdir steam-runtime-setup-chroot-XXX.log)"
+			fi
+			script --return --command "time $SCRIPT $(sh_quote "${args[@]}")" "${LOGFILE}"
+			exit $?
+		else
+			echo >&2 "!! 'script' command not found, will not auto-generate a log file"
+			# Continue
+		fi
+	fi
+
 	CHROOT_PREFIX="${CHROOT_PREFIX}${suite}${suite_suffix}_"
 
 	case "$suite" in
 		(scout*)
-			# We still support doing this the hard way for scout
+			# We still support doing this the hard way for scout but show a
+			# deprecated warning.
+			if [ -z "$tarball" ]; then
+				echo "WARNING: The usage of this script without the option \"--tarball\" " \
+				     "is deprecated and should not be used anymore!" >&2
+				echo "Use --tarball to provide a pre-prepared sysroot as explained in the " \
+				     "\"Using schroot\" section of the README.md" >&2
+			fi
 			;;
 
 		(demoman*|engineer*|heavy*|medic*|pyro*|sniper*|soldier*|spy*)
@@ -379,19 +410,6 @@ main()
 
 	echo -e "\\n${COLOR_ON}Done...${COLOR_OFF}"
 }
-
-# Launch ourselves with script so we can time this and get a log file
-if [[ ! -v SETUP_CHROOT_LOGGING_STARTED ]]; then
-	if command -v script >/dev/null; then
-		export SETUP_CHROOT_LOGGING_STARTED=1
-		export SHELL=/bin/bash
-		script --return --command "time $SCRIPT $(sh_quote "$@")" "${LOGFILE}"
-		exit $?
-	else
-		echo >&2 "!! 'script' command not found, will not auto-generate a log file"
-		# Continue to main
-	fi
-fi
 
 main "$@"
 
