@@ -154,10 +154,6 @@ build_chroot()
 
 	echo -e "\\n${COLOR_ON}Running ${BOOTSTRAP_SCRIPT}$(printf ' %q' "$@")...${COLOR_OFF}"
 
-	# Touch the logfile first so it has the proper permissions
-	rm -f "${LOGFILE}"
-	touch "${LOGFILE}"
-
 	# The chroot has access to /tmp so copy the script there and run it with --configure
 	TMPNAME="$(basename "$BOOTSTRAP_SCRIPT")"
 	TMPNAME="${TMPNAME%.*}-$$.sh"
