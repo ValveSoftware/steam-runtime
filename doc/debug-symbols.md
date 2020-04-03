@@ -71,7 +71,7 @@ which Steam Runtime you have. These instructions assume you are using
 at least version 0.20190716.1. At the time of writing, the public stable
 release is version 0.20191024.0.
 
-Look in <http://repo.steampowered.com/steamrt-images-scout/snapshots/>
+Look in <https://repo.steampowered.com/steamrt-images-scout/snapshots/>
 for a corresponding version of the Steam Runtime container builds.
 
 Download

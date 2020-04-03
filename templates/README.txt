@@ -8,7 +8,7 @@ The scripts used to build these packages can be found on GitHub:
 https://github.com/ValveSoftware/steam-runtime
 
 The source code and debug versions of the packages can be found here:
-http://media.steampowered.com/client/runtime/PLACEHOLDER_URL
+https://repo.steampowered.com/PLACEHOLDER_URL
 
 
 The scripts and other documentation contributed by Valve are covered under

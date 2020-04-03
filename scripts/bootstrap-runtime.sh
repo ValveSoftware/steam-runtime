@@ -158,7 +158,7 @@ heredoc
   apt-get install --force-yes -y clang-3.6 lldb-3.6
 
   # Workaround bug 714890 in 32-bit clang. Gcc 4.8 changed the include paths.
-  # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=714890
+  # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=714890
   #   /usr/include/c++/4.6/i686-linux-gnu/bits/c++config.h
   #   /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h
   if [ -d /usr/include/i386-linux-gnu/c++/4.8 ]; then

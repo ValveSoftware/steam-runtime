@@ -211,14 +211,14 @@ def parse_args():
 	parser.add_argument("--symbols", help="include debugging symbols", action="store_true")
 	parser.add_argument(
 		"--repo", help="main apt repository URL",
-		default="http://repo.steampowered.com/steamrt",
+		default="https://repo.steampowered.com/steamrt",
 	)
 	parser.add_argument(
 		"--extra-apt-source", dest='extra_apt_sources',
 		default=[], action='append',
 		help=(
 			"additional apt sources in the form "
-			"'deb http://URL SUITE COMPONENT [COMPONENT...]' "
+			"'deb https://URL SUITE COMPONENT [COMPONENT...]' "
 			"(may be repeated)"
 		),
 	)
@@ -1202,7 +1202,7 @@ for line in args.extra_apt_sources:
 	if len(tokens) < 4:
 		raise ValueError(
 			'--extra-apt-source argument must be in the form '
-			'"deb http://URL SUITE COMPONENT [COMPONENT...]"')
+			'"deb https://URL SUITE COMPONENT [COMPONENT...]"')
 
 	if tokens[0] not in ('deb', 'deb-src', 'both'):
 		raise ValueError(

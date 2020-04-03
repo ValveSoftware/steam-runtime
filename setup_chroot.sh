@@ -229,7 +229,7 @@ untar_chroot ()
 	fi
 }
 
-# http://stackoverflow.com/questions/64786/error-handling-in-bash
+# https://stackoverflow.com/questions/64786/error-handling-in-bash
 function cleanup()
 {
 	echo -e "\\nenv is:\\n$(env)\\n"

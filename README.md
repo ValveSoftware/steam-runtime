@@ -8,7 +8,7 @@ Introduction
 
 This release of the steam-runtime SDK marks a change to a chroot environment used for building apps. A chroot environment is a standalone Linux environment rooted somewhere in your file system.
 
-[http://en.wikipedia.org/wiki/Chroot](http://en.wikipedia.org/wiki/Chroot "")
+[https://en.wikipedia.org/wiki/Chroot](https://en.wikipedia.org/wiki/Chroot "")
 
 All processes that run within the root run relative to that rooted environment. It is possible to install a differently versioned distribution within a root, than the native distribution. For example, it is possible to install an Ubuntu 12.04 chroot environment on an Ubuntu 14.04 system. Tools and utilities for building apps can be installed in the root using standard package management tools, since from the tool's perspective it is running in a native Linux environment. This makes it well suited for an SDK environment.
 
@@ -20,7 +20,7 @@ If any of these packages contain runtime dependencies, then you will have to mak
 
 Installation
 ------------
-All the software that makes up the Steam Runtime is available in both source and binary form in the Steam Runtime repository [http://repo.steampowered.com/steamrt](http://repo.steampowered.com/steamrt "")
+All the software that makes up the Steam Runtime is available in both source and binary form in the Steam Runtime repository [https://repo.steampowered.com/steamrt](https://repo.steampowered.com/steamrt "")
 
 Included in this repository are scripts for building local copies of the Steam Runtime for testing and scripts for building Linux chroot environments suitable for building applications.
 
@@ -34,7 +34,7 @@ may want to test an application with a different build of the runtime.
 ### Downloading a Steam Runtime
 
 Current and past versions of the Steam Runtime are available from
-<http://repo.steampowered.com/steamrt-images-scout/snapshots/>.
+<https://repo.steampowered.com/steamrt-images-scout/snapshots/>.
 Beta builds, newer than the one included with Steam, are sometimes
 available from the same location. The versioned directory names correspond
 to the `version.txt` found in official Steam Runtime builds, typically
@@ -111,7 +111,7 @@ into your applications, you should build within a Steam Runtime chroot
 environment or container.
 
 To obtain one, first find an appropriate directory in
-<http://repo.steampowered.com/steamrt-images-scout/snapshots/>.
+<https://repo.steampowered.com/steamrt-images-scout/snapshots/>.
 The versioned directory names correspond to the
 `version.txt` found in official Steam Runtime builds, typically
 `ubuntu12_32/steam-runtime/version.txt` in a Steam installation: you
