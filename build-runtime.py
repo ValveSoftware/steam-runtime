@@ -1,8 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Script to build and install packages into the Steam runtime
 
-from __future__ import print_function
 import calendar
 import errno
 import os
@@ -16,7 +15,6 @@ import subprocess
 import tarfile
 import tempfile
 import time
-from contextlib import closing, contextmanager
 from debian import deb822
 from debian.debian_support import Version
 import argparse
@@ -51,15 +49,6 @@ ARCHITECTURES = {
 	'amd64': 'x86_64-linux-gnu',
 	'i386': 'i386-linux-gnu',
 }
-
-
-def mkdir_p(path):
-	"""
-	Like os.makedirs(path, exist_ok=True), but compatible
-	with Python 2.
-	"""
-	if not os.path.isdir(path):
-		os.makedirs(path)
 
 
 def hard_link_or_copy(source, dest):
@@ -399,7 +388,7 @@ def install_sources(apt_sources, sourcelist):
 
 				# Copy the source package into the output directory
 				# (optimizing the copy as a hardlink if possible)
-				mkdir_p(os.path.join(args.output, 'source'))
+				os.makedirs(os.path.join(args.output, 'source'), exist_ok=True)
 				hard_link_or_copy(
 					os.path.join(cache_dir, file['name']),
 					os.path.join(
@@ -863,7 +852,7 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 							relative_path,
 							member,
 						)
-						mkdir_p(merged)
+						os.makedirs(merged, exist_ok=True)
 
 					for member in filenames:
 						source = os.path.join(
@@ -878,7 +867,7 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 						if os.path.exists(merged):
 							warn_if_different(source, merged)
 						else:
-							mkdir_p(os.path.dirname(merged))
+							os.makedirs(os.path.dirname(merged), exist_ok=True)
 							shutil.move(source, merged)
 
 				# Replace amd64/usr/lib with a symlink to
@@ -910,7 +899,7 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 				# Populate OUTPUT/usr/bin with symlinks
 				# to OUTPUT/amd64/[usr/]bin/x86_64-linux-gnu-*
 				# and OUTPUT/i386/[usr/]bin/i386-linux-gnu-*
-				mkdir_p(os.path.join(args.output, 'usr', 'bin'))
+				os.makedirs(os.path.join(args.output, 'usr', 'bin'), exist_ok=True)
 				relative_path = os.path.relpath(exe, args.output)
 				os.symlink(
 					os.path.join('..', '..', relative_path),
@@ -1149,22 +1138,6 @@ def write_manifests(manifest):
 			writer.write(line)
 
 
-@contextmanager
-def waiting(popen):
-	"""
-	Context manager to wait for a subprocess.Popen object to finish,
-	similar to contextlib.closing().
-
-	Popen objects are context managers themselves, but only in
-	Python 3.2 or later.
-	"""
-	try:
-		yield popen
-	finally:
-		popen.stdin.close()
-		popen.wait()
-
-
 def normalize_tar_entry(entry):
 	# type: (tarfile.TarInfo) -> tarfile.TarInfo
 	if args.verbose:
@@ -1241,7 +1214,7 @@ for line in args.extra_apt_sources:
 timestamps = {}
 
 for source in apt_sources:
-	with closing(urlopen(source.release_url)) as release_file:
+	with urlopen(source.release_url) as release_file:
 		release_info = deb822.Deb822(release_file)
 		try:
 			timestamps[source] = calendar.timegm(time.strptime(
@@ -1423,16 +1396,16 @@ if args.archive is not None:
 
 	print("Creating archive %s..." % archive)
 
-	with open(archive, 'wb') as archive_writer, waiting(subprocess.Popen(
+	with open(archive, 'wb') as archive_writer, subprocess.Popen(
 		compressor_args,
 		stdin=subprocess.PIPE,
 		stdout=archive_writer,
-	)) as compressor, closing(tarfile.open(
+	) as compressor, tarfile.open(
 		archive,
 		mode='w|',
 		format=tarfile.GNU_FORMAT,
 		fileobj=compressor.stdin,
-	)) as archiver:
+	) as archiver:
 		members = []
 
 		for dir_path, dirs, files in os.walk(

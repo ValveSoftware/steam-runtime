@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (C) 2019 Collabora Ltd.
 #
 # SPDX-License-Identifier: MIT
