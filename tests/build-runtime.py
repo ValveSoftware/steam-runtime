@@ -36,8 +36,8 @@ class TestBuildRuntime(unittest.TestCase):
             BUILD_RUNTIME,
             '--archive=runtime/',
             '--dump-options',
-        ])
-        o = json.loads(j, encoding='utf-8')
+        ]).decode('utf-8')
+        o = json.loads(j)
         self.assertEqual(o['architectures'], ['amd64', 'i386'])
         self.assertEqual(o['packages_from'], [])
         self.assertEqual(
@@ -51,8 +51,8 @@ class TestBuildRuntime(unittest.TestCase):
             '--dump-options',
             '--arch', 'mips',
             '--arch', 'mipsel',
-        ])
-        o = json.loads(j, encoding='utf-8')
+        ]).decode('utf-8')
+        o = json.loads(j)
         self.assertEqual(o['architectures'], ['mips', 'mipsel'])
 
     def test_packages_from(self):
@@ -62,8 +62,8 @@ class TestBuildRuntime(unittest.TestCase):
             '--dump-options',
             '--packages-from', '/tmp/packages.txt',
             '--packages-from', 'foobar.txt',
-        ])
-        o = json.loads(j, encoding='utf-8')
+        ]).decode('utf-8')
+        o = json.loads(j)
         self.assertEqual(
             o['packages_from'],
             ['/tmp/packages.txt', 'foobar.txt'],
