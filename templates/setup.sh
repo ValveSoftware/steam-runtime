@@ -415,6 +415,7 @@ main ()
 
     case "$action" in
         (--print-bin-path)
+            # Keep this in sync with run.sh
             case "$(uname -m)" in
                 (*64)
                     arch=amd64

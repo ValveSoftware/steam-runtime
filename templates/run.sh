@@ -3,7 +3,11 @@
 # This is a script which runs programs in the Steam runtime
 
 # The top level of the runtime tree
-TOP=$(cd "${0%/*}" && pwd)
+STEAM_RUNTIME=$(cd "${0%/*}" && pwd)
+# Note that we put the Steam runtime first
+# If ldd on a program shows any library in the system path, then that program
+# may not run in the Steam runtime.
+export STEAM_RUNTIME
 
 # Make sure we have something to run
 if [ "$1" = "" ]; then
@@ -21,10 +25,39 @@ if [ -z ${SYSTEM_ZENITY} ]; then
     fi
 fi
 
-# Note that we put the Steam runtime first
-# If ldd on a program shows any library in the system path, then that program
-# may not run in the Steam runtime.
-export STEAM_RUNTIME="${TOP}"
+set_bin_path()
+{
+    local arch
+    local unique_steam_runtime_paths
+
+    unique_steam_runtime_paths=
+
+    case "$(uname -m)" in
+        (*64)
+            arch=amd64
+            ;;
+        (*)
+            arch=i386
+            ;;
+    esac
+
+    # Keep this in sync with setup.sh
+    for rt_path in "$STEAM_RUNTIME/$arch/bin" "$STEAM_RUNTIME/$arch/usr/bin" "$STEAM_RUNTIME/usr/bin"; do
+        case ":${PATH}:" in
+            (*:${rt_path}:*)
+                # rt_path is already in PATH, ignore
+                ;;
+
+            (*)
+                # rt_path is not in PATH, save it and then prepend it to PATH
+                unique_steam_runtime_paths="${unique_steam_runtime_paths}${rt_path}:"
+                ;;
+        esac
+    done
+
+    # Prepend the Steam Runtime's paths
+    export PATH="${unique_steam_runtime_paths}${PATH}"
+}
 
 host_library_paths=
 
@@ -55,6 +88,8 @@ if [ "$1" = "--print-steam-runtime-library-paths" ]; then
 fi
 
 export LD_LIBRARY_PATH="$steam_runtime_library_paths:${LD_LIBRARY_PATH-}"
+
+set_bin_path
 
 exec "$@"
 
