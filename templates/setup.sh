@@ -73,7 +73,7 @@ pin_newer_runtime_libs ()
     if [ "$zenity_progress" = true ]; then
         echo 4
     else
-        printf '\r 4%    \r'
+        printf '\r 4%%    \r'
     fi
 
     # First, grab the list of system libraries from ldconfig and put them in the arrays
@@ -130,7 +130,7 @@ pin_newer_runtime_libs ()
     if [ "$zenity_progress" = true ]; then
         echo 64
     else
-        printf '\r 64%    \r'
+        printf '\r 64%%    \r'
     fi
 
     mkdir "$steam_runtime_path/pinned_libs_32"
