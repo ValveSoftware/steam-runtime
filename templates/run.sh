@@ -2,6 +2,10 @@
 #
 # This is a script which runs programs in the Steam runtime
 
+set -e
+set -u
+set -o pipefail
+
 # The top level of the runtime tree
 STEAM_RUNTIME=$(cd "${0%/*}" && pwd)
 # Note that we put the Steam runtime first
@@ -15,7 +19,7 @@ if [ "$1" = "" ]; then
     exit 1
 fi
 
-if [ -z "${SYSTEM_ZENITY}" ]; then
+if [ -z "${SYSTEM_ZENITY-}" ]; then
     # Prefer host zenity binary if available
     SYSTEM_ZENITY="$(command -v zenity || true)"
     export SYSTEM_ZENITY
