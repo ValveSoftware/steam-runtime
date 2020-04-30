@@ -1295,7 +1295,7 @@ if args.debug_url:
 		) as writer:
 			for line in reader:
 				line = re.sub(
-					r'https?://media\.steampowered\.com/client/runtime/.*$',
+					r'https?://repo\.steampowered\.com/PLACEHOLDER.*$',
 					args.debug_url, line)
 				writer.write(line)
 
