@@ -1137,6 +1137,37 @@ def write_manifests(manifest):
 		for line in sorted(lines):
 			writer.write(line)
 
+	# non-packages.txt: A summary of files that were included other than
+	# from a package. Currently this means the repository containing
+	# this script and the default template scripts.
+	with open(os.path.join(args.output, 'non-packages.txt'), 'w') as writer:
+		writer.write('#Name\t#Version\t#Comment\n')
+
+		try:
+			with subprocess.Popen(
+				[
+					'git', 'describe',
+					'--always',
+					'--dirty',
+					'--long',
+				],
+				cwd=os.path.dirname(__file__),
+				stdout=subprocess.PIPE,
+				universal_newlines=True,
+			) as describe:
+				description = describe.stdout.read().strip()
+				# Deliberately ignoring exit status:
+				# if git is missing or old we'll use 'unknown'
+		except FileNotFoundError:
+			description = ''
+
+		writer.write(
+			'steam-runtime.git\t{}\t{}\n'.format(
+				description or 'unknown',
+				'# build-runtime.py, run.sh, setup.sh etc.',
+			)
+		)
+
 
 def normalize_tar_entry(entry):
 	# type: (tarfile.TarInfo) -> tarfile.TarInfo
