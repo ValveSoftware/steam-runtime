@@ -1287,21 +1287,23 @@ with open(os.path.join(args.output, 'version.txt'), 'w') as writer:
 
 if args.debug_url:
 	# Note where people can get the debug version of this runtime
-	with open(
-		os.path.join(args.templates, 'README.txt')
-	) as reader:
+	for base in ('README.txt', 'COPYING'):
 		with open(
-			os.path.join(args.output, 'README.txt.new'), 'w'
-		) as writer:
-			for line in reader:
-				line = re.sub(
-					r'https?://repo\.steampowered\.com/PLACEHOLDER.*$',
-					args.debug_url, line)
-				writer.write(line)
+			os.path.join(args.templates, base)
+		) as reader:
+			with open(
+				os.path.join(args.output, base + '.new'), 'w'
+			) as writer:
+				for line in reader:
+					line = re.sub(
+						r'https?://repo\.steampowered\.com/PLACEHOLDER.*$',
+						args.debug_url, line)
+					writer.write(line)
 
-	os.rename(
-		os.path.join(args.output, 'README.txt.new'),
-		os.path.join(args.output, 'README.txt'))
+		os.rename(
+			os.path.join(args.output, base + '.new'),
+			os.path.join(args.output, base),
+		)
 
 # Process packages.txt to get the list of source and binary packages
 sources_from_lists = set()		# type: typing.Set[str]
