@@ -77,7 +77,13 @@ pin_newer_runtime_libs ()
     fi
 
     # First, grab the list of system libraries from ldconfig and put them in the arrays
-    mapfile -t ldconfig_output_array < <(/sbin/ldconfig -XNv 2> /dev/null)
+    shopt -s lastpipe
+    if /sbin/ldconfig -XNv 2> /dev/null | mapfile -t ldconfig_output_array; then
+        true  # OK
+    else
+        >&2 echo "Warning: An unexpected error occurred while executing \"/sbin/ldconfig -XNv\", the exit status was $?"
+    fi
+
     ldconfig_num=${#ldconfig_output_array[@]}
     n_done=0
 
