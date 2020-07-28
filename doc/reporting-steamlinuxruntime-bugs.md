@@ -18,7 +18,9 @@ to include full system information (*Help -> System Information*) in your
 report. Wait for the extended system infomation to be collected by Steam.
 
 When reporting bugs in the container runtime, please include a debug
-log:
+log. This can be done using either one of these two methods:
+
+Method 1:
 
 * Completely exit from Steam
 
@@ -37,6 +39,27 @@ For example, this command will leave Steam output in a file named
 `pressure-vessel.log` in your home directory:
 
     PRESSURE_VESSEL_VERBOSE=1 steam 2>&1 | tee ~/pressure-vessel.log
+
+Method 2:
+
+* Open your Steam library
+
+* Right-click on the title which you want to capture a debug log from
+    and select Properties...
+
+* Click on Set Launch Options...
+
+* Enter a command that sets the `PRESSURE_VESSEL_VERBOSE` environment
+    variable to 1. Usually, pasting this command into the box and
+    subsequently pressing OK should suffice: 
+    `PRESSURE_VESSEL_VERBOSE=1 %command% 2>&1 | tee ~/pressure-vessel.log`
+
+* Run the game, or do whatever else is necessary to reproduce the bug
+
+* Exit the game
+
+If you went with the suggested command, you should now have a log claled
+`pressure-vessel.log` in your home directory.
 
 You can censor the system information and the log (usernames, directory
 names etc.) if you need to, as long as it's obvious what you have
