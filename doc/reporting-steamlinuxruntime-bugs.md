@@ -238,9 +238,16 @@ directory.
 If you have detached debug symbols in `/usr/lib/debug` on your host
 system, you can use those to analyze backtraces that involve libraries
 that came from the host system, such as glibc and Mesa graphics drivers.
-To do that, merge your host system's `/usr/lib/debug` into the SDK's
-`files/lib/debug`. This will work best if the host system also uses
+To do that, either merge your host system's `/usr/lib/debug` into the SDK's
+`files/lib/debug`, or run `gdb` like this:
+
+    gdb -iex \
+    'set debug-file-directory /usr/lib/debug:/run/host/usr/lib/debug' \
+    ...
+
+This will work best if the host system also uses
 build-ID-based detached debug symbols, like Debian and Fedora.
+
 Alternatively, use versions of glibc and Mesa on the host system that
 were built with `gcc -g` and not stripped, such as Debian packages
 built with `DEB_BUILD_OPTIONS=nostrip`.
