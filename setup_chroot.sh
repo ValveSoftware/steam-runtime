@@ -24,6 +24,8 @@ if [[ $(tput colors 2>/dev/null || echo 0) -gt 0 ]]; then
   COLOR_OFF=$'\e[0m'
 fi
 
+FORCE=0
+
 sh_quote ()
 {
   local quoted
@@ -49,10 +51,12 @@ prebuild_chroot()
 		tput sgr0
 		echo "  ${schroot_list}"
 		echo ""
-		read -r -p "Are you sure you want to continue (y/n)? "
-		if [[ "$REPLY" != [Yy] ]]; then
-			echo -e "Cancelled...\\n"
-			exit 1
+		if [ ${FORCE} -gt 0 ]; then
+			read -r -p "Are you sure you want to continue (y/n)? "
+			if [[ "$REPLY" != [Yy] ]]; then
+				echo -e "Cancelled...\\n"
+				exit 1
+			fi
 		fi
 	fi
 
@@ -74,10 +78,12 @@ prebuild_chroot()
 	done
 
 	if [[ "$STEAM_RUNTIME_SPEW_WARNING" == "1" ]]; then
-		read -r -p "  This ok (y/n)? "
-		if [[ "$REPLY" != [Yy] ]]; then
-			echo -e "Cancelled...\\n"
-			exit 1
+		if [ ${FORCE} -gt 0 ]; then
+			read -r -p "  This ok (y/n)? "
+			if [[ "$REPLY" != [Yy] ]]; then
+				echo -e "Cancelled...\\n"
+				exit 1
+			fi
 		fi
 	fi
 }
@@ -275,6 +281,11 @@ main()
 
 	while [ "$#" -gt 0 ]; do
 		case "$1" in
+			(--force)
+				FORCE=1
+				shift
+				;;
+
 			(--amd64|--i386)
 				arch_arguments+=("$1")
 				shift
