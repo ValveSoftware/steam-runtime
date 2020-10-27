@@ -19,6 +19,14 @@ if [ "$1" = "" ]; then
     exit 1
 fi
 
+# Save the system paths, they might be useful later
+if [ -z "${SYSTEM_PATH-}" ]; then
+    export SYSTEM_PATH="${PATH-}"
+fi
+if [ -z "${SYSTEM_LD_LIBRARY_PATH-}" ]; then
+    export SYSTEM_LD_LIBRARY_PATH="${LD_LIBRARY_PATH-}"
+fi
+
 if [ -z "${SYSTEM_ZENITY-}" ]; then
     # Prefer host zenity binary if available
     SYSTEM_ZENITY="$(command -v zenity || true)"
@@ -89,6 +97,8 @@ while read -r line; do
     fi
 done <<< "$ldconfig_output"
 
+host_library_paths="${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}$host_library_paths"
+
 host_library_paths="$STEAM_RUNTIME/pinned_libs_32:$STEAM_RUNTIME/pinned_libs_64:$host_library_paths"
 
 steam_runtime_library_paths="$host_library_paths$STEAM_RUNTIME/lib/i386-linux-gnu:$STEAM_RUNTIME/usr/lib/i386-linux-gnu:$STEAM_RUNTIME/lib/x86_64-linux-gnu:$STEAM_RUNTIME/usr/lib/x86_64-linux-gnu:$STEAM_RUNTIME/lib:$STEAM_RUNTIME/usr/lib"
@@ -98,7 +108,7 @@ if [ "$1" = "--print-steam-runtime-library-paths" ]; then
     exit 0
 fi
 
-export LD_LIBRARY_PATH="$steam_runtime_library_paths:${LD_LIBRARY_PATH-}"
+export LD_LIBRARY_PATH="$steam_runtime_library_paths"
 
 set_bin_path
 
