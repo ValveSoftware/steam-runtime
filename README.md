@@ -1,5 +1,5 @@
-steam-runtime
-=============
+steam runtime SDK
+=================
 
 A binary compatible runtime environment for Steam applications on Linux.
 
@@ -160,6 +160,10 @@ This will download an Ubuntu 12.04 container and convert it into a Steam
 Runtime environment. The result does not match the official sysroot
 tarball and is not guaranteed to match any specific/identifiable version
 of the Steam Runtime, so this approach is not recommended.
+
+### Docker registry
+
+Docker images for the scout steam runtime can be downloaded from https://gitlab.steamos.cloud/steamrt/scout/sdk
 
 ### Using schroot
 
