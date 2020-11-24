@@ -106,6 +106,34 @@ aim higher than 2015.
 Steam Runtime version 2 should be based on a more contemporary stack,
 for example Debian 10 'buster', which was released in 2019.
 
+#### New glibc
+
+One specific aspect of new runtimes that we need to be able to ship is
+a newer version of glibc.
+
+The `LD_LIBRARY_PATH` Steam Runtime cannot contain glibc, because:
+
+* The path to [`ld.so(8)`][ld.so] is hard-coded into all executables
+    (it is the ELF interpreter, part of the platform ABI), so we
+    don't get to change it.
+
+* The version of `ld.so` is coupled to `libdl.so.2`:
+    they come from the same source package, and are allowed to assume
+    that they are installed and upgraded in lockstep.
+
+* Similarly, the version of `libdl.so.2` is coupled to the rest of glibc.
+
+So, everything in the `LD_LIBRARY_PATH` Steam Runtime must be built for
+a glibc at least as old as the oldest system that Steam supports. This
+makes it difficult to advance beyond the Ubuntu 12.04-based 'scout'
+runtime: everything that is updated effectively has to be backported to
+Ubuntu 12.04.
+
+To be able to replace glibc, the runtime needs to provide at least
+`/usr`, `/lib*`, `/bin` and `/sbin`, like a Flatpak runtime does.
+
+[ld.so]: https://linux.die.net/man/8/ld.so
+
 ### Games can be built in a container
 
 It should be straightforward for game developers to build their games
@@ -120,6 +148,37 @@ After a game works once, it should work essentially forever.
 In particular we don't want to spend time debugging conflicts between the
 Steam Runtime's idea of what should be in libpcre.so.3 and libcurl.so.4,
 and the host system's.
+
+#### Avoiding incompatibilities between libraries
+
+Games can break when libraries claim to be compatible (by having the
+same ELF `DT_SONAME`) but are in fact not compatible, for example:
+
+
+- libcurl.so.4 linked to libssl 1.0 is not completely compatible with
+    libcurl.so.4 linked to libssl 1.1
+
+- The history of libcurl.so.4 in Debian/Ubuntu has involved two
+   incompatible sets of versioned symbols, due to some decisions
+   made in 2005 and 2007 that, with hindsight, were less wise than
+   they appeared at the time
+
+- Various libraries can be compiled with or without particular
+    features and dependencies; if the version in the Steam Runtime
+    has a feature, and the host system version is newer but does not
+    have that feature, then games cannot rely on the feature
+
+- In the worst-case, compiling a library without a particular
+    feature or dependency can result in symbols disappearing from
+    its ABI, resulting in games that reference those symbols crashing
+
+- There is a fairly subtle interaction between libdbus,
+    libdbusmenu-gtk, libdbusmenu-glib and Ubuntu's patched GTK 2
+    that has resulted in these libraries being forced to be taken
+    from the Steam Runtime, to avoid breaking the Unity dock
+
+If we always take these libraries from the runtime, then incompatible
+changes on the host system don't affect us.
 
 ### Games that inappropriately bundle libraries work anyway
 
