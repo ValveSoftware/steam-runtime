@@ -1,14 +1,31 @@
 Reporting SteamLinuxRuntime bugs
 ================================
 
-The Steam Linux container runtime (SteamLinuxRuntime, app ID 1070560)
-runs each game in a container. It is under development, and probably
-has bugs.
+The Steam Linux container runtime runs each game in a container.
 
 It consists of:
 
 * pressure-vessel, a container launching tool
-* the scout runtime, a set of libraries for games to use
+* a *runtime*, providing a set of libraries for games to use
+
+There are currently two runtimes available:
+
+* [Steam Runtime 2 'soldier'](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/soldier/README.md),
+    [app ID 1391110](https://steamdb.info/app/1391110/)
+    is used to run official releases of Proton 5.13 or newer. It might be used
+    for newer native Linux games in future.
+
+* [Steam Runtime 1 'scout'](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/scout/README.md),
+    [app ID 1070560](https://steamdb.info/app/1070560/)
+    can be used on an opt-in basis to run native Linux games in a
+    container. It uses the same libraries as the traditional
+    `LD_LIBRARY_PATH` runtime.
+
+Unofficial third-party builds of Proton might use the container runtime
+like the official Proton 5.13, or they might use the traditional
+`LD_LIBRARY_PATH` runtime like the official Proton 5.0, or they might
+do something else entirely. We cannot provide support for unofficial
+builds of Proton.
 
 Essential information
 ---------------------
@@ -18,9 +35,51 @@ to include full system information (*Help -> System Information*) in your
 report. Wait for the extended system infomation to be collected by Steam.
 
 When reporting bugs in the container runtime, please include a debug
-log. This can be done using either one of these two methods:
+log. Since version 0.20210105.0, the easiest way to get this is:
 
-Method 1:
+* Completely exit from Steam
+
+* Run a terminal emulator such as GNOME Terminal, Konsole or xterm
+
+* Run Steam with the `STEAM_LINUX_RUNTIME_LOG` environment variable
+    set to 1, for example:
+
+        STEAM_LINUX_RUNTIME_LOG=1 steam
+
+    You can leave Steam running with this setting permanently if you're
+    testing multiple games.
+
+* Run the game, or do whatever else is necessary to reproduce the bug
+
+* Find the Steam Library directory where the runtime is installed,
+    typically `~/.local/share/Steam/steamapps/common/SteamLinuxRuntime_soldier`
+    for soldier (Proton 5.13 or newer), or
+    `~/.local/share/Steam/steamapps/common/SteamLinuxRuntime`
+    for scout
+
+* The log file is in the `var/` directory and named `slr-app*-*.log`
+    for Steam games, or `slr-non-steam-game-*.log` if we cannot identify
+    a Steam app ID for the game.
+
+For Proton games, you can combine this with `PROTON_LOG=1` to capture a
+Proton log file too.
+
+For Proton games, putting `STEAM_LINUX_RUNTIME_LOG=1` in the game's
+*Launch Options* will not give us all the information we need, so please
+set it globally as described here.
+
+You can censor the system information and the log (usernames, directory
+names etc.) if you need to, as long as it's obvious what you have
+edited. For example, replacing names with `XXX` or `REDACTED` is OK.
+If your report contains information about more than one Steam Library
+directory, please keep it obvious that they are different - for example
+replace one with `/media/REDACTED1` and the other with
+`/media/REDACTED2` in a consistent way.
+
+### Older method
+
+In older pressure-vessel versions that do not have this option available,
+please do this instead:
 
 * Completely exit from Steam
 
@@ -40,34 +99,8 @@ For example, this command will leave Steam output in a file named
 
     PRESSURE_VESSEL_VERBOSE=1 steam 2>&1 | tee ~/pressure-vessel.log
 
-Method 2:
-
-* Open your Steam library
-
-* Right-click on the title which you want to capture a debug log from
-    and select Properties...
-
-* Click on Set Launch Options...
-
-* Enter a command that sets the `PRESSURE_VESSEL_VERBOSE` environment
-    variable to 1. Usually, pasting this command into the box and
-    subsequently pressing OK should suffice: 
-    `PRESSURE_VESSEL_VERBOSE=1 %command% 2>&1 | tee ~/pressure-vessel.log`
-
-* Run the game, or do whatever else is necessary to reproduce the bug
-
-* Exit the game
-
-If you went with the suggested command, you should now have a log claled
-`pressure-vessel.log` in your home directory.
-
-You can censor the system information and the log (usernames, directory
-names etc.) if you need to, as long as it's obvious what you have
-edited. For example, replacing names with `XXX` or `REDACTED` is OK.
-If your report contains information about more than one Steam Library
-directory, please keep it obvious that they are different - for example
-replace one with `/media/REDACTED1` and the other with
-`/media/REDACTED2` in a consistent way.
+Again, doing this via the *Launch Options* does not provide all the
+information we need for Proton games.
 
 Common issues and workarounds
 -----------------------------
@@ -138,7 +171,8 @@ Even more logging
 -----------------
 
 Steam and pressure-vessel developers might also ask you to run Steam
-with `CAPSULE_DEBUG=all` or `G_MESSAGES_DEBUG=all`, which produce
+with `STEAM_LINUX_RUNTIME_VERBOSE=1`, `PRESSURE_VESSEL_VERBOSE=1`,
+`CAPSULE_DEBUG=all` or `G_MESSAGES_DEBUG=all`, which produce
 even more debug logging that is sometimes useful.
 
 Advanced debugging
@@ -161,7 +195,8 @@ Debian-derived systems), then run Steam with the `PRESSURE_VESSEL_WRAP_GUI`
 environment variable set to `1`.
 
 This mode does not work in situations where pressure-vessel would have
-been run non-interactively, such as for *Help -> System Information*.
+been run non-interactively, such as for *Help -> System Information*
+and Proton games.
 
 ### Getting a shell inside the container
 
@@ -177,6 +212,8 @@ the double quotes!) to run the game inside the interactive shell.
 
 This mode does not work in situations where pressure-vessel would have
 been run non-interactively, such as for *Help -> System Information*.
+It partially works for Proton games: the shell will not open until the
+game's setup commands have finished.
 
 ### Copying the runtime
 
@@ -185,9 +222,10 @@ links for efficiency, and then modifies the copy in-place to have the
 contents we need. This is not the default yet, but it might be in future.
 
 You can try this by creating a directory `.../SteamLinuxRuntime/var`,
+or `.../SteamLinuxRuntime_soldier/var`,
 and running Steam with the `PRESSURE_VESSEL_COPY_RUNTIME_INTO`
-environment variable set to the absolute path to `.../SteamLinuxRuntime/var`.
-The temporary runtimes will be in `.../SteamLinuxRuntime/var/tmp-*`,
+environment variable set to the absolute path to this `var` directory.
+The temporary runtimes will be in `var/tmp-*`,
 and will be deleted the next time you run pressure-vessel (so there
 will normally only be one at a time).
 
@@ -212,6 +250,11 @@ and unpack the tarball into that directory so that you have files like
 `SteamLinuxRuntime/my_scout_platform_0.20200604.0/files/bin/env`.
 Then select it from the list of runtimes in [the test-UI](#test-ui).
 
+Similarly, files named
+`com.valvesoftware.SteamRuntime.Platform-amd64,i386-soldier-runtime.tar.gz`
+from <https://repo.steampowered.com/steamrt-images-soldier/snapshots/>
+can be used in `SteamLinuxRuntime_soldier`.
+
 ### SDK runtimes
 
 If you download a file named
@@ -223,6 +266,9 @@ and unpack the tarball into that directory so that you have files like
 `SteamLinuxRuntime/my_scout_sdk_0.20200604.0/metadata` and
 `SteamLinuxRuntime/my_scout_sdk_0.20200604.0/files/bin/env`.
 Then select it from the list of runtimes in [the test-UI](#test-ui).
+
+Again, the same mechanism can work for soldier, with the names changed
+appropriately.
 
 The SDK has some basic debugging tools like `strace`, `gdb` and `busybox`,
 as well as development tools like C compilers.
