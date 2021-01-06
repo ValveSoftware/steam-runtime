@@ -27,8 +27,9 @@ like the official Proton 5.13, or they might use the traditional
 do something else entirely. We cannot provide support for unofficial
 builds of Proton.
 
-The list of [known issues](KNOWN-ISSUES.md) describes some issues that
-cannot be fixed immediately, with workarounds where available.
+The list of [known issues](steamlinuxruntime-known-issues.md) describes
+some issues that cannot be fixed immediately, with workarounds where
+available.
 
 If you encounter other issues, please report them to the Steam Runtime's
 issue tracker: <https://github.com/ValveSoftware/steam-runtime/issues>.
