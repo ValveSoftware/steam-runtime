@@ -51,7 +51,7 @@ prebuild_chroot()
 		tput sgr0
 		echo "  ${schroot_list}"
 		echo ""
-		if [ ${FORCE} -gt 0 ]; then
+		if [ ${FORCE} -eq 0 ]; then
 			read -r -p "Are you sure you want to continue (y/n)? "
 			if [[ "$REPLY" != [Yy] ]]; then
 				echo -e "Cancelled...\\n"
@@ -78,7 +78,7 @@ prebuild_chroot()
 	done
 
 	if [[ "$STEAM_RUNTIME_SPEW_WARNING" == "1" ]]; then
-		if [ ${FORCE} -gt 0 ]; then
+		if [ ${FORCE} -eq 0 ]; then
 			read -r -p "  This ok (y/n)? "
 			if [[ "$REPLY" != [Yy] ]]; then
 				echo -e "Cancelled...\\n"
@@ -265,7 +265,7 @@ main()
 {
 	local getopt_temp
 	getopt_temp="$(getopt -o '' --long \
-	'amd64,beta,extra-apt-source:,i386,name:,output-dir:,logfile:,suite:,tarball:,help' \
+	'force,amd64,beta,extra-apt-source:,i386,name:,output-dir:,logfile:,suite:,tarball:,help' \
 	-n "$0" -- "$@")"
 	eval set -- "$getopt_temp"
 	unset getopt_temp
