@@ -104,7 +104,9 @@ Audio
 
 The recommended audio framework is PulseAudio. Pipewire emulating a
 PulseAudio server should also work. Using ALSA or OSS might work, but
-is not really supported. JACK is not supported.
+is not really supported. JACK is not supported, because its IPC protocol
+is not compatible between different JACK versions, so there is no version
+of the JACK library that would be suitable for all host OSs.
 
 Workaround: use PulseAudio.
 
