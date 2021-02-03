@@ -67,30 +67,6 @@ systems.
 
 This can also affect system-wide Vulkan layers like MangoHUD and vkBasalt.
 
-Launch options
---------------
-
-This issue is specific to Proton games.
-
-Using Steam's *Launch Options* feature to set environment variables such
-as `LD_PRELOAD` for the game, or wrap the game in an "adverb" command like
-`env` or `taskset`, often does not work.
-
-This affects use of a custom per-game driver (like with `VK_ICD_FILENAMES`
-or `LIBGL_DRIVERS_PATH`), and user hooks like `LD_PRELOAD` (such as
-MangoHUD OpenGL).
-
-Workaround: completely exit from Steam, then run Steam with
-`PRESSURE_VESSEL_RELAUNCH_CONTAINER=1` in the environment. This shuts down
-the container after the setup commands, and starts a new container (which
-uses the launch options) for the actual game. This is slightly slower to
-start, but results in the launch options being used for the new container.
-It might become the default in a future release.
-
-([#304](https://github.com/ValveSoftware/steam-runtime/issues/304),
-[Proton#2330](https://github.com/ValveSoftware/Proton/issues/2330),
-probably others)
-
 /usr/local
 ----------
 
