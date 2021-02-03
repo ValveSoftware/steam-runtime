@@ -111,6 +111,49 @@ For example, this command will leave Steam output in a file named
 Again, doing this via the *Launch Options* does not provide all the
 information we need for Proton games.
 
+Using a beta or an older version
+--------------------------------
+
+Several branches of the Steam Linux Runtime are available. You can
+select a different branch from your Steam Library, in the same way
+you would for a game: follow the same procedure as
+<https://support.steampowered.com/kb_article.php?ref=9847-WHXC-7326>,
+but instead of the properties of CS:GO, change the properties of the
+Steam Linux Runtime.
+
+The branches that are usually available are:
+
+* The default branch (SteamDB calls this `public`) is the recommended
+    version for most people.
+
+* The `client_beta` branch can be used to get a preview of what will
+    be in the next update to the default branch. It is either the same
+    as the default branch, or a bit newer.
+
+    Please use this in conjunction with the
+    [Steam Client beta](https://support.steampowered.com/kb_article.php?ref=7021-eiah-8669),
+    because it will sometimes rely on new Steam Client features that are not
+    yet available in the non-beta client.
+
+    If this branch doesn't work, please report a bug, then switch to
+    the default branch.
+
+* The `previous_release` branch is an older version of the default
+    branch. Only use this if the default branch is not working for you,
+    and please report it as a bug if that happens.
+
+If something works in one branch but fails in another branch, that's
+very useful information to include in issue reports. Please be as clear
+as you can about which version works and which version fails. You can
+check the current version by looking at
+`SteamLinuxRuntime_soldier/VERSIONS.txt` or
+`SteamLinuxRuntime/VERSIONS.txt`.
+
+It is very useful if you can show us a System Information report and a
+log for the version that fails, then switch to the version that works
+(without changing anything else!) and capture a new System Information
+report and a new log, so that we can compare them.
+
 Common issues and workarounds
 -----------------------------
 
