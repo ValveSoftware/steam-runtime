@@ -113,12 +113,6 @@ Workaround: use PulseAudio.
 ([#307](https://github.com/ValveSoftware/steam-runtime/issues/307),
 [#344](https://github.com/ValveSoftware/steam-runtime/issues/344))
 
-Sharing PulseAudio with the container doesn't currently work reliably if
-you don't have an `XDG_RUNTIME_DIR`. Workaround: use systemd-logind
-or elogind.
-
-([#343](https://github.com/ValveSoftware/steam-runtime/issues/343))
-
 Common issues and workarounds specific to 'scout'
 -------------------------------------------------
 
