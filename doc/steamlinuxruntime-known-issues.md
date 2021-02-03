@@ -54,16 +54,11 @@ Vulkan layers and driver/device selection
 
 Getting Vulkan layers from the host system to work in the container
 is complicated, and is still being worked on. In recent versions of
-pressure-vessel, *most* Vulkan layers should work, with some exceptions:
+pressure-vessel, *most* Vulkan layers should work, with some exceptions.
 
-- If a layer lists a filename with no directory separators in its JSON
-   manifest, it won't load correctly in the container. This should be
-   fixed soon. In particular, this bug affects the Mesa device selection
-   layer.
-
-- If a layer has a separate JSON manifest for 32-bit and 64-bit,
-    it might only work for 32-bit *or* 64-bit, and not both.
-    Fixing this is likely to require changes in the Vulkan loader.
+If a layer has a separate JSON manifest for 32-bit and 64-bit,
+it might only work for 32-bit *or* 64-bit, and not both.
+Fixing this is likely to require changes in the Vulkan loader.
 
 The mechanism for selecting the correct Vulkan driver and GPU on Linux
 is not fully settled, and the container can interfere with this, resulting
