@@ -39,7 +39,9 @@ Essential information
 
 We will need to know some information about your system. Please make sure
 to include full system information (*Help -> System Information*) in your
-report. Wait for the extended system infomation to be collected by Steam.
+report. If the text ends with a line like "The runtime information tool
+is preparing a report, please wait...", please wait for it to be
+replaced by the full version of the report.
 
 When reporting bugs in the container runtime, please include a debug
 log. Since version 0.20210105.0, the easiest way to get this is:
