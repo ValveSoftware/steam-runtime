@@ -26,28 +26,64 @@ Non-FHS operating systems
 Unusual directory layouts and `ld.so` names are not supported.
 The Debian/Ubuntu family, the Fedora/CentOS/Red Hat family, Arch Linux
 and openSUSE are most likely to work.
-Exherbo and NixOS are known not to work at the moment.
+
+Exherbo and ClearLinux did not work in the past, but recent versions of
+SteamLinuxRuntime fix this. Please report any regressions. The changes
+made to support these operating systems can be used as a basis to propose
+patches to make it work in other "almost-FHS" environments.
+
+NixOS has its own scripts to set up a FHS-compatible environment to
+run Steam. As of early 2021, very recent versions of this should be
+mostly compatible with pressure-vessel, but some system configurations
+are still problematic.
+
+Guix probably does not work for the same reasons as NixOS.
+
 Other non-FHS distributions might also not work.
 
 Workaround: don't enable SteamLinuxRuntime or Proton 5.13 (or newer)
 on OSs with unusual directory layouts.
-
-([#230](https://github.com/ValveSoftware/steam-runtime/issues/230))
 
 kernel.unprivileged\_userns\_clone
 ----------------------------------
 
 On Debian 10 or older and SteamOS, either the `bubblewrap` package
 from the OS must be installed, or the `kernel.unprivileged_userns_clone`
-sysctl parameter must be set to 1. Similarly, on Arch Linux with the
-non-default `linux-hardened` kernel, either the `bubblewrap-suid`
-package must be installed, or the `kernel.unprivileged_userns_clone`
-sysctl parameter must be set to 1. If any other distributions use the
-`kernel.unprivileged_userns_clone` patch, they will have similar
-requirements.
+sysctl parameter must be set to 1. Debian 11 will do this by default.
+
+Similarly, on Arch Linux with the non-default `linux-hardened`
+kernel, either the `bubblewrap-suid` package must be installed, or the
+`kernel.unprivileged_userns_clone` sysctl parameter must be set to 1.
+
+If any other distributions use the `kernel.unprivileged_userns_clone`
+patch, they will have similar requirements.
 
 ([#342](https://github.com/ValveSoftware/steam-runtime/issues/342),
 [#297](https://github.com/ValveSoftware/steam-runtime/issues/297))
+
+<a name="issue363"></a>MangoHUD with Mesa 20.3.4 and 21.0.0.rc5
+---------------------------------------------------------------
+
+Mesa version 20.3.4, and Mesa release candidates 21.0.0.rc2 to 21.0.0.rc5
+inclusive, have a problematic interaction between Mesa's device selection
+layer and other Vulkan layers, causing Proton/DXVK games to crash or hang
+on startup. The exact conditions to trigger this are complicated and not
+well-understood, but it is known to happen on many systems when Proton/DXVK
+games load the MangoHUD Vulkan layer in the Steam Linux Runtime container.
+
+Mesa versions 20.3.5, 21.0.0 and 21.1.0 are expected to contain a change
+that avoids this problem, and some Linux distributions such as Arch Linux
+have already backported the necessary patch into their packages for older
+Mesa releases.
+
+It is not clear which component is at fault here: it might be a bug in
+Vulkan-Loader, MangoHUD, Mesa, pressure-vessel or something else. We're
+continuing to investigate.
+
+Workaround: disable MangoHUD with environment variable `DISABLE_MANGOHUD=1`.
+
+([#363](https://github.com/ValveSoftware/steam-runtime/issues/363),
+[#365](https://github.com/ValveSoftware/steam-runtime/issues/365))
 
 Vulkan layers and driver/device selection
 -----------------------------------------
@@ -58,14 +94,24 @@ pressure-vessel, *most* Vulkan layers should work, with some exceptions.
 
 If a layer has a separate JSON manifest for 32-bit and 64-bit,
 it might only work for 32-bit *or* 64-bit, and not both.
-Fixing this is likely to require changes in the Vulkan loader.
+This is fixed in version 0.20210217.0 of both scout and soldier.
+However, in some cases this fix exposes other problems with Vulkan
+layers (see [above](#issue363)).
 
 The mechanism for selecting the correct Vulkan driver and GPU on Linux
 is not fully settled, and the container can interfere with this, resulting
 in the wrong GPU or driver being selected, particularly on multi-GPU
 systems.
 
+([#312](https://github.com/ValveSoftware/steam-runtime/issues/312),
+[#352](https://github.com/ValveSoftware/steam-runtime/issues/352);
+maybe also
+[#340](https://github.com/ValveSoftware/steam-runtime/issues/340),
+[#341](https://github.com/ValveSoftware/steam-runtime/issues/341))
+
 This can also affect system-wide Vulkan layers like MangoHUD and vkBasalt.
+
+([#295](https://github.com/ValveSoftware/steam-runtime/issues/295))
 
 /usr/local
 ----------
@@ -112,6 +158,60 @@ Workaround: use PulseAudio.
 
 ([#307](https://github.com/ValveSoftware/steam-runtime/issues/307),
 [#344](https://github.com/ValveSoftware/steam-runtime/issues/344))
+
+Sharing directories with the container
+--------------------------------------
+
+By default, most of the directories that might be used by a game are
+shared between the real system and the container:
+
+* your home directory
+* the Steam library containing the actual game
+* the directory containing Proton, if used
+* the installation directory for Steam itself
+* the shader cache
+
+However, directories outside those areas are usually not shared with
+the container. In particular, this affects games that ask you to browse
+for a directory to be used for storage, like Microsoft Flight Simulator.
+
+You can force them to be shared by setting the environment variable
+`PRESSURE_VESSEL_FILESYSTEMS_RO` and/or `PRESSURE_VESSEL_FILESYSTEMS_RW`
+to a colon-separated list of paths. Paths in
+`PRESSURE_VESSEL_FILESYSTEMS_RO` are read-only and paths in
+`PRESSURE_VESSEL_FILESYSTEMS_RW` are read/write.
+
+Example:
+
+    export PRESSURE_VESSEL_FILESYSTEMS_RO="$MANGOHUD_CONFIGFILE"
+    export PRESSURE_VESSEL_FILESYSTEMS_RW="/media/ssd:/media/hdd"
+    steam
+
+Symbolic links between directories
+----------------------------------
+
+Symbolic links that cross between directories tend to cause trouble for
+container frameworks. Consider using bind mounts instead, particularly
+for system-level directories (outside the home directory).
+
+If a directory that will be shared with the container is a symbolic link
+to some other directory, please make sure that the target of the symbolic
+link is also in a directory that is shared with the container.
+
+When using Proton, please avoid using symbolic links to redirect part of
+an emulated Windows drive to a different location. This can easily break
+assumptions made by Windows games.
+
+([#334](https://github.com/ValveSoftware/steam-runtime/issues/334))
+
+Some directories will cause the container launcher to exit with an error
+if they are symbolic links. Please report these as bugs if they have not
+already been reported, but they are unlikely to be easy to fix (we already
+fixed the easier cases). Workaround: use bind mounts instead.
+
+([#291](https://github.com/ValveSoftware/steam-runtime/issues/291),
+[#321](https://github.com/ValveSoftware/steam-runtime/issues/321),
+[#368](https://github.com/ValveSoftware/steam-runtime/issues/368))
 
 Common issues and workarounds specific to 'scout'
 -------------------------------------------------
