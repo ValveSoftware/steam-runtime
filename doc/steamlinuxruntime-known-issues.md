@@ -85,23 +85,63 @@ Workaround: disable MangoHUD with environment variable `DISABLE_MANGOHUD=1`.
 ([#363](https://github.com/ValveSoftware/steam-runtime/issues/363),
 [#365](https://github.com/ValveSoftware/steam-runtime/issues/365))
 
-Vulkan layers and driver/device selection
------------------------------------------
+<a name="issue312"></a> Multiple-GPU systems
+--------------------------------------------
 
-Getting Vulkan layers from the host system to work in the container
-is complicated, and is still being worked on. In recent versions of
-pressure-vessel, *most* Vulkan layers should work, with some exceptions.
-
-If a layer has a separate JSON manifest for 32-bit and 64-bit,
-it might only work for 32-bit *or* 64-bit, and not both.
-This is fixed in version 0.20210217.0 of both scout and soldier.
-However, in some cases this fix exposes other problems with Vulkan
-layers (see [above](#issue363)).
+Some systems have more than one GPU, typically a slower Intel or AMD
+integrated GPU built in to the CPU, and a faster NVIDIA or AMD discrete
+GPU as a separate module.
 
 The mechanism for selecting the correct Vulkan driver and GPU on Linux
 is not fully settled, and the container can interfere with this, resulting
-in the wrong GPU or driver being selected, particularly on multi-GPU
-systems.
+in the wrong GPU or driver being selected. This can result in the game
+either running more slowly than it should, or not running successfully
+at all.
+
+On desktop systems, if you intend to use the discrete GPU for everything,
+the simplest configuration is to configure the firmware (BIOS/EFI) so the
+discrete GPU is used, and connect the display to the discrete GPU.
+
+On laptops where the display is connected to the integrated GPU but a
+more powerful discrete GPU is also available (NVIDIA Optimus or AMD
+Switchable Graphics), the most reliable configuration seems to be to use
+PRIME GPU offloading (NVIDIA Prime Render Offload for NVIDIA devices,
+DRI PRIME for AMD devices).
+
+Some systems, such as Ubuntu, provide a graphical user interface for
+switching between Intel-only, NVIDIA-on-demand and NVIDIA-only modes on
+NVIDIA Optimus laptops. In recent versions this is based on PRIME GPU
+offloading, and the most reliable configuration seems to be to
+select NVIDIA-on-demand, then use the mechanisms described below to
+request that Steam and/or individual games run on the NVIDIA GPU.
+
+Recent versions of GNOME (GNOME Shell 3.38+) and KDE Plasma Desktop
+(KDE Frameworks 5.30+) have built-in support for marking applications to
+be run using a specific GPU. If Steam is run like this, then most games
+should also run on the same GPU, with no further action required.
+
+Marking applications to be run using a specific GPU works by setting the
+environment variables described below. If you run Steam from a terminal
+for debugging or development, you will need to set those environment
+variables manually.
+
+On recent NVIDIA systems, you can request NVIDIA Prime Render Offload
+for Vulkan by running either Steam or individual games with the environment
+variable `__NV_PRIME_RENDER_OFFLOAD=1` set. It might also be helpful to set
+`__VK_LAYER_NV_optimus=NVIDIA_only` (which specifically asks the Vulkan
+layer to use only NVIDIA GPUs) and `__GLX_VENDOR_LIBRARY_NAME=nvidia`
+(which does the same for OpenGL rather than Vulkan). For example,
+[Arch Linux's prime-run script](https://github.com/archlinux/svntogit-packages/tree/packages/nvidia-prime/trunk)
+implements this approach.
+
+Similarly, on recent Mesa systems, you can request DRI PRIME offloading by
+running Steam or individual games with the environment variable
+`DRI_PRIME=1` set.
+
+Using Bumblebee and Primus (`optirun`, `primusrun`, `pvkrun`, `primus_vk`)
+adds an extra layer of complexity that does not work reliably with the
+container runtime. We recommend using NVIDIA Prime Render Offload or
+DRI PRIME offloading instead, if possible.
 
 ([#312](https://github.com/ValveSoftware/steam-runtime/issues/312),
 [#352](https://github.com/ValveSoftware/steam-runtime/issues/352);
@@ -109,9 +149,24 @@ maybe also
 [#340](https://github.com/ValveSoftware/steam-runtime/issues/340),
 [#341](https://github.com/ValveSoftware/steam-runtime/issues/341))
 
-This can also affect system-wide Vulkan layers like MangoHUD and vkBasalt.
+Vulkan layers and driver/device selection
+-----------------------------------------
 
+Getting Vulkan layers from the host system to work in the container
+is complicated, and is still being worked on. In recent versions of
+pressure-vessel, *most* Vulkan layers should work, with some exceptions.
+
+This can affect the selection of driver/GPU in multi-GPU systems
+(see [Multiple-GPU systems](#issue312)).
+
+This can also affect system-wide Vulkan layers like MangoHUD and vkBasalt.
 ([#295](https://github.com/ValveSoftware/steam-runtime/issues/295))
+
+Some layers will only work inside the container for 32-bit games *or*
+for 64-bit games, and not both on the same system.
+This is believed to be fixed in version 0.20210217.0 of both scout and soldier.
+However, in some cases this fix exposes other problems with Vulkan
+layers, such as [MangoHUD with Mesa 20.3.4 and 21.0.0.rc5](#issue363).
 
 /usr/local
 ----------
