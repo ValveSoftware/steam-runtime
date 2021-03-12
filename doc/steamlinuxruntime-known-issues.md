@@ -71,16 +71,17 @@ on startup. The exact conditions to trigger this are complicated and not
 well-understood, but it is known to happen on many systems when Proton/DXVK
 games load the MangoHUD Vulkan layer in the Steam Linux Runtime container.
 
-Mesa versions 20.3.5, 21.0.0 and 21.1.0 are expected to contain a change
-that avoids this problem, and some Linux distributions such as Arch Linux
-have already backported the necessary patch into their packages for older
-Mesa releases.
+Mesa version 21.0.0 contains a change that avoids this problem.
+Version 20.3.5 is expected to have the same change included, and some
+Linux distributions such as Arch Linux have backported the necessary
+patch into their packages for older Mesa releases.
 
 It is not clear which component is at fault here: it might be a bug in
 Vulkan-Loader, MangoHUD, Mesa, pressure-vessel or something else. We're
 continuing to investigate.
 
-Workaround: disable MangoHUD with environment variable `DISABLE_MANGOHUD=1`.
+Workaround: upgrade Mesa to version 21.0.0 or later, or disable MangoHUD
+with environment variable `DISABLE_MANGOHUD=1`.
 
 ([#363](https://github.com/ValveSoftware/steam-runtime/issues/363),
 [#365](https://github.com/ValveSoftware/steam-runtime/issues/365))
