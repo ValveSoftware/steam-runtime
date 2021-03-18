@@ -86,6 +86,21 @@ with environment variable `DISABLE_MANGOHUD=1`.
 ([#363](https://github.com/ValveSoftware/steam-runtime/issues/363),
 [#365](https://github.com/ValveSoftware/steam-runtime/issues/365))
 
+vkBasalt with shaders in /usr/share
+-----------------------------------
+
+The vkBasalt Vulkan layer crashes if told to load shaders that cannot
+be found. Configuring it to load shaders from `/usr/share` is not
+compatible with the Steam Linux Runtime container, because the container
+uses a different directory to provide its `/usr/share`.
+
+Workaround: copy the required shaders into your home directory and
+configure it to use them from that location, or disable vkBasalt with
+environment variable `DISABLE_VKBASALT=1`.
+
+([#381](https://github.com/ValveSoftware/steam-runtime/issues/381),
+[vkBasalt#146](https://github.com/DadSchoorse/vkBasalt/issues/146))
+
 <a name="issue312"></a> Multiple-GPU systems
 --------------------------------------------
 
