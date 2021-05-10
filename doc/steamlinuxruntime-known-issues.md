@@ -308,15 +308,14 @@ experimental, and is not expected to work for all games. Native Linux
 games that were compiled for Steam Runtime 1 `scout` are intended to be
 run in the older `LD_LIBRARY_PATH`-based Steam Runtime.
 
-Native Wayland graphics are not currently supported in `scout`
-(they can work in `soldier`).
+Native Wayland graphics are not currently supported in `scout` due to
+the age of the libraries included in `scout`. They can work in `soldier`.
+Recent versions will automatically fall back to X11 if the `DISPLAY`
+environment variable points to Xwayland, ignoring `SDL_VIDEODRIVER=wayland`
+if set.
 
-Workaround:
-Have Xwayland running (or use an environment like GNOME that does this
-automatically), and don't set `SDL_VIDEODRIVER`, so that SDL will default
-to using X11 via Xwayland.
-
-([#232](https://github.com/ValveSoftware/steam-runtime/issues/232))
+([#232](https://github.com/ValveSoftware/steam-runtime/issues/232),
+[#396](https://github.com/ValveSoftware/steam-runtime/issues/396))
 
 Game Maker games such as Undertale and Danger Gazers don't start
 in the `scout` runtime,
