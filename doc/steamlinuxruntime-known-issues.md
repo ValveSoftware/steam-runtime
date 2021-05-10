@@ -185,25 +185,6 @@ maybe also
 [#340](https://github.com/ValveSoftware/steam-runtime/issues/340),
 [#341](https://github.com/ValveSoftware/steam-runtime/issues/341))
 
-Vulkan layers and driver/device selection
------------------------------------------
-
-Getting Vulkan layers from the host system to work in the container
-is complicated, and is still being worked on. In recent versions of
-pressure-vessel, *most* Vulkan layers should work, with some exceptions.
-
-This can affect the selection of driver/GPU in multi-GPU systems
-(see [Multiple-GPU systems](#issue312)).
-
-This can also affect system-wide Vulkan layers like MangoHUD and vkBasalt.
-([#295](https://github.com/ValveSoftware/steam-runtime/issues/295))
-
-Some layers will only work inside the container for 32-bit games *or*
-for 64-bit games, and not both on the same system.
-This is believed to be fixed in version 0.20210217.0 of both scout and soldier.
-However, in some cases this fix exposes other problems with Vulkan
-layers, such as [MangoHUD with Mesa 20.3.4 and 21.0.0.rc5](#issue363).
-
 /usr/local
 ----------
 
