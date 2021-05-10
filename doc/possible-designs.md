@@ -628,11 +628,8 @@ Games run in a container via the pressure-vessel tool:
       - host system, unrestricted
       - a private directory like ~/.var/app/com.steampowered.App440 per game
 
-"Steam Runtime 2 Platform" refers to an as-yet hypothetical Steam
-Runtime v2. For example, if we based it on an existing Linux
-distribution like Debian 10, or an existing Flatpak runtime like
-org.freedesktop.Platform//18.08, then any game that currently works in
-that environment would work here too.
+The diagram and text above uses Steam Runtime v2 'soldier' for brevity,
+but this could equally well be done with a future runtime.
 
 Entirely solves:
 
@@ -676,8 +673,6 @@ Does not solve:
 
 ## Flatpak + pressure-vessel in parallel
 
-(This is theoretical, and has not been deployed in practice.)
-
     |----------------------------
     |                    Host system
     |    flatpak run
@@ -691,7 +686,7 @@ Does not solve:
     |  |      .    |    s-rt scout |
     |  |      .    |               |
     |  |      .    \- steam binary |
-    |  |      .         \======IPC===> A portal service
+    |  |      .         \======IPC===> flatpak-portal service
     |  |---------------------------|     |
     |                                 |--\-bwrap--------------------|
     |                                 |     |             A runtime |
@@ -769,17 +764,17 @@ Mostly solves:
 Only partially solves:
 
   * Host system doesn't need uncommon packages installed
-      - This will need sufficiently capable versions of
-        Flatpak, bubblewrap and/or a portal service, unless the Steam
-        client is given the necessary permissions to execute arbitrary
-        code on the host system in order to start the game containers
+      - Flatpak 1.11.1, which is not yet a stable release, is required
 
 ### Pure Steam Runtime container for game
+
+This is implemented in pressure-vessel >= 0.20210430.0 when used with
+Flatpak 1.11.1.
 
     |----------------------------
     |                    Host system
     |
-    |  A portal service <===== IPC from Steam client
+    |  flatpak-portal service <===== IPC from Steam client
     |       |
     |  |----\-pressure-vessel-wrap, bwrap-----
     |  |       |      SteamLinuxRuntime/scout or Steam Runtime 2
@@ -888,14 +883,10 @@ Does not solve:
 
 ### Flatpak runtime container with `LD_LIBRARY_PATH` runtime inside
 
-This assumes that Flatpak can be enhanced to allow the Steam client
-to launch a parallel container with the same Flatpak runtime, and
-the same or stricter sandboxing parameters.
-
     |----------------------------
     |                    Host system
     |
-    |  A portal service <===== IPC from Steam client
+    |  flatpak-portal service <===== IPC from Steam client
     |       |
     |  |----\-Flatpak/bwrap--------------------
     |  |       |      org.freedesktop.Platform//20.08
