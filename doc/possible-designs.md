@@ -190,7 +190,7 @@ Does not solve:
     |    flatpak run
     |     |
     |  |--\-bwrap-------------------
-    |  |    |            org.freedesktop.Platform//18.08
+    |  |    |            org.freedesktop.Platform//20.08
     |  |    |
     |  |    \-steam.sh
     |  |         |
@@ -683,7 +683,7 @@ Does not solve:
     |    flatpak run
     |     |
     |  |--\-bwrap------------------|
-    |  |    |        o.fd.P//18.08 |
+    |  |    |        o.fd.P//20.08 |
     |  |    |                      |
     |  |    \-steam.sh             |
     |  |         |                 |
@@ -898,7 +898,7 @@ the same or stricter sandboxing parameters.
     |  A portal service <===== IPC from Steam client
     |       |
     |  |----\-Flatpak/bwrap--------------------
-    |  |       |      org.freedesktop.Platform//18.08
+    |  |       |      org.freedesktop.Platform//20.08
     |  |       |
     |  |   |- -\-run.sh - - - - - - - - - - - -
     |  |   .      |   Steam Runtime 1 or 2
