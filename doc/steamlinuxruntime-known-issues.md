@@ -8,17 +8,40 @@ Here are some that are likely to affect multiple users:
 Flatpak
 -------
 
-SteamLinuxRuntime cannot be used from inside the unofficial Flatpak
-version of Steam. We are trying to make this work, but it is going
-to need changes to both pressure-vessel and Flatpak.
-Workaround: Either don't use the Flatpak version of Steam, or if you
-do, don't enable SteamLinuxRuntime or the official builds of
-Proton 5.13 (or later).
+Using the Steam container runtimes from inside a Flatpak sandbox requires
+features that are not yet available in stable Flatpak releases. To use
+the container runtimes, you will need:
 
-There is an unsupported community build of Proton 5.13 available that
-*does* work in a Flatpak environment.
+* An operating system where unprivileged users can create user
+    namespaces (non-setuid bubblewrap)
 
-([#294](https://github.com/ValveSoftware/steam-runtime/issues/294))
+    * Debian >= 11, but not Debian 10 or older
+    * RHEL/CentOS >= 8, but not RHEL/CentOS 7 or older
+    * Arch Linux with the default `linux` kernel,
+        but not `linux-hardened` and `bubblewrap-suid`
+    * Most other recent distributions, e.g. Ubuntu
+
+* Flatpak 1.11.1 or later. This is a development version, so use it at
+    your own risk.
+
+    * Ubuntu users can get this from
+        [the PPA](https://launchpad.net/~alexlarsson/+archive/ubuntu/flatpak)
+    * Debian users can get this from
+        [experimental](https://packages.debian.org/source/experimental/flatpak)
+
+* A fully up-to-date version of the Steam Flatpak app, with the
+   `per-app-dev-shm` feature listed in its permissions
+
+* A fully up-to-date version of `SteamLinuxRuntime` or
+    `SteamLinuxRuntime_soldier`, with `pressure-vessel 0.20210430.0` or
+    later listed in its `VERSIONS.txt` file
+
+As a workaround, users of older versions of Flatpak can try using
+[a community build of Proton](https://github.com/flathub/com.valvesoftware.Steam.CompatibilityTool.Proton)
+which uses the freedesktop.org runtime instead of Steam Runtime 2.
+
+([#294](https://github.com/ValveSoftware/steam-runtime/issues/294),
+[com.valvesoftware.Steam#642](https://github.com/flathub/com.valvesoftware.Steam/issues/642))
 
 Non-FHS operating systems
 -------------------------
