@@ -6,7 +6,7 @@ COLOR_ON='\033[1;93m'
 set -eu
 
 steamrt_mirror="http://repo.steampowered.com/steamrt"
-ubuntu_mirror="http://us.archive.ubuntu.com/ubuntu"
+ubuntu_mirror="http://old-releases.ubuntu.com/ubuntu"
 extra_apt_sources=()
 
 # bootstrap_container <docker | chroot> suite
