@@ -154,7 +154,7 @@ build_chroot()
 
 	# Create our chroot
 	echo -e "\\n${COLOR_ON}Bootstrap the chroot...${COLOR_OFF}"
-	sudo -E debootstrap --arch="${pkg}" --include=wget --keyring="${SCRIPT_DIR}/ubuntu-archive-keyring.gpg" precise "${CHROOT_DIR}/${name}" http://archive.ubuntu.com/ubuntu/
+	sudo -E debootstrap --arch="${pkg}" --include=wget --keyring="${SCRIPT_DIR}/ubuntu-archive-keyring.gpg" precise "${CHROOT_DIR}/${name}" http://old-releases.ubuntu.com/ubuntu/
 
 	copy_apt_settings "${CHROOT_DIR}/${name}"
 
