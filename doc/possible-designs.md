@@ -595,7 +595,8 @@ Does not solve:
 
 ## <a name="pressure-vessel-scout-on-srt2">2018 `LD_LIBRARY_PATH` scout runtime + newer Platform + scout again</a>
 
-(This is theoretical, and has not been deployed in practice.)
+This is implemented in the `scout_layered_slim` beta branch of
+`SteamLinuxRuntime`. It might become the default in a future release.
 
     |----------------------------
     |                    Host system
@@ -608,6 +609,7 @@ Does not solve:
     |  .       |
     |  .  |----\-pressure-vessel-wrap, bwrap-----
     |  .  |       |       Steam Runtime 2 Platform
+    |  .  |       |       (soldier, based on Debian 10)
     |  .  |       |
     |  .  |   .- -\-run.sh- - - - - - - - - -
     |  .  |   .      |     steam-runtime (scout)
@@ -641,12 +643,19 @@ Entirely solves:
 Mostly solves:
 
   * Old games continue to work
-      - Expected to be fewer regressions than with pure scout container
+      - Expected to be fewer regressions than with the
+        [pure scout container](#pressure-vessel-2019)
   * i386 games continue to work on i386-capable hosts
       - Expected to be fewer regressions than with pure scout container
   * Open-source (Mesa) graphics drivers continue to work
   * Proprietary (NVIDIA) graphics drivers continue to work
   * Games developed in an impure scout environment continue to work
+      - Games confirmed to work in this configuration but not in the
+        pure scout container include:
+          + Shadow of the Tomb Raider (750920)
+          + Life is Strange 2 (532210)
+          + Danger Gazers (1043150), Demetrios (451570),
+            The Swords of Ditto (619780) and other Game Maker titles
   * Game data is easy to sync and delete
       - Only if the private home directory is used
   * Games cannot accidentally break the system
@@ -835,6 +844,10 @@ Does not solve:
         not currently implemented
 
 ### Steam Runtime 2 container with `LD_LIBRARY_PATH` runtime inside
+
+This is implemented in the `scout_layered_slim` beta branch of
+`SteamLinuxRuntime`, when combined with Flatpak 1.11.1 or later.
+It might become the default in a future `SteamLinuxRuntime` release.
 
     |----------------------------
     |                    Host system
