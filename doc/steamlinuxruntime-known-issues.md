@@ -92,6 +92,10 @@ kernel, either the `bubblewrap-suid` package must be installed, or the
 If any other distributions use the `kernel.unprivileged_userns_clone`
 patch, they will have similar requirements.
 
+Note that if you are running Steam under Flatpak, a setuid version of
+`/usr/bin/bwrap` will not work: the `kernel.unprivileged_userns_clone`
+sysctl parameter must be set to 1 instead.
+
 ([#342](https://github.com/ValveSoftware/steam-runtime/issues/342),
 [#297](https://github.com/ValveSoftware/steam-runtime/issues/297))
 
