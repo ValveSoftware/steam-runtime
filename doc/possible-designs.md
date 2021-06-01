@@ -673,6 +673,8 @@ Does not solve:
 
 ## Flatpak + pressure-vessel in parallel
 
+This is implemented when using Flatpak 1.11.1 or later.
+
     |----------------------------
     |                    Host system
     |    flatpak run
@@ -686,7 +688,8 @@ Does not solve:
     |  |      .    |    s-rt scout |
     |  |      .    |               |
     |  |      .    \- steam binary |
-    |  |      .         \======IPC===> flatpak-portal service
+    |  |      .         \- pv-wrap |
+    |  |      .             \==IPC===> flatpak-portal service
     |  |---------------------------|     |
     |                                 |--\-bwrap--------------------|
     |                                 |     |             A runtime |
@@ -769,21 +772,21 @@ Only partially solves:
 ### Pure Steam Runtime container for game
 
 This is implemented in pressure-vessel >= 0.20210430.0 when used with
-Flatpak 1.11.1.
+Flatpak 1.11.1 or later.
 
     |----------------------------
     |                    Host system
     |
-    |  flatpak-portal service <===== IPC from Steam client
+    |  flatpak-portal service <===== IPC from pressure-vessel-wrap
     |       |
-    |  |----\-pressure-vessel-wrap, bwrap-----
+    |  |----\-bwrap-----
     |  |       |      SteamLinuxRuntime/scout or Steam Runtime 2
     |  |       |
     |  |       \- The game
 
   * Graphics driver comes from one of:
-      - host system
-      - some Flatpak runtime
+      - the Flatpak runtime (this is what is implemented so far)
+      - the host system
   * glibc comes from:
     *newest*(where graphics driver comes from, Steam Runtime)
   * Libraries used by graphics driver come from:
@@ -791,7 +794,7 @@ Flatpak 1.11.1.
   * Other libraries come from: Steam Runtime
   * User's home directory comes from one of:
       - host system, unrestricted
-      - ~/.var/app/com.valvesoftware.Steam
+      - ~/.var/app/com.valvesoftware.Steam (this is what is implemented so far)
       - a private directory like ~/.var/app/com.steampowered.App440 per game
 
 Entirely solves:
@@ -810,6 +813,8 @@ Mostly solves:
   * Proprietary (NVIDIA) graphics drivers continue to work
   * New runtimes do not require extensive patching
   * New runtimes work on future hardware
+  * Security boundary between desktop and games
+      - Dependent on sandboxing parameters
 
 Only partially solves:
 
@@ -823,18 +828,20 @@ Does not solve:
 
   * Games developed in an impure scout environment continue to work
   * Games that inappropriately bundle libraries work anyway
-  * Security boundary between desktop and games
   * i386 games work on non-i386 hosts
       - If the graphics driver comes from the host system
+  * Security boundary between Steam client and games
+      - Dependent on sandboxing parameters, but a security boundary is
+        not currently implemented
 
 ### Steam Runtime 2 container with `LD_LIBRARY_PATH` runtime inside
 
     |----------------------------
     |                    Host system
     |
-    |  A portal service <===== IPC from Steam client
+    |  flatpak-portal service <===== IPC from pressure-vessel-wrap
     |       |
-    |  |----\-pressure-vessel-wrap, bwrap-----
+    |  |----\-bwrap-----
     |  |       |      Steam Runtime 2
     |  |       |
     |  |   |- -\-run.sh - - - - - - - - - - - -
@@ -843,8 +850,8 @@ Does not solve:
     |  |   .      \- The game
 
   * Graphics driver comes from one of:
-      - host system
-      - Flatpak runtime extension
+      - the Flatpak runtime (this is what is implemented so far)
+      - the host system
   * glibc comes from:
       - *newest*(where graphics driver came from, Steam Runtime 2)
   * Libraries used by graphics driver come from:
@@ -855,7 +862,7 @@ Does not solve:
     exists, in which case we use the scout version)
   * User's home directory comes from one of:
       - host system, unrestricted
-      - ~/.var/app/com.valvesoftware.Steam
+      - ~/.var/app/com.valvesoftware.Steam (this is what is implemented so far)
       - a private directory like ~/.var/app/com.steampowered.App440 per game
 
 Entirely solves:
@@ -873,26 +880,34 @@ Mostly solves:
   * Open-source (Mesa) graphics drivers continue to work
   * Proprietary (NVIDIA) graphics drivers continue to work
   * Games run in a predictable, robust environment
+  * Security boundary between desktop and games
+      - Dependent on sandboxing parameters
 
 Does not solve:
 
-  * Security boundary between desktop and games
   * Games that inappropriately bundle libraries work anyway
   * i386 games work on non-i386 hosts
       - If the graphics driver comes from the host system
+  * Security boundary between Steam client and games
+      - Dependent on sandboxing parameters, but a security boundary is
+        not currently implemented
 
 ### Flatpak runtime container with `LD_LIBRARY_PATH` runtime inside
+
+Flatpak can theoretically support this, but pressure-vessel does not
+currently implement this mode, because using the Steam Runtime 2 container
+is expected to have better compatibility.
 
     |----------------------------
     |                    Host system
     |
-    |  flatpak-portal service <===== IPC from Steam client
+    |  flatpak-portal service <===== IPC from pressure-vessel
     |       |
     |  |----\-Flatpak/bwrap--------------------
     |  |       |      org.freedesktop.Platform//20.08
     |  |       |
     |  |   |- -\-run.sh - - - - - - - - - - - -
-    |  |   .      |   Steam Runtime 1 or 2
+    |  |   .      |   Steam Runtime 1
     |  |   .      |
     |  |   .      \- The game
 
@@ -930,13 +945,13 @@ Mostly solves:
       - Could get broken by updated graphics driver extension
   * New runtimes do not require newest host system
   * New runtimes work on future hardware
+  * Security boundary between desktop and games
+      - Dependent on sandboxing parameters
 
 Only partially solves:
 
   * Games that inappropriately bundle libraries work anyway
   * Security boundary between Steam client and games
-      - Dependent on sandboxing parameters
-  * Security boundary between desktop and games
       - Dependent on sandboxing parameters
 
 Does not solve:
