@@ -75,7 +75,8 @@ Guix probably does not work for the same reasons as NixOS.
 Other non-FHS distributions might also not work.
 
 Workaround: don't enable SteamLinuxRuntime or Proton 5.13 (or newer)
-on OSs with unusual directory layouts.
+on OSs with unusual directory layouts, or use the unofficial Flatpak app
+(requires Flatpak 1.11.1).
 
 kernel.unprivileged\_userns\_clone
 ----------------------------------
