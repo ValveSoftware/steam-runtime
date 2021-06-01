@@ -36,12 +36,22 @@ the container runtimes, you will need:
     `SteamLinuxRuntime_soldier`, with `pressure-vessel 0.20210430.0` or
     later listed in its `VERSIONS.txt` file
 
+Additionally, a known bug
+[flatpak#4286](https://github.com/flatpak/flatpak/issues/4286) can result
+in games failing to launch (it's intermittent). Re-launching the same
+game will usually succeed. This has been fixed in Flatpak git master,
+and the fix should be in 1.11.2 (not yet released).
+
 As a workaround, users of older versions of Flatpak can try using
 [a community build of Proton](https://github.com/flathub/com.valvesoftware.Steam.CompatibilityTool.Proton)
 which uses the freedesktop.org runtime instead of Steam Runtime 2.
 
 ([#294](https://github.com/ValveSoftware/steam-runtime/issues/294),
-[com.valvesoftware.Steam#642](https://github.com/flathub/com.valvesoftware.Steam/issues/642))
+[Proton#4268](https://github.com/ValveSoftware/Proton/issues/4268),
+[Proton#4283](https://github.com/ValveSoftware/Proton/issues/4283),
+[com.valvesoftware.Steam#642](https://github.com/flathub/com.valvesoftware.Steam/issues/642),
+[flatpak#3797](https://github.com/flatpak/flatpak/issues/3797),
+[flatpak#4286](https://github.com/flatpak/flatpak/issues/4286))
 
 Non-FHS operating systems
 -------------------------
