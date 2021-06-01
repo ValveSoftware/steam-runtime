@@ -66,6 +66,8 @@ log. Since version 0.20210105.0, the easiest way to get this is:
     `~/.local/share/Steam/steamapps/common/SteamLinuxRuntime`
     for scout
 
+* Version numbers for some important runtime components are in `VERSIONS.txt`
+
 * The log file is in the `var/` directory and named `slr-app*-*.log`
     for Steam games, or `slr-non-steam-game-*.log` if we cannot identify
     a Steam app ID for the game.
