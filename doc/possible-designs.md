@@ -966,7 +966,7 @@ For both the `steam` binary and games:
     where libraries in /usr/lib/steam:/usr/lib32/steam are preferred
       - In theory these can be made compatible with the ones shipped
         in scout
-      - In practice this is a losing battle, because 2019 Arch and
+      - In practice this is a losing battle, because 2021 Arch and
         2012 Ubuntu are too different
   * User's home directory comes from: host system, unrestricted
 
