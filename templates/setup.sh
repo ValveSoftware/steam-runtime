@@ -363,15 +363,15 @@ check_pins ()
 
     if [[ $pins_need_redoing == "yes" ]]
     then
-        echo Pins potentially out-of-date, rebuilding...
+        echo Updating Steam runtime environment...
         # Is always set at this point, but may be empty if the host lacks zenity
         if [ -n "${STEAM_ZENITY}" ]; then
-            pin_newer_runtime_libs "$steam_runtime_path" | "${STEAM_ZENITY}" --progress --auto-close --percentage=0 --no-cancel --width 400 --text="Pins potentially out-of-date, rebuilding..."
+            pin_newer_runtime_libs "$steam_runtime_path" | "${STEAM_ZENITY}" --progress --auto-close --percentage=0 --no-cancel --width 400 --title="Steam setup" --text="Updating Steam runtime environment..."
         else
             pin_newer_runtime_libs "$steam_runtime_path" "false"
         fi
     else
-        echo Pins up-to-date!
+        echo Steam runtime environment up-to-date!
     fi
 }
 
@@ -485,7 +485,7 @@ main ()
             then
                 # Is always set at this point, but may be empty if the host lacks zenity
                 if [ -n "${STEAM_ZENITY}" ]; then
-                    pin_newer_runtime_libs "$top" | "${STEAM_ZENITY}" --progress --auto-close --percentage=0 --no-cancel --width 400 --text="Forcing rebuild of pins..."
+                    pin_newer_runtime_libs "$top" | "${STEAM_ZENITY}" --progress --auto-close --percentage=0 --no-cancel --width 400 --title="Steam setup" --text="Reconfiguring Steam runtime environment..."
                 else
                     pin_newer_runtime_libs "$top" "false"
                 fi
