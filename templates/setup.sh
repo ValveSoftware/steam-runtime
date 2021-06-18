@@ -39,6 +39,7 @@ pin_newer_runtime_libs ()
     local -A host_libraries_64
 
     local bitness
+    local file_output
     local final_library
     local find_num
     local find_output
@@ -122,11 +123,13 @@ pin_newer_runtime_libs ()
             # If it doesn't exist, skip as well
             if [[ ! -f $final_library ]]; then continue; fi
 
+            file_output=$(file -L "$final_library")
+
             # Save into bitness-specific associative array with only SONAME as left-hand
-            if [[ $(file -L "$final_library") == *"32-bit"* ]]
+            if [[ $file_output == *"32-bit"* ]]
             then
                 host_libraries_32[$soname]=$soname_fullpath
-            elif [[ $(file -L "$final_library") == *"64-bit"* ]]
+            elif [[ $file_output == *"64-bit"* ]]
             then
                 host_libraries_64[$soname]=$soname_fullpath
             fi
@@ -182,21 +185,26 @@ pin_newer_runtime_libs ()
         soname=$(basename "$soname_symlink")
 
         # If we had entries in our arrays, get them
-        if [[ $(file -L "$final_library") == *"32-bit"* ]]
+        if [[ -n "${host_libraries_32[$soname]+isset}" ||
+              -n "${host_libraries_64[$soname]+isset}" ]]
         then
-            if [ -n "${host_libraries_32[$soname]+isset}" ]
+            file_output=$(file -L "$final_library")
+            if [[ $file_output == *"32-bit"* ]]
             then
-                host_soname_symlink=${host_libraries_32[$soname]}
-            fi
-            bitness="32"
-        elif [[ $(file -L "$final_library") == *"64-bit"* ]]
-        then
-            if [ -n "${host_libraries_64[$soname]+isset}" ]
+                if [ -n "${host_libraries_32[$soname]+isset}" ]
+                then
+                    host_soname_symlink=${host_libraries_32[$soname]}
+                fi
+                bitness="32"
+            elif [[ $file_output == *"64-bit"* ]]
             then
-                host_soname_symlink=${host_libraries_64[$soname]}
+                if [ -n "${host_libraries_64[$soname]+isset}" ]
+                then
+                    host_soname_symlink=${host_libraries_64[$soname]}
+                fi
+                bitness="64"
             fi
-            bitness="64"
-        fi
+       fi
 
         # Do we have a host library found for the same SONAME?
         if [[ ! -f $host_soname_symlink || $bitness == "unknown" ]]; then continue; fi
