@@ -21,8 +21,7 @@ the container runtimes, you will need:
         but not `linux-hardened` and `bubblewrap-suid`
     * Most other recent distributions, e.g. Ubuntu
 
-* Flatpak 1.11.1 or later. This is a development version, so use it at
-    your own risk.
+* Flatpak 1.11.2. This is a development version, so use it at your own risk.
 
     * Ubuntu users can get this from
         [the PPA](https://launchpad.net/~alexlarsson/+archive/ubuntu/flatpak)
@@ -35,12 +34,6 @@ the container runtimes, you will need:
 * A fully up-to-date version of `SteamLinuxRuntime` or
     `SteamLinuxRuntime_soldier`, with `pressure-vessel 0.20210430.0` or
     later listed in its `VERSIONS.txt` file
-
-Additionally, a known bug
-[flatpak#4286](https://github.com/flatpak/flatpak/issues/4286) can result
-in games failing to launch (it's intermittent). Re-launching the same
-game will usually succeed. This has been fixed in Flatpak git master,
-and the fix should be in 1.11.2 (not yet released).
 
 As a workaround, users of older versions of Flatpak can try using
 [a community build of Proton](https://github.com/flathub/com.valvesoftware.Steam.CompatibilityTool.Proton)
@@ -76,7 +69,7 @@ Other non-FHS distributions might also not work.
 
 Workaround: don't enable SteamLinuxRuntime or Proton 5.13 (or newer)
 on OSs with unusual directory layouts, or use the unofficial Flatpak app
-(requires Flatpak 1.11.1).
+(requires Flatpak 1.11.2).
 
 kernel.unprivileged\_userns\_clone
 ----------------------------------
