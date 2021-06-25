@@ -21,8 +21,7 @@ the container runtimes, you will need:
         but not `linux-hardened` and `bubblewrap-suid`
     * Most other recent distributions, e.g. Ubuntu
 
-* Flatpak 1.11.1 or later. This is a development version, so use it at
-    your own risk.
+* Flatpak 1.11.2. This is a development version, so use it at your own risk.
 
     * Ubuntu users can get this from
         [the PPA](https://launchpad.net/~alexlarsson/+archive/ubuntu/flatpak)
@@ -35,12 +34,6 @@ the container runtimes, you will need:
 * A fully up-to-date version of `SteamLinuxRuntime` or
     `SteamLinuxRuntime_soldier`, with `pressure-vessel 0.20210430.0` or
     later listed in its `VERSIONS.txt` file
-
-Additionally, a known bug
-[flatpak#4286](https://github.com/flatpak/flatpak/issues/4286) can result
-in games failing to launch (it's intermittent). Re-launching the same
-game will usually succeed. This has been fixed in Flatpak git master,
-and the fix should be in 1.11.2 (not yet released).
 
 As a workaround, users of older versions of Flatpak can try using
 [a community build of Proton](https://github.com/flathub/com.valvesoftware.Steam.CompatibilityTool.Proton)
@@ -76,7 +69,7 @@ Other non-FHS distributions might also not work.
 
 Workaround: don't enable SteamLinuxRuntime or Proton 5.13 (or newer)
 on OSs with unusual directory layouts, or use the unofficial Flatpak app
-(requires Flatpak 1.11.1).
+(requires Flatpak 1.11.2).
 
 kernel.unprivileged\_userns\_clone
 ----------------------------------
@@ -308,45 +301,6 @@ experimental, and is not expected to work for all games. Native Linux
 games that were compiled for Steam Runtime 1 `scout` are intended to be
 run in the older `LD_LIBRARY_PATH`-based Steam Runtime.
 
-Native Wayland graphics are not currently supported in `scout`
-(they can work in `soldier`).
-
-Workaround:
-Have Xwayland running (or use an environment like GNOME that does this
-automatically), and don't set `SDL_VIDEODRIVER`, so that SDL will default
-to using X11 via Xwayland.
-
-([#232](https://github.com/ValveSoftware/steam-runtime/issues/232))
-
-Game Maker games such as Undertale and Danger Gazers don't start
-in the `scout` runtime,
-because they assume that newer Debian/Ubuntu libraries are available.
-
-Workaround: don't use SteamLinuxRuntime for those games yet, or try
-using the `scout_layered_slim` branch (but see below).
-
-([#216](https://github.com/ValveSoftware/steam-runtime/issues/216),
-[#235](https://github.com/ValveSoftware/steam-runtime/issues/235),
-[#410](https://github.com/ValveSoftware/steam-runtime/issues/410))
-
-Haxe games such as Evoland Legendary Edition don't start in the
-`scout` runtime,
-because they assume that newer Debian/Ubuntu libraries are available.
-
-Workaround: don't use SteamLinuxRuntime for those games yet, or try
-using the `scout_layered_slim` branch (but see below).
-
-([#224](https://github.com/ValveSoftware/steam-runtime/issues/224))
-
-Feral Interactive ports such as Shadow of the Tomb Raider and Dirt 4
-crash when launched in a 'scout' container.
-
-Workaround: don't use SteamLinuxRuntime for those games yet, or try
-using the `scout_layered_slim` branch (but see below).
-
-([#202](https://github.com/ValveSoftware/steam-runtime/issues/202),
-[#249](https://github.com/ValveSoftware/steam-runtime/issues/249))
-
 The `scout_layered_slim` beta branch improves compatibility with
 games that assume a newer environment than pure scout, by providing
 an environment that is a mixture of Steam Runtime 2 'soldier' and
@@ -355,6 +309,68 @@ also work in this environment. However, due to a Steam limitation,
 after switching to or from this branch, it is necessary to exit from
 Steam completely and re-launch Steam, so that the updated compatibility
 tool configuration will be loaded.
+
+### Wayland
+
+Native Wayland graphics are not currently supported in `scout` due to
+the age of the libraries included in `scout`. They can work in `soldier`
+or in the `scout_layered_slim` branch.
+
+Recent versions of the scout runtime will automatically fall back to
+X11 if the `DISPLAY` environment variable points to Xwayland, ignoring
+`SDL_VIDEODRIVER=wayland` if set.
+
+([#232](https://github.com/ValveSoftware/steam-runtime/issues/232),
+[#396](https://github.com/ValveSoftware/steam-runtime/issues/396))
+
+### Game Maker games
+
+Several Game Maker games don't start in the `scout` runtime,
+because they assume that newer Debian/Ubuntu libraries are available.
+
+Known to be affected:
+
+* Danger Gazers
+* Demetrios
+* Undertale
+
+Workaround: don't use SteamLinuxRuntime for those games yet, or try
+using the `scout_layered_slim` branch (see above).
+
+([#216](https://github.com/ValveSoftware/steam-runtime/issues/216),
+[#235](https://github.com/ValveSoftware/steam-runtime/issues/235),
+[#410](https://github.com/ValveSoftware/steam-runtime/issues/410))
+
+### Haxe/HashLink games
+
+Several Haxe games don't start in the `scout` runtime,
+because they assume that newer Debian/Ubuntu libraries are available.
+
+Known to be affected:
+
+* Dead Cells
+* Evoland Legendary Edition
+
+Workaround: don't use SteamLinuxRuntime for those games yet, or try
+using the `scout_layered_slim` branch (see above).
+
+([#224](https://github.com/ValveSoftware/steam-runtime/issues/224))
+
+### various Feral Interactive games
+
+Several Feral Interactive ports crash when launched in a 'scout' container.
+
+Known to be affected:
+
+* Dirt 4
+* Life is Strange 2
+* Shadow of the Tomb Raider
+
+Workaround: don't use SteamLinuxRuntime for those games yet, or try
+using the `scout_layered_slim` branch (see above).
+
+([#202](https://github.com/ValveSoftware/steam-runtime/issues/202),
+[#249](https://github.com/ValveSoftware/steam-runtime/issues/249))
 
 Reporting other issues
 ----------------------
