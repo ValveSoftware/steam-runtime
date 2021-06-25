@@ -325,9 +325,14 @@ X11 if the `DISPLAY` environment variable points to Xwayland, ignoring
 
 ### Game Maker games
 
-Game Maker games such as Undertale and Danger Gazers don't start
-in the `scout` runtime,
+Several Game Maker games don't start in the `scout` runtime,
 because they assume that newer Debian/Ubuntu libraries are available.
+
+Known to be affected:
+
+* Danger Gazers
+* Demetrios
+* Undertale
 
 Workaround: don't use SteamLinuxRuntime for those games yet, or try
 using the `scout_layered_slim` branch (see above).
@@ -338,9 +343,13 @@ using the `scout_layered_slim` branch (see above).
 
 ### Haxe/HashLink games
 
-Haxe games such as Evoland Legendary Edition don't start in the
-`scout` runtime,
+Several Haxe games don't start in the `scout` runtime,
 because they assume that newer Debian/Ubuntu libraries are available.
+
+Known to be affected:
+
+* Dead Cells
+* Evoland Legendary Edition
 
 Workaround: don't use SteamLinuxRuntime for those games yet, or try
 using the `scout_layered_slim` branch (see above).
@@ -349,8 +358,13 @@ using the `scout_layered_slim` branch (see above).
 
 ### various Feral Interactive games
 
-Feral Interactive ports such as Shadow of the Tomb Raider and Dirt 4
-crash when launched in a 'scout' container.
+Several Feral Interactive ports crash when launched in a 'scout' container.
+
+Known to be affected:
+
+* Dirt 4
+* Life is Strange 2
+* Shadow of the Tomb Raider
 
 Workaround: don't use SteamLinuxRuntime for those games yet, or try
 using the `scout_layered_slim` branch (see above).
