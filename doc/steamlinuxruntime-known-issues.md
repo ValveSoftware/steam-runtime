@@ -301,6 +301,17 @@ experimental, and is not expected to work for all games. Native Linux
 games that were compiled for Steam Runtime 1 `scout` are intended to be
 run in the older `LD_LIBRARY_PATH`-based Steam Runtime.
 
+The `scout_layered_slim` beta branch improves compatibility with
+games that assume a newer environment than pure scout, by providing
+an environment that is a mixture of Steam Runtime 2 'soldier' and
+Steam Runtime 1 'scout'. Most games that work on Debian 10 should
+also work in this environment. However, due to a Steam limitation,
+after switching to or from this branch, it is necessary to exit from
+Steam completely and re-launch Steam, so that the updated compatibility
+tool configuration will be loaded.
+
+### Wayland
+
 Native Wayland graphics are not currently supported in `scout` due to
 the age of the libraries included in `scout`. They can work in `soldier`.
 Recent versions will automatically fall back to X11 if the `DISPLAY`
@@ -310,43 +321,40 @@ if set.
 ([#232](https://github.com/ValveSoftware/steam-runtime/issues/232),
 [#396](https://github.com/ValveSoftware/steam-runtime/issues/396))
 
+### Game Maker games
+
 Game Maker games such as Undertale and Danger Gazers don't start
 in the `scout` runtime,
 because they assume that newer Debian/Ubuntu libraries are available.
 
 Workaround: don't use SteamLinuxRuntime for those games yet, or try
-using the `scout_layered_slim` branch (but see below).
+using the `scout_layered_slim` branch (see above).
 
 ([#216](https://github.com/ValveSoftware/steam-runtime/issues/216),
 [#235](https://github.com/ValveSoftware/steam-runtime/issues/235),
 [#410](https://github.com/ValveSoftware/steam-runtime/issues/410))
+
+### Haxe/HashLink games
 
 Haxe games such as Evoland Legendary Edition don't start in the
 `scout` runtime,
 because they assume that newer Debian/Ubuntu libraries are available.
 
 Workaround: don't use SteamLinuxRuntime for those games yet, or try
-using the `scout_layered_slim` branch (but see below).
+using the `scout_layered_slim` branch (see above).
 
 ([#224](https://github.com/ValveSoftware/steam-runtime/issues/224))
+
+### various Feral Interactive games
 
 Feral Interactive ports such as Shadow of the Tomb Raider and Dirt 4
 crash when launched in a 'scout' container.
 
 Workaround: don't use SteamLinuxRuntime for those games yet, or try
-using the `scout_layered_slim` branch (but see below).
+using the `scout_layered_slim` branch (see above).
 
 ([#202](https://github.com/ValveSoftware/steam-runtime/issues/202),
 [#249](https://github.com/ValveSoftware/steam-runtime/issues/249))
-
-The `scout_layered_slim` beta branch improves compatibility with
-games that assume a newer environment than pure scout, by providing
-an environment that is a mixture of Steam Runtime 2 'soldier' and
-Steam Runtime 1 'scout'. Most games that work on Debian 10 should
-also work in this environment. However, due to a Steam limitation,
-after switching to or from this branch, it is necessary to exit from
-Steam completely and re-launch Steam, so that the updated compatibility
-tool configuration will be loaded.
 
 Reporting other issues
 ----------------------
