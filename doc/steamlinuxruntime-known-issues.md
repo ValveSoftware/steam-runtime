@@ -313,10 +313,12 @@ tool configuration will be loaded.
 ### Wayland
 
 Native Wayland graphics are not currently supported in `scout` due to
-the age of the libraries included in `scout`. They can work in `soldier`.
-Recent versions will automatically fall back to X11 if the `DISPLAY`
-environment variable points to Xwayland, ignoring `SDL_VIDEODRIVER=wayland`
-if set.
+the age of the libraries included in `scout`. They can work in `soldier`
+or in the `scout_layered_slim` branch.
+
+Recent versions of the scout runtime will automatically fall back to
+X11 if the `DISPLAY` environment variable points to Xwayland, ignoring
+`SDL_VIDEODRIVER=wayland` if set.
 
 ([#232](https://github.com/ValveSoftware/steam-runtime/issues/232),
 [#396](https://github.com/ValveSoftware/steam-runtime/issues/396))
