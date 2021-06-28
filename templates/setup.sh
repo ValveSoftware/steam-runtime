@@ -182,7 +182,7 @@ pin_newer_runtime_libs ()
         host_soname_symlink=""
         bitness="unknown"
 
-        soname=$(basename "$soname_symlink")
+        soname=${soname_symlink##*/}
 
         # If we had entries in our arrays, get them
         if [[ -n "${host_libraries_32[$soname]+isset}" ||
