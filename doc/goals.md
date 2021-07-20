@@ -103,8 +103,14 @@ was strictly necessary. This is a step forward, but if we are going to
 introduce a new runtime for games and support it longer-term, we should
 aim higher than 2015.
 
-Steam Runtime version 2 should be based on a more contemporary stack,
-for example Debian 10 'buster', which was released in 2019.
+Steam Runtime version 2, 'soldier', is based on Debian 10 'buster',
+released in 2019. It is used to run Proton 5.13 and later versions.
+Running native Linux games in a "pure" soldier container is not
+currently possible, but would be a good improvement.
+
+Steam Runtime version 3, 'sniper', is likely to be based on
+Debian 11 'bullseye', released in 2021, and otherwise work in exactly
+the same way as soldier.
 
 #### New glibc
 
