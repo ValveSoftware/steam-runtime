@@ -294,7 +294,7 @@ Does not solve:
   * Games cannot accidentally break the Steam client
   * Security boundary between Steam client and games
 
-## <a name="pressure-vessel-2019">2018 `LD_LIBRARY_PATH` scout runtime + 2019 pressure-vessel scout Platform</a>
+## <a name="pressure-vessel-2019">2018 `LD_LIBRARY_PATH` scout runtime + pressure-vessel container</a>
 
     |----------------------------
     |                    Host system
@@ -306,33 +306,38 @@ Does not solve:
     |  .    \- steam binary
     |  .       |
     |  .  |----\-pressure-vessel-wrap, bwrap-----
-    |  .  |       |      SteamLinuxRuntime/scout
+    |  .  |       |      container runtime (scout, soldier, sniper etc.)
     |  .  |       |
     |  .  |       \- Proton (if used)
     |  .  |          \- The game
 
-This is what the Steam container runtime's `run-in-scout` script sets up.
+This design is used by the "Steam Linux Runtime - soldier" compatibility
+tool, currently used to run Proton 5.13 or later. It could potentially be
+used to run native Linux games in future, if Steam gains a way to mark
+games as targeting scout rather than soldier.
 
-If you are using `pressure-vessel-test-ui` or `PRESSURE_VESSEL_WRAP_GUI=1`,
-it's what you get by selecting the scout runtime from the *Runtime*
-drop-down list.
+This is also what the "Steam Linux Runtime" compatibility tool did
+until mid July 2021, but with a scout container instead of a soldier
+container. Since mid July 2021,
+[a different design](#pressure-vessel-scout-on-srt2)
+has been used for native Linux games running in a scout environment.
 
 The libraries used for the Steam binary are the same as in the
 [2018 `LD_LIBRARY_PATH` Steam runtime](#ldlp-2018).
 
 However, games run in a container via the pressure-vessel tool:
 
-  * glibc comes from: *newest*(host system, scout)
+  * glibc comes from: *newest*(host system, container runtime)
   * Graphics driver comes from: host system
   * Libraries used by graphics driver come from:
-    *newest*(scout, host system)
-  * Other libraries come from: scout
+    *newest*(host system, container runtime)
+  * Other libraries come from: container runtime
   * User's home directory comes from one of:
       - host system, unrestricted
       - a private directory like ~/.var/app/com.steampowered.App440 per game
 
-For newer runtimes (Steam Runtime 2), we would simply use the new runtime
-for individual games instead of using Steam Runtime 1 'scout'.
+As currently deployed, the container runtime is soldier, but it could
+be anything.
 
 Entirely solves:
 
@@ -380,7 +385,8 @@ Only partially solves:
 Does not solve:
 
   * Games developed in an impure scout environment continue to work
-      - Not true (somewhat by design), so it will have to be opt-in
+      - Not true (somewhat by design), which is why we no longer use
+        this design for scout games
   * Games that inappropriately bundle libraries work anyway
   * Steam client can use a newer runtime
   * i386 games work on non-i386 hosts
@@ -426,14 +432,14 @@ the same as in the 2018 `LD_LIBRARY_PATH` Steam Runtime. However, in
 this mode, we do have the opportunity to unshare `/home` if we want to.
 
 For newer runtimes (Steam Runtime 2), we could choose other modes like
-[2018 `LD_LIBRARY_PATH` scout runtime + 2019 pressure-vessel scout Platform](#pressure-vessel-2019)
+[2018 `LD_LIBRARY_PATH` scout runtime + pressure-vessel container](#pressure-vessel-2019)
 on a per-game basis.
 
 Entirely solves:
 
   * Games don't all have to use the same runtime
        - Not directly, but we can choose between this and other modes like
-         [2018 `LD_LIBRARY_PATH` scout runtime + 2019 pressure-vessel scout Platform](#pressure-vessel-2019)
+         [2018 `LD_LIBRARY_PATH` scout runtime + pressure-vessel container](#pressure-vessel-2019)
          on a per-game basis
 
 Mostly solves:
@@ -453,12 +459,13 @@ Mostly solves:
         Flatpak or standalone bubblewrap, or a kernel that allows the
         bundled copy to create user namespaces without being setuid root
   * New runtimes do not require newest host system
-      - To achieve this, the newer runtimes would have to behave more like
-        [2018 `LD_LIBRARY_PATH` scout runtime + 2019 pressure-vessel scout Platform](#pressure-vessel-2019),
-        substituting the new runtime for scout
+      - To achieve this, the newer runtimes must use
+         [2018 `LD_LIBRARY_PATH` scout runtime + pressure-vessel container](#pressure-vessel-2019)
+         instead
   * New runtimes do not require extensive patching
-      - Again, the newer runtimes would have to behave more like
-        the scout Platform to achieve this
+      - To achieve this, the newer runtimes must use
+         [2018 `LD_LIBRARY_PATH` scout runtime + pressure-vessel container](#pressure-vessel-2019)
+         instead
   * Game data is easy to sync and delete
       - Only if the private home directory is used
   * Games cannot accidentally break the system
@@ -597,8 +604,8 @@ Does not solve:
 
 ## <a name="pressure-vessel-scout-on-srt2">2018 `LD_LIBRARY_PATH` scout runtime + newer Platform + scout again</a>
 
-This is implemented in the `scout_layered_slim` beta branch of
-`SteamLinuxRuntime`. It might become the default in a future release.
+This design is used by the "Steam Linux Runtime" compatibility
+tool since mid July 2021.
 
     |----------------------------
     |                    Host system
@@ -639,7 +646,7 @@ Entirely solves:
 
   * Games don't all have to use the same runtime
        - Not directly, but we can choose between this and other modes like
-         [2018 `LD_LIBRARY_PATH` scout runtime + 2019 pressure-vessel scout Platform](#pressure-vessel-2019)
+         [2018 `LD_LIBRARY_PATH` scout runtime + pressure-vessel container](#pressure-vessel-2019)
          on a per-game basis
 
 Mostly solves:
@@ -730,23 +737,26 @@ For the game, there are several options for what the runtime could be
 and how it would work. For old (scout) games, it could be:
 
   * a pure Steam Runtime 1 'scout' container, similar to
-    [2018 `LD_LIBRARY_PATH` scout runtime + 2019 pressure-vessel scout Platform](#pressure-vessel-2019)
+    [2018 `LD_LIBRARY_PATH` scout runtime + pressure-vessel container](#pressure-vessel-2019)
     above, with graphics drivers from the host system or a Flatpak runtime
     (presumably the same one the Steam client uses)
   * a Steam Runtime 2 container with the `LD_LIBRARY_PATH`
     scout runtime inside, similar to
     [2018 `LD_LIBRARY_PATH` scout runtime + newer Platform + scout again](#pressure-vessel-scout-on-srt2)
     above, with graphics drivers from the host system or a Flatpak runtime
+    (as of mid July 2021, this is what is implemented in practice)
   * a Flatpak runtime with the `LD_LIBRARY_PATH`
     scout runtime inside, similar to
     [2018 `LD_LIBRARY_PATH` scout runtime + newer Platform + scout again](#pressure-vessel-scout-on-srt2)
-    above, with graphics drivers from the host system or that same
-    Flatpak runtime
+    above but using a Flatpak runtime instead of Steam Runtime 2, with
+    graphics drivers from the host system or that same Flatpak runtime
 
 and for new (Steam Runtime 2) games, it could be:
 
   * a pure Steam Runtime 2 container,
+    [2018 `LD_LIBRARY_PATH` scout runtime + pressure-vessel container](#pressure-vessel-2019),
     with graphics drivers from the host system or a Flatpak runtime
+    (as of mid July 2021, this is what is implemented in practice)
   * a Flatpak runtime with an `LD_LIBRARY_PATH`
     Steam Runtime 2 runtime inside, analogous to
     [Layered `LD_LIBRARY_PATH` runtime](#layered-ldlp) above,
@@ -791,7 +801,7 @@ Flatpak 1.11.1 or later.
     |  flatpak-portal service <===== IPC from pressure-vessel-wrap
     |       |
     |  |----\-bwrap-----
-    |  |       |      SteamLinuxRuntime/scout or Steam Runtime 2
+    |  |       |      Steam Runtime 2
     |  |       |
     |  |       \- Proton, if used
     |  |          \- The game
@@ -848,9 +858,8 @@ Does not solve:
 
 ### Steam Runtime 2 container with `LD_LIBRARY_PATH` runtime inside
 
-This is implemented in the `scout_layered_slim` beta branch of
-`SteamLinuxRuntime`, when combined with Flatpak 1.11.1 or later.
-It might become the default in a future `SteamLinuxRuntime` release.
+This design is used by the "Steam Linux Runtime" compatibility
+tool since mid July 2021, when combined with Flatpak 1.11.1 or later.
 
     |----------------------------
     |                    Host system
