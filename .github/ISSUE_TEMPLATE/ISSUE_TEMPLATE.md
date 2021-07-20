@@ -13,7 +13,7 @@ about: Issues with the Steam runtime
 * Have you checked for system updates?: [Yes/No]
 * What compatibility tool are you using?: [None / Steam Linux Runtime / Proton 5.13+ / older Proton]
 * If you are using Steam Linux Runtime for native Linux games: What versions are listed in `SteamLinuxRuntime/VERSIONS.txt`?
-* If you are using Proton 5.13 or newer: What versions are listed in `SteamLinuxRuntime_soldier/VERSIONS.txt`?
+* If you are using Steam Linux Runtime, or Proton 5.13 or newer: What versions are listed in `SteamLinuxRuntime_soldier/VERSIONS.txt`?
 
 #### Please describe your issue in as much detail as possible:
 <!-- Describe what you _expected_ should happen and what _did_ happen. Please link any large code pastes as a [Github Gist](https://gist.github.com/) -->
