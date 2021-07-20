@@ -209,28 +209,6 @@ been run non-interactively, such as for *Help -> System Information*.
 It partially works for Proton games: the shell will not open until the
 game's setup commands have finished.
 
-### Copying the runtime
-
-pressure-vessel has a mode where it copies the runtime, using hard
-links for efficiency, and then modifies the copy in-place to have the
-contents we need. This is not the default yet, but it might be in future.
-
-You can try this by creating a directory `.../SteamLinuxRuntime/var`,
-or `.../SteamLinuxRuntime_soldier/var`,
-and running Steam with the `PRESSURE_VESSEL_COPY_RUNTIME_INTO`
-environment variable set to the absolute path to this `var` directory.
-The temporary runtimes will be in `var/tmp-*`,
-and will be deleted the next time you run pressure-vessel (so there
-will normally only be one at a time).
-
-If your pressure-vessel version has this feature, [the test-UI](#test-ui)
-will have a checkbox labelled *Create temporary runtime copy on disk*.
-
-This mode allows the temporary runtime to be modified in-place. Be
-careful to break the hard links (delete files and replace them), instead
-of editing them in-place. (If you don't understand what that means, don't
-modify the temporary runtime!)
-
 ### Changing the runtime version
 
 If you download a file named
