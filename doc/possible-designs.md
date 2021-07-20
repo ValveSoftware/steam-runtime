@@ -46,10 +46,7 @@ the Steam Runtime works, so they are not discussed here:
     |  .         \- Proton, if used
     |  .            \- The game
 
-If `STEAM_RUNTIME_PREFER_HOST_LIBRARIES` is set to 0, then we revert
-to the [2013 behaviour](#ldlp-2013).
-
-Otherwise, for both the `steam` binary and games:
+For both the `steam` binary and games:
 
   * glibc comes from: host system
   * Graphics driver comes from: host system
@@ -138,7 +135,7 @@ For both the `steam` binary and games:
   * Libraries used by graphics driver come from:
     *first*(scout, host system)
       - Note that this can easily break the graphics driver, which is
-        why the 2018 behaviour is different. For example, the graphics
+        why this behaviour is no longer offered. For example, the graphics
         driver will often require a newer `libgcc.so.1` than the one
         in scout.
   * Other libraries come from: *first*(scout, host system)
