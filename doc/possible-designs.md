@@ -32,7 +32,8 @@ the Steam Runtime works, so they are not discussed here:
 
 ## <a name="ldlp-2018">2018 `LD_LIBRARY_PATH` scout runtime</a>
 
-(Status quo for non-Flatpak users.)
+(Status quo for non-Flatpak users running native Linux games, or
+Proton 5.0 or older.)
 
     |----------------------------
     |                    Host system
@@ -793,7 +794,7 @@ Only partially solves:
 ### Pure Steam Runtime container for game
 
 This is implemented in pressure-vessel >= 0.20210430.0 when used with
-Flatpak 1.11.1 or later.
+Flatpak 1.11.1 or later and Proton >= 5.13.
 
     |----------------------------
     |                    Host system
