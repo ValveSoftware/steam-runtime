@@ -310,23 +310,6 @@ Until Steam has been restarted, trying to launch a game with the
 "Steam Linux Runtime" compatibility tool will show an error message
 asking for a Steam restart.
 
-### Game Maker games
-
-Several Game Maker games don't start in the `scout` runtime,
-because they assume that newer Debian/Ubuntu libraries are available.
-Changes made during July 2021 might have resolved this for some or
-all of these games.
-
-Games thought to be affected include:
-
-* Danger Gazers
-* Demetrios
-* Undertale
-
-([#216](https://github.com/ValveSoftware/steam-runtime/issues/216),
-[#235](https://github.com/ValveSoftware/steam-runtime/issues/235),
-[#410](https://github.com/ValveSoftware/steam-runtime/issues/410))
-
 ### Haxe/HashLink games
 
 Several Haxe games don't start in the `scout` runtime,
