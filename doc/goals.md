@@ -62,10 +62,10 @@ or the AMD Radeon series), games should work on it.
 
 For recent GPUs, this means the game must be able to use a suitably
 recent driver version that supports the GPU: for example, we cannot
-expect a 2019 GPU to be supported by a 2012 version of Mesa.
+expect a 2021 GPU to be supported by a 2012 version of Mesa.
 
 Meeting this goal is likely to be particularly problematic in designs
-that would require us to compile a 2019 graphics driver in the 2012
+that would require us to compile a 2021 graphics driver in the 2012
 runtime/SDK environment.
 
 ### Proprietary (NVIDIA) graphics drivers continue to work
