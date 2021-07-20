@@ -15,11 +15,17 @@ There are currently two runtimes available:
     is used to run official releases of Proton 5.13 or newer. It might be used
     for newer native Linux games in future.
 
+    It is also used to run native Linux games that target
+    Steam Runtime 1 'scout', if the "Steam Linux Runtime" compatibility
+    tool is selected for them.
+
 * [Steam Runtime 1 'scout'](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/scout/README.md),
     [app ID 1070560](https://steamdb.info/app/1070560/)
     can be used on an opt-in basis to run native Linux games in a
     container. It uses the same libraries as the traditional
-    `LD_LIBRARY_PATH` runtime.
+    `LD_LIBRARY_PATH` runtime, but instead of using them as an overlay
+    over the host machine, they are used as an overlay over a
+    Steam Runtime 2 'soldier' container.
 
 Unofficial third-party builds of Proton might use the container runtime
 like the official Proton 5.13, or they might use the traditional
@@ -62,15 +68,16 @@ log. Since version 0.20210105.0, the easiest way to get this is:
 
 * Find the Steam Library directory where the runtime is installed,
     typically `~/.local/share/Steam/steamapps/common/SteamLinuxRuntime_soldier`
-    for soldier (Proton 5.13 or newer), or
-    `~/.local/share/Steam/steamapps/common/SteamLinuxRuntime`
-    for scout
+    for soldier
 
 * Version numbers for some important runtime components are in `VERSIONS.txt`
 
 * The log file is in the `var/` directory and named `slr-app*-*.log`
     for Steam games, or `slr-non-steam-game-*.log` if we cannot identify
     a Steam app ID for the game.
+
+* For native Linux games that use scout, the version number in
+    `~/.steam/root/ubuntu12_32/steam-runtime/version.txt is also important
 
 For Proton games, you can combine this with `PROTON_LOG=1` to capture a
 Proton log file too.
@@ -89,7 +96,7 @@ replace one with `/media/REDACTED1` and the other with
 
 ### Older method
 
-In older pressure-vessel versions that do not have this option available,
+If pressure-vessel is crashing on startup and does not produce a log,
 please do this instead:
 
 * Completely exit from Steam
@@ -212,45 +219,44 @@ game's setup commands have finished.
 ### Changing the runtime version
 
 If you download a file named
-`com.valvesoftware.SteamRuntime.Platform-amd64,i386-scout-runtime.tar.gz`
-from <https://repo.steampowered.com/steamrt-images-scout/snapshots/>,
+`com.valvesoftware.SteamRuntime.Platform-amd64,i386-soldier-runtime.tar.gz`
+from <https://repo.steampowered.com/steamrt-images-soldier/snapshots/>,
 you can use it as a runtime instead of the one provided by Steam.
-Create a new directory in `SteamLinuxRuntime`, for example
-`SteamLinuxRuntime/my_scout_platform_0.20200604.0`,
+Create a new directory in `SteamLinuxRuntime_soldier`, for example
+`SteamLinuxRuntime_soldier/my_soldier_platform_0.20200604.0`,
 and unpack the tarball into that directory so that you have files like
-`SteamLinuxRuntime/my_scout_platform_0.20200604.0/metadata` and
-`SteamLinuxRuntime/my_scout_platform_0.20200604.0/files/bin/env`.
+`SteamLinuxRuntime_soldier/my_soldier_platform_0.20200604.0/metadata` and
+`SteamLinuxRuntime_soldier/my_soldier_platform_0.20200604.0/files/bin/env`.
 Then select it from the list of runtimes in [the test-UI](#test-ui).
 
-Similarly, files named
-`com.valvesoftware.SteamRuntime.Platform-amd64,i386-soldier-runtime.tar.gz`
-from <https://repo.steampowered.com/steamrt-images-soldier/snapshots/>
-can be used in `SteamLinuxRuntime_soldier`.
+For the "Steam Linux Runtime" scout environment, the closest equivalent
+is to download a file named `steam-runtime.tar.xz` from
+from <https://repo.steampowered.com/steamrt-images-scout/snapshots/>
+and unpack it into the `SteamLinuxRuntime` directory, so that you have
+files like `SteamLinuxRuntime/steam-runtime/version.txt`. This will be
+used in preference to the scout runtime that comes with Steam.
 
 ### SDK runtimes
 
 If you download a file named
-`com.valvesoftware.SteamRuntime.Sdk-amd64,i386-scout-runtime.tar.gz`
-from <https://repo.steampowered.com/steamrt-images-scout/snapshots/>,
+`com.valvesoftware.SteamRuntime.Sdk-amd64,i386-soldier-runtime.tar.gz`
+from <https://repo.steampowered.com/steamrt-images-soldier/snapshots/>,
 you can use it as a runtime. Create a new directory in
-`SteamLinuxRuntime`, for example `SteamLinuxRuntime/my_scout_sdk_0.20200604.0`,
+`SteamLinuxRuntime_soldier`, for example `SteamLinuxRuntime_soldier/my_soldier_sdk_0.20200604.0`,
 and unpack the tarball into that directory so that you have files like
-`SteamLinuxRuntime/my_scout_sdk_0.20200604.0/metadata` and
-`SteamLinuxRuntime/my_scout_sdk_0.20200604.0/files/bin/env`.
+`SteamLinuxRuntime_soldier/my_soldier_sdk_0.20200604.0/metadata` and
+`SteamLinuxRuntime_soldier/my_soldier_sdk_0.20200604.0/files/bin/env`.
 Then select it from the list of runtimes in [the test-UI](#test-ui).
-
-Again, the same mechanism can work for soldier, with the names changed
-appropriately.
 
 The SDK has some basic debugging tools like `strace`, `gdb` and `busybox`,
 as well as development tools like C compilers.
 
 To get detached debugging symbols for `gdb` backtraces, download
-`com.valvesoftware.SteamRuntime.Sdk-amd64,i386-scout-debug.tar.gz` from
+`com.valvesoftware.SteamRuntime.Sdk-amd64,i386-soldier-debug.tar.gz` from
 the same directory as the SDK runtime. Unpack it in a temporary location,
 and rename its `files` directory to be `.../files/lib/debug` inside the
 SDK runtime, so that you get a
-`SteamLinuxRuntime/my_scout_sdk_0.20200604.0/files/lib/debug/.build-id`
+`SteamLinuxRuntime_soldier/my_soldier_sdk_0.20200604.0/files/lib/debug/.build-id`
 directory.
 
 If you have detached debug symbols in `/usr/lib/debug` on your host
