@@ -15,8 +15,8 @@ These are things that are already more or less true in the
 ### Old games continue to work
 
 Older games like Half-Life and Portal, developed circa Ubuntu 12.04,
-must work on modern systems like the upcoming Ubuntu 20.04 without
-needing ongoing maintenance.
+must work on modern systems like Ubuntu 20.04 without needing ongoing
+maintenance.
 
 This is particularly important in cases like Torchlight where the
 original developer has gone out of business, so there will be no more
