@@ -324,21 +324,6 @@ Games thought to be affected include:
 
 ([#224](https://github.com/ValveSoftware/steam-runtime/issues/224))
 
-### various Feral Interactive games
-
-Several Feral Interactive ports crash when launched in a 'scout' container.
-Changes made during July 2021 might have resolved this for some or
-all of these games.
-
-Games thought to be affected include:
-
-* Dirt 4
-* Life is Strange 2
-* Shadow of the Tomb Raider
-
-([#202](https://github.com/ValveSoftware/steam-runtime/issues/202),
-[#249](https://github.com/ValveSoftware/steam-runtime/issues/249))
-
 Reporting other issues
 ----------------------
 
