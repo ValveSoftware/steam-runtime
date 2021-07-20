@@ -222,7 +222,7 @@ The Steam client and the oldest games currently both use scout, the
 oldest Steam Runtime, but I expect we will eventually want the Steam
 client to switch to something more modern.
 
-### New runtimes can be supported for multiple years
+### New runtimes for games can be supported for multiple years
 
 The basis for a new runtime should have upstream security support,
 without compatibility breaks, for a few years. For example, Debian 10
@@ -231,6 +231,12 @@ but non-LTS Ubuntu releases would not be suitable.
 
 Even after upstream security support ends, we should be able to backport
 critical security fixes to our version ourselves.
+
+We do not necessarily require this for the runtime that is used to run
+the Steam client itself: the Steam client is frequently updated and
+versions older than the current general-availability version are not
+supported, so if necessary the Steam client can have a flag-day that
+increases its requirements to a newer runtime.
 
 ### New runtimes do not require newest host system
 
