@@ -43,7 +43,8 @@ the Steam Runtime works, so they are not discussed here:
     |  .    |
     |  .    \- steam binary
     |  .         |
-    |  .         \- The game
+    |  .         \- Proton, if used
+    |  .            \- The game
 
 If `STEAM_RUNTIME_PREFER_HOST_LIBRARIES` is set to 0, then we revert
 to the [2013 behaviour](#ldlp-2013).
@@ -199,7 +200,8 @@ Does not solve:
     |  |      .    |
     |  |      .    \- steam binary
     |  |      .         |
-    |  |      .         \- The game
+    |  |      .         \- Proton (if used)
+    |  |      .            \- The game
 
 This is exactly the [2018 `LD_LIBRARY_PATH` Steam runtime](#ldlp-2018),
 but placed inside a Flatpak container.
@@ -309,7 +311,8 @@ Does not solve:
     |  .  |----\-pressure-vessel-wrap, bwrap-----
     |  .  |       |      SteamLinuxRuntime/scout
     |  .  |       |
-    |  .  |       \- The game
+    |  .  |       \- Proton (if used)
+    |  .  |          \- The game
 
 This is what the Steam container runtime's `run-in-scout` script sets up.
 
@@ -408,7 +411,8 @@ Does not solve:
     |  .  |----\-pressure-vessel-wrap, bwrap-----
     |  .  |       |      Host system /usr + steam-runtime libraries,
     |  .  |       |               but in container namespaces
-    |  .  |       \- The game
+    |  .  |       \- Proton (if used)
+    |  .  |          \- The game
 
 If you are using `pressure-vessel-test-ui` or `PRESSURE_VESSEL_WRAP_GUI=1`,
 this is what you get by selecting *None (use host system)* from the
@@ -501,7 +505,8 @@ Does not solve:
     |  .  .   .- -\-run.sh- - - - - - - - - -
     |  .  .   .      |     steam-runtime (B)
     |  .  .   .      |
-    |  .  .   .      \- The game
+    |  .  .   .      \- Proton (if used)
+    |  .  .   .         \- The game
 
 The Steam client could use an as yet hypothetical `unruntime.sh` to undo
 what `run.sh` did, wrapping a *different* Steam Runtime's `run.sh`,
@@ -791,7 +796,8 @@ Flatpak 1.11.1 or later.
     |  |----\-bwrap-----
     |  |       |      SteamLinuxRuntime/scout or Steam Runtime 2
     |  |       |
-    |  |       \- The game
+    |  |       \- Proton, if used
+    |  |          \- The game
 
   * Graphics driver comes from one of:
       - the Flatpak runtime (this is what is implemented so far)
@@ -860,7 +866,8 @@ It might become the default in a future `SteamLinuxRuntime` release.
     |  |   |- -\-run.sh - - - - - - - - - - - -
     |  |   .      |   steam-runtime scout
     |  |   .      |
-    |  |   .      \- The game
+    |  |   .      \- Proton, if used
+    |  |   .         \- The game
 
   * Graphics driver comes from one of:
       - the Flatpak runtime (this is what is implemented so far)
