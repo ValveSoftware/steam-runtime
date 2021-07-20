@@ -208,7 +208,8 @@ the host system.
 
 We need older games like Torchlight to keep using the old runtime
 indefinitely, even if newer/more-updated games like DOTA2 switch to
-a new runtime.
+a new runtime, and even if the Steam client itself switches to a
+new runtime.
 
 ### Steam client runs in a predictable environment
 
