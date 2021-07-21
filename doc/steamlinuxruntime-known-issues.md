@@ -310,19 +310,47 @@ Until Steam has been restarted, trying to launch a game with the
 "Steam Linux Runtime" compatibility tool will show an error message
 asking for a Steam restart.
 
-### Haxe/HashLink games
+### Games that reset `LD_LIBRARY_PATH`
 
-Several Haxe games don't start in the `scout` runtime,
-because they assume that newer Debian/Ubuntu libraries are available.
-Changes made during July 2021 might have resolved this for some or
-all of these games.
+Several games don't start in the `scout` runtime, because their startup
+scripts completely reset `LD_LIBRARY_PATH`, which is not compatible with
+how the container runtime works. This can also cause problems for games
+that do not run in a container.
 
-Games thought to be affected include:
+In particular, games using the Hashlink interpreter for the Haxe language
+often do this.
 
-* Dead Cells
-* Evoland Legendary Edition
+Developers of games that have a directory containing extra libraries
+should not overwrite the `LD_LIBRARY_PATH` completely:
 
-([#224](https://github.com/ValveSoftware/steam-runtime/issues/224))
+```
+#!/bin/sh
+set -e
+# DOES NOT WORK
+export LD_LIBRARY_PATH="./mylibs"
+exec ./bin/main-executable "$@"
+```
+
+Instead, prepending to the `LD_LIBRARY_PATH` is usually correct:
+
+```
+#!/bin/sh
+set -e
+export LD_LIBRARY_PATH="./mylibs${LD_LIBRARY_PATH:+":$LD_LIBRARY_PATH"}"
+exec ./bin/main-executable "$@"
+```
+
+Workaround: Edit the script that launches the game, or don't use the
+container runtime.
+
+Affected games include:
+
+* Dead Cells (Haxe/Hashlink)
+* Evoland Legendary Edition (Haxe/Hashlink)
+* Game Dev Tycoon
+
+([#198](https://github.com/ValveSoftware/steam-runtime/issues/198),
+[#224](https://github.com/ValveSoftware/steam-runtime/issues/224))
 
 Reporting other issues
 ----------------------
