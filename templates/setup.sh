@@ -1,12 +1,14 @@
 #!/bin/bash
 # Copyright 2012-2019 Valve Software
-# Copyright 2019 Collabora Ltd.
+# Copyright 2019-2021 Collabora Ltd.
 #
 # SPDX-License-Identifier: MIT
 
 set -e
 set -u
 set -o pipefail
+
+identify_library_abi=
 
 # Check if set, which is normally done by steam.sh, but will not be set when invoked directly
 if [ -z "${STEAM_ZENITY+x}" ]; then
@@ -39,11 +41,11 @@ pin_newer_runtime_libs ()
     local -A host_libraries_64
 
     local bitness
-    local file_output
+    local soname_details
     local final_library
     local find_num
-    local find_output
-    local find_output_array
+    local line
+    local output_array
     local h_lib_major
     local h_lib_minor
     local h_lib_third
@@ -77,64 +79,91 @@ pin_newer_runtime_libs ()
         printf '\r 4%%    \r'
     fi
 
-    # First, grab the list of system libraries from ldconfig and put them in the arrays
-    shopt -s lastpipe
-    if /sbin/ldconfig -XNv 2> /dev/null | mapfile -t ldconfig_output_array; then
-        true  # OK
+    if [[ -n "$identify_library_abi" ]]; then
+        local executable_output_array
+        local line
+        local soname_path
+        local abi
+
+        # This usually takes only a few dozen milliseconds, there is no need
+        # to update the progress bar
+        mapfile -t executable_output_array < <($identify_library_abi --ldconfig --skip-unversioned 2>/dev/null)
+
+        for line in "${executable_output_array[@]}"
+        do
+            soname_path=${line%=*}
+            soname=${soname_path##*/}
+            abi=${line#*=}
+
+            if [[ ${abi} == "i386-linux-gnu" ]]; then
+                host_libraries_32[$soname]=$soname_path
+            elif [[ ${abi} == "x86_64-linux-gnu" ]]; then
+                host_libraries_64[$soname]=$soname_path
+            fi
+            # If it's not i386-linux-gnu nor x86_64-linux-gnu we just skip it
+        done
     else
-        >&2 echo "Warning: An unexpected error occurred while executing \"/sbin/ldconfig -XNv\", the exit status was $?"
+        # Fallback to the older, and slower, method that uses `file -L`
+
+        # First, grab the list of system libraries from ldconfig and put them in the arrays
+        shopt -s lastpipe
+        if /sbin/ldconfig -XNv 2> /dev/null | mapfile -t ldconfig_output_array; then
+            true  # OK
+        else
+            >&2 echo "Warning: An unexpected error occurred while executing \"/sbin/ldconfig -XNv\", the exit status was $?"
+        fi
+
+        ldconfig_num=${#ldconfig_output_array[@]}
+        n_done=0
+
+        for ldconfig_output in "${ldconfig_output_array[@]}"
+        do
+            if [ "$zenity_progress" = true ]; then
+                echo $(( ( 60 * n_done ) / ldconfig_num + 4 ))
+            else
+                printf '\r %d%%    \r' $(( ( 60 * n_done ) / ldconfig_num + 4 ))
+            fi
+            (( n_done=n_done+1 ))
+            # If line starts with a leading / and contains :, it's a new path prefix
+            if [[ "$ldconfig_output" =~ ^/.*: ]]
+            then
+                library_path_prefix=$(echo "$ldconfig_output" | cut -d: -f1)
+            else
+                # Otherwise it's a soname symlink -> library pair, build a full path to the soname link
+                leftside=${ldconfig_output% -> *}
+                soname=$(echo "$leftside" | tr -d '[:space:]')
+                soname_fullpath=$library_path_prefix/$soname
+
+                # Left side better be a symlink
+                if [[ ! -L $soname_fullpath ]]; then continue; fi
+
+                # Left-hand side of soname symlink should be *.so.%d
+                if [[ ! $soname_fullpath =~ .*\.so.[[:digit:]]+$ ]]; then continue; fi
+
+                if ! final_library=$(readlink -f "$soname_fullpath")
+                then
+                    continue
+                fi
+
+                # Target library must be named *.so.%d.%d.%d
+                if [[ ! $final_library =~ .*\.so.[[:digit:]]+.[[:digit:]]+.[[:digit:]]+$ ]]; then continue; fi
+
+                # If it doesn't exist, skip as well
+                if [[ ! -f $final_library ]]; then continue; fi
+
+                soname_details=$(file -L "$final_library")
+
+                # Save into bitness-specific associative array with only SONAME as left-hand
+                if [[ $soname_details == *"32-bit"* ]]
+                then
+                    host_libraries_32[$soname]=$soname_fullpath
+                elif [[ $soname_details == *"64-bit"* ]]
+                then
+                    host_libraries_64[$soname]=$soname_fullpath
+                fi
+            fi
+        done
     fi
-
-    ldconfig_num=${#ldconfig_output_array[@]}
-    n_done=0
-
-    for ldconfig_output in "${ldconfig_output_array[@]}"
-    do
-        if [ "$zenity_progress" = true ]; then
-            echo $(( ( 60 * n_done ) / ldconfig_num + 4 ))
-        else
-            printf '\r %d%%    \r' $(( ( 60 * n_done ) / ldconfig_num + 4 ))
-        fi
-        (( n_done=n_done+1 ))
-        # If line starts with a leading / and contains :, it's a new path prefix
-        if [[ "$ldconfig_output" =~ ^/.*: ]]
-        then
-            library_path_prefix=$(echo "$ldconfig_output" | cut -d: -f1)
-        else
-            # Otherwise it's a soname symlink -> library pair, build a full path to the soname link
-            leftside=${ldconfig_output% -> *}
-            soname=$(echo "$leftside" | tr -d '[:space:]')
-            soname_fullpath=$library_path_prefix/$soname
-
-            # Left side better be a symlink
-            if [[ ! -L $soname_fullpath ]]; then continue; fi
-
-            # Left-hand side of soname symlink should be *.so.%d
-            if [[ ! $soname_fullpath =~ .*\.so.[[:digit:]]+$ ]]; then continue; fi
-
-            if ! final_library=$(readlink -f "$soname_fullpath")
-            then
-                continue
-            fi
-
-            # Target library must be named *.so.%d.%d.%d
-            if [[ ! $final_library =~ .*\.so.[[:digit:]]+.[[:digit:]]+.[[:digit:]]+$ ]]; then continue; fi
-
-            # If it doesn't exist, skip as well
-            if [[ ! -f $final_library ]]; then continue; fi
-
-            file_output=$(file -L "$final_library")
-
-            # Save into bitness-specific associative array with only SONAME as left-hand
-            if [[ $file_output == *"32-bit"* ]]
-            then
-                host_libraries_32[$soname]=$soname_fullpath
-            elif [[ $file_output == *"64-bit"* ]]
-            then
-                host_libraries_64[$soname]=$soname_fullpath
-            fi
-        fi
-    done
 
     if [ "$zenity_progress" = true ]; then
         echo 64
@@ -145,11 +174,16 @@ pin_newer_runtime_libs ()
     mkdir "$steam_runtime_path/pinned_libs_32"
     mkdir "$steam_runtime_path/pinned_libs_64"
 
-    mapfile -t find_output_array < <(find "$steam_runtime_path" -type l | grep \\\.so)
-    find_num=${#find_output_array[@]}
+    if [[ -n "$identify_library_abi" ]]; then
+        mapfile -t output_array < <($identify_library_abi --directory "$steam_runtime_path" --skip-unversioned  2>/dev/null)
+    else
+        mapfile -t output_array < <(find "$steam_runtime_path" -type l | grep \\\.so)
+    fi
+
+    find_num=${#output_array[@]}
     n_done=0
 
-    for find_output in "${find_output_array[@]}"
+    for line in "${output_array[@]}"
     do
         if [ "$zenity_progress" = true ]; then
             echo $(( ( 35 * n_done ) / find_num + 64 ))
@@ -157,10 +191,17 @@ pin_newer_runtime_libs ()
             printf '\r %d%%    \r' $(( ( 35 * n_done ) / find_num + 64 ))
         fi
         (( n_done=n_done+1 ))
-        # Left-hand side of soname symlink should be *.so.%d
-        if [[ ! $find_output =~ .*\.so.[[:digit:]]+$ ]]; then continue; fi
 
-        soname_symlink=$find_output
+        if [[ -n "$identify_library_abi" ]]; then
+            soname_symlink=${line%=*}
+            soname_details=${line#*=}
+        else
+            soname_symlink=$line
+            soname_details=
+        fi
+
+        # Left-hand side of soname symlink should be *.so.%d
+        if [[ ! $soname_symlink =~ .*\.so.[[:digit:]]+$ ]]; then continue; fi
 
         if ! final_library=$(readlink -f "$soname_symlink")
         then
@@ -188,15 +229,18 @@ pin_newer_runtime_libs ()
         if [[ -n "${host_libraries_32[$soname]+isset}" ||
               -n "${host_libraries_64[$soname]+isset}" ]]
         then
-            file_output=$(file -L "$final_library")
-            if [[ $file_output == *"32-bit"* ]]
+            if [[ -z $soname_details ]]; then
+                soname_details=$(file -L "$final_library")
+            fi
+
+            if [[ $soname_details == *"32-bit"* || $soname_details == "i386-linux-gnu" ]]
             then
                 if [ -n "${host_libraries_32[$soname]+isset}" ]
                 then
                     host_soname_symlink=${host_libraries_32[$soname]}
                 fi
                 bitness="32"
-            elif [[ $file_output == *"64-bit"* ]]
+            elif [[ $soname_details == *"64-bit"* || $soname_details == "x86_64-linux-gnu" ]]
             then
                 if [ -n "${host_libraries_64[$soname]+isset}" ]
                 then
@@ -474,17 +518,27 @@ main ()
         usage 2
     fi
 
+    case "$(uname -m)" in
+        (*64)
+            arch=amd64
+            ;;
+        (*)
+            arch=i386
+            ;;
+    esac
+
+    identify_library_abi="$top/$arch/usr/bin/steam-runtime-identify-library-abi"
+
+    if [[ ! -x "$identify_library_abi" ]]; then
+        identify_library_abi="$top/$arch/bin/steam-runtime-identify-library-abi"
+        if [[ ! -x "$identify_library_abi" ]]; then
+            identify_library_abi=
+        fi
+    fi
+
     case "$action" in
         (--print-bin-path)
             # Keep this in sync with run.sh
-            case "$(uname -m)" in
-                (*64)
-                    arch=amd64
-                    ;;
-                (*)
-                    arch=i386
-                    ;;
-            esac
             echo "$top/$arch/bin:$top/$arch/usr/bin:$top/usr/bin"
             ;;
 
