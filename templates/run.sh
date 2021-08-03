@@ -103,6 +103,14 @@ host_library_paths="$STEAM_RUNTIME/pinned_libs_32:$STEAM_RUNTIME/pinned_libs_64:
 
 steam_runtime_library_paths="$host_library_paths$STEAM_RUNTIME/lib/i386-linux-gnu:$STEAM_RUNTIME/usr/lib/i386-linux-gnu:$STEAM_RUNTIME/lib/x86_64-linux-gnu:$STEAM_RUNTIME/usr/lib/x86_64-linux-gnu:$STEAM_RUNTIME/lib:$STEAM_RUNTIME/usr/lib"
 
+if [[ -n "${STEAM_COMPAT_INSTALL_PATH-}" && -n "${STEAM_COMPAT_FLAGS-}" ]]; then
+    case ",$STEAM_COMPAT_FLAGS," in
+        (*,search-cwd,*)
+            steam_runtime_library_paths="${steam_runtime_library_paths}:${STEAM_COMPAT_INSTALL_PATH}"
+            ;;
+    esac
+fi
+
 if [ "$1" = "--print-steam-runtime-library-paths" ]; then
     echo "$steam_runtime_library_paths"
     exit 0
