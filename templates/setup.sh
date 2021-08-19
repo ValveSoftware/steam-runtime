@@ -27,7 +27,7 @@ pin_newer_runtime_libs ()
     local zenity_progress=true
 
     # First argument is the runtime path
-    steam_runtime_path=$(realpath "$1")
+    steam_runtime_path=$(readlink -f "$1")
 
     if [[ ! -d "$steam_runtime_path" ]]; then return; fi
 
@@ -370,7 +370,7 @@ check_pins ()
     local steam_runtime_path
 
     # First argument is the runtime path
-    steam_runtime_path=$(realpath "$1")
+    steam_runtime_path=$(readlink -f "$1")
 
     if [[ ! -d "$steam_runtime_path" ]]; then return; fi
 
