@@ -8,7 +8,7 @@
 set -e
 set -u
 
-if [ "x${PYFLAKES:=pyflakes3}" = xfalse ] || \
+if [ "${PYFLAKES:=pyflakes3}" = false ] || \
         [ -z "$(command -v "$PYFLAKES")" ]; then
     echo "1..0 # SKIP pyflakes3 not found"
 elif "${PYFLAKES}" \
