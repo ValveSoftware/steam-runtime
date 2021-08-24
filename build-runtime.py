@@ -1465,7 +1465,7 @@ if args.archive is not None:
 				os.path.join(args.output, member),
 				arcname=os.path.normpath(
 					os.path.join(
-						'steam-runtime',
+						name,
 						member,
 					)),
 				recursive=False,
