@@ -17,6 +17,7 @@ for shell_script in \
         scripts/*.sh \
         tests/*.sh \
         templates/*.sh \
+        templates/scripts/switch-runtime.sh \
         ; do
     n=$((n + 1))
     if shellcheck "$shell_script"; then
