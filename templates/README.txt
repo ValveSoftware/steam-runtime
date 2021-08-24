@@ -2,7 +2,7 @@
 This is a collection of software packages for the Steam Linux Runtime.
 
 Each individual package has its own licensing terms, typically in:
-    <arch>/usr/share/doc/<package>/copyright.
+    usr/share/doc/<package>/copyright.
 
 The scripts used to build these packages can be found on GitHub:
 https://github.com/ValveSoftware/steam-runtime
