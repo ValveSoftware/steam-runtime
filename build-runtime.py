@@ -203,6 +203,15 @@ def parse_args():
 		default="https://repo.steampowered.com/steamrt",
 	)
 	parser.add_argument(
+		"--upstream-apt-source", dest='upstream_apt_sources',
+		default=[], action='append',
+		help=(
+			"additional apt sources in the form "
+			"'deb https://URL SUITE COMPONENT [COMPONENT...]' "
+			"(may be repeated)"
+		),
+	)
+	parser.add_argument(
 		"--extra-apt-source", dest='extra_apt_sources',
 		default=[], action='append',
 		help=(
@@ -1205,8 +1214,19 @@ apt_sources = [
 	AptSource('deb', args.repo, args.suite, ('main',)),
 	AptSource('deb-src', args.repo, args.suite, ('main',)),
 ]
+seen_apt_lines = set()		# type: typing.Set[str]
 
-for line in args.extra_apt_sources:
+if args.suite in ('heavy', 'heavy_beta') and not args.upstream_apt_sources:
+	args.upstream_apt_sources = [
+		'both https://deb.debian.org/debian jessie main',
+		'both https://deb.debian.org/debian-security jessie/updates main',
+	]
+
+for line in list(args.upstream_apt_sources) + list(args.extra_apt_sources):
+	if line in seen_apt_lines:
+		continue
+
+	seen_apt_lines.add(line)
 	trusted=False
 	tokens = line.split()
 
