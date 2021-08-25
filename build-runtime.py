@@ -271,7 +271,10 @@ def parse_args():
 			% args.output)
 
 	if not args.architectures:
-		args.architectures = sorted(ARCHITECTURES.keys())
+		if args.suite in ('heavy', 'heavy_beta'):
+			args.architectures = ['amd64']
+		else:
+			args.architectures = sorted(ARCHITECTURES.keys())
 
 	if not args.packages_from and not args.metapackages:
 		args.metapackages = ['steamrt-libs', 'steamrt-legacy']
