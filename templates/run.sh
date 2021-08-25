@@ -105,6 +105,9 @@ steam_runtime_library_paths="$host_library_paths$STEAM_RUNTIME/lib/i386-linux-gn
 
 if [[ -n "${STEAM_COMPAT_INSTALL_PATH-}" && -n "${STEAM_COMPAT_FLAGS-}" ]]; then
     case ",$STEAM_COMPAT_FLAGS," in
+        (*,search-cwd-first,*)
+            steam_runtime_library_paths="${STEAM_COMPAT_INSTALL_PATH}:${steam_runtime_library_paths}"
+            ;;
         (*,search-cwd,*)
             steam_runtime_library_paths="${steam_runtime_library_paths}:${STEAM_COMPAT_INSTALL_PATH}"
             ;;
