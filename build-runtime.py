@@ -1560,6 +1560,14 @@ if args.archive is not None:
 				archive_dir, archive_basename + '.version.txt'),
 		)
 
+		script = os.path.join(args.output, 'scripts', 'switch-runtime.sh')
+
+		if os.path.exists(script):
+			shutil.copy(
+				script,
+				os.path.join(archive_dir, archive_basename + '.sh'),
+			)
+
 	if make_latest_symlink:
 		print("Creating symlink %s_latest%s..." % (name, ext))
 		symlink = os.path.join(archive_dir, name + '_latest' + ext)
