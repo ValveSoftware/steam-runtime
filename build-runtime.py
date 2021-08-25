@@ -1316,6 +1316,12 @@ shutil.copytree(args.templates, args.output, symlinks=True)
 with open(os.path.join(args.output, 'version.txt'), 'w') as writer:
 	writer.write('%s\n' % name_version)
 
+if args.debug_url is None:
+	if args.suite in ('scout', 'scout_beta'):
+		args.debug_url = 'https://repo.steampowered.com/steamrt-images-scout/snapshots/'
+	elif args.suite in ('heavy', 'heavy_beta'):
+		args.debug_url = 'https://repo.steampowered.com/steamrt-images-heavy/snapshots/'
+
 if args.debug_url:
 	# Note where people can get the debug version of this runtime
 	for base in ('README.txt', 'COPYING'):
