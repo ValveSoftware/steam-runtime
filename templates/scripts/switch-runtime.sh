@@ -118,7 +118,7 @@ bootstrap () {
     fi
 
     # Note we're using a subshell here so we don't change the script's cwd
-    if ! ( cd "$unpack_dir" && md5sum --quiet -c "$steamrt.tar.xz.checksum" ); then
+    if ! ( cd "$unpack_dir" && md5sum -c "$steamrt.tar.xz.checksum" > /dev/null ); then
         echo "$me: error: integrity check for $tarball failed"
         EX_SOFTWARE
     fi
