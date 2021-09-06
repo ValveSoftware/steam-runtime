@@ -67,6 +67,13 @@ undo_steamrt () {
     if [ -n "${SYSTEM_PATH+set}" ]; then
         export PATH="$SYSTEM_PATH"
     fi
+
+    # Removing the Steam Runtime from the PATH might have eliminated our
+    # ability to run zenity via PATH search, if the host system doesn't
+    # have it
+    if [ "${STEAM_ZENITY-}" = zenity ] && ! command -v zenity >/dev/null; then
+        unset STEAM_ZENITY
+    fi
 }
 
 # see sysexits.h
