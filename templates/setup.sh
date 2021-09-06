@@ -17,6 +17,15 @@ if [ -z "${STEAM_ZENITY+x}" ]; then
     export STEAM_ZENITY
 fi
 
+# If steam.sh or run.sh doesn't find a system zenity, it sets
+# STEAM_ZENITY=zenity, meaning do a PATH search and hope to find the one
+# from the Steam Runtime. However, in this script we don't expect the
+# Steam Runtime search paths to be available yet, so double-check: we
+# might find that no zenity is available.
+if ! [ -x "$(command -v "${STEAM_ZENITY}" || true)" ]; then
+    STEAM_ZENITY=
+fi
+
 pin_newer_runtime_libs ()
 {
     # Set separator to newline just for this function
