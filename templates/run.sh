@@ -15,7 +15,7 @@ export STEAM_RUNTIME
 
 # Make sure we have something to run
 if [ "$1" = "" ]; then
-    echo "Usage: $0 program [args]"
+    echo "Usage: $0 program [args]" >&2
     exit 1
 fi
 

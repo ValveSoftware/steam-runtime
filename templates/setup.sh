@@ -85,7 +85,7 @@ pin_newer_runtime_libs ()
     if [ "$zenity_progress" = true ]; then
         echo 4
     else
-        printf '\r 4%%    \r'
+        printf '\r 4%%    \r' >&2
     fi
 
     if [[ -n "$identify_library_abi" ]]; then
@@ -130,7 +130,7 @@ pin_newer_runtime_libs ()
             if [ "$zenity_progress" = true ]; then
                 echo $(( ( 60 * n_done ) / ldconfig_num + 4 ))
             else
-                printf '\r %d%%    \r' $(( ( 60 * n_done ) / ldconfig_num + 4 ))
+                printf '\r %d%%    \r' $(( ( 60 * n_done ) / ldconfig_num + 4 )) >&2
             fi
             (( n_done=n_done+1 ))
             # If line starts with a leading / and contains :, it's a new path prefix
@@ -177,7 +177,7 @@ pin_newer_runtime_libs ()
     if [ "$zenity_progress" = true ]; then
         echo 64
     else
-        printf '\r 64%%    \r'
+        printf '\r 64%%    \r' >&2
     fi
 
     mkdir "$steam_runtime_path/pinned_libs_32"
@@ -197,7 +197,7 @@ pin_newer_runtime_libs ()
         if [ "$zenity_progress" = true ]; then
             echo $(( ( 35 * n_done ) / find_num + 64 ))
         else
-            printf '\r %d%%    \r' $(( ( 35 * n_done ) / find_num + 64 ))
+            printf '\r %d%%    \r' $(( ( 35 * n_done ) / find_num + 64 )) >&2
         fi
         (( n_done=n_done+1 ))
 
@@ -266,7 +266,7 @@ pin_newer_runtime_libs ()
 
         if [[ ! -f $host_library ]]; then continue; fi
 
-        #echo $soname ${host_libraries[$soname]} $r_lib_major $r_lib_minor $r_lib_third
+        #echo $soname ${host_libraries[$soname]} $r_lib_major $r_lib_minor $r_lib_third >&2
 
         # Pretty sure the host library already matches, but we need the rematch anyway
         if [[ ! $host_library =~ .*\.so.([[:digit:]]+).([[:digit:]]+).([[:digit:]]+)$ ]]; then continue; fi
@@ -362,7 +362,7 @@ pin_newer_runtime_libs ()
     if [ "$zenity_progress" = true ]; then
         echo 100
     else
-        echo " 100%   "
+        echo " 100%   " >&2
     fi
 }
 
@@ -424,7 +424,7 @@ check_pins ()
 
     if [[ $pins_need_redoing == "yes" ]]
     then
-        echo Updating Steam runtime environment...
+        echo Updating Steam runtime environment... >&2
         # Is always set at this point, but may be empty if the host lacks zenity
         if [ -n "${STEAM_ZENITY}" ]; then
             pin_newer_runtime_libs "$steam_runtime_path" | "${STEAM_ZENITY}" --progress --auto-close --percentage=0 --no-cancel --width 400 --title="Steam setup" --text="Updating Steam runtime environment..."
@@ -432,7 +432,7 @@ check_pins ()
             pin_newer_runtime_libs "$steam_runtime_path" "false"
         fi
     else
-        echo Steam runtime environment up-to-date!
+        echo Steam runtime environment up-to-date! >&2
     fi
 }
 

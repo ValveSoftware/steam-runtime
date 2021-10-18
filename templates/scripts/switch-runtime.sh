@@ -113,13 +113,13 @@ bootstrap () {
 
     if [ -e "$available" ] && cmp -s "$reference" "$available"; then
         # Runtime is unpacked and up to date, use it as-is
-        "${unpack_dir:?}/$steamrt/setup.sh"
+        "${unpack_dir:?}/$steamrt/setup.sh" >&2
         return 0
     fi
 
     # Note we're using a subshell here so we don't change the script's cwd
     if ! ( cd "$unpack_dir" && md5sum -c "$steamrt.tar.xz.checksum" > /dev/null ); then
-        echo "$me: error: integrity check for $tarball failed"
+        echo "$me: error: integrity check for $tarball failed" >&2
         EX_SOFTWARE
     fi
 
@@ -134,10 +134,10 @@ bootstrap () {
     rmdir "$tmpdir"
 
     if ! cmp -s "$0" "${unpack_dir:?}/$steamrt/scripts/switch-runtime.sh"; then
-        echo "$me: WARNING: $0 is out of sync. Update from $steamrt/scripts/switch-runtime.sh"
+        echo "$me: WARNING: $0 is out of sync. Update from $steamrt/scripts/switch-runtime.sh" >&2
     fi
 
-    "${unpack_dir:?}/$steamrt/setup.sh" --force
+    "${unpack_dir:?}/$steamrt/setup.sh" --force >&2
 }
 
 usage () {
