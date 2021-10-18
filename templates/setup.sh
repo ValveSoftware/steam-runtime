@@ -26,6 +26,13 @@ if ! [ -x "$(command -v "${STEAM_ZENITY}" || true)" ]; then
     STEAM_ZENITY=
 fi
 
+debug ()
+{
+    if [ -n "${STEAM_RUNTIME_VERBOSE-}" ]; then
+        echo "setup.sh: $*" >&2
+    fi
+}
+
 pin_newer_runtime_libs ()
 {
     # Set separator to newline just for this function
@@ -105,9 +112,17 @@ pin_newer_runtime_libs ()
             abi=${line#*=}
 
             if [[ ${abi} == "i386-linux-gnu" ]]; then
-                host_libraries_32[$soname]=$soname_path
+                if [[ -n "${host_libraries_32[$soname]+isset}" ]]; then
+                    debug "Ignoring $soname_path because ${host_libraries_32[$soname]} is higher-precedence"
+                else
+                    host_libraries_32[$soname]=$soname_path
+                fi
             elif [[ ${abi} == "x86_64-linux-gnu" ]]; then
-                host_libraries_64[$soname]=$soname_path
+                if [[ -n "${host_libraries_64[$soname]+isset}" ]]; then
+                    debug "Ignoring $soname_path because ${host_libraries_64[$soname]} is higher-precedence"
+                else
+                    host_libraries_64[$soname]=$soname_path
+                fi
             fi
             # If it's not i386-linux-gnu nor x86_64-linux-gnu we just skip it
         done
@@ -165,10 +180,18 @@ pin_newer_runtime_libs ()
                 # Save into bitness-specific associative array with only SONAME as left-hand
                 if [[ $soname_details == *"32-bit"* ]]
                 then
-                    host_libraries_32[$soname]=$soname_fullpath
+                    if [[ -n "${host_libraries_32[$soname]+isset}" ]]; then
+                        debug "Ignoring $soname_fullpath because ${host_libraries_32[$soname]} is higher-precedence"
+                    else
+                        host_libraries_32[$soname]=$soname_fullpath
+                    fi
                 elif [[ $soname_details == *"64-bit"* ]]
                 then
-                    host_libraries_64[$soname]=$soname_fullpath
+                    if [[ -n "${host_libraries_64[$soname]+isset}" ]]; then
+                        debug "Ignoring $soname_fullpath because ${host_libraries_64[$soname]} is higher-precedence"
+                    else
+                        host_libraries_64[$soname]=$soname_fullpath
+                    fi
                 fi
             fi
         done
