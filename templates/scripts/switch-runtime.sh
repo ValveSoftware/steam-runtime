@@ -32,6 +32,10 @@ me="$(readlink -f "$0")"
 here="${me%/*}"
 me="${me##*/}"
 
+log () {
+    echo "$me[$$]: $*" >&2 || :
+}
+
 undo_steamrt () {
     # Undo the Steam Runtime environment, but only if it's already in use.
     case "${STEAM_RUNTIME-}" in
@@ -90,17 +94,17 @@ bootstrap () {
 
     case "$steamrt" in
         (.)
-            echo "$me: --runtime with --unpack-dir must not start with a dot" >&2
+            log "--runtime with --unpack-dir must not start with a dot"
             EX_USAGE
             ;;
 
         ("")
-            echo "$me: --runtime with --unpack-dir must be non-empty" >&2
+            log "--runtime with --unpack-dir must be non-empty"
             EX_USAGE
             ;;
 
         (*/*)
-            echo "$me: --runtime with --unpack-dir must be a single path component" >&2
+            log "--runtime with --unpack-dir must be a single path component"
             EX_USAGE
             ;;
     esac
@@ -119,7 +123,7 @@ bootstrap () {
 
     # Note we're using a subshell here so we don't change the script's cwd
     if ! ( cd "$unpack_dir" && md5sum -c "$steamrt.tar.xz.checksum" > /dev/null ); then
-        echo "$me: error: integrity check for $tarball failed" >&2
+        log "error: integrity check for $tarball failed"
         EX_SOFTWARE
     fi
 
@@ -134,7 +138,7 @@ bootstrap () {
     rmdir "$tmpdir"
 
     if ! cmp -s "$0" "${unpack_dir:?}/$steamrt/scripts/switch-runtime.sh"; then
-        echo "$me: WARNING: $0 is out of sync. Update from $steamrt/scripts/switch-runtime.sh" >&2
+        log "WARNING: $0 is out of sync. Update from $steamrt/scripts/switch-runtime.sh"
     fi
 
     "${unpack_dir:?}/$steamrt/setup.sh" --force >&2
@@ -192,7 +196,7 @@ main () {
 
             (--unpack-dir)
                 if ! [ -d "$2" ]; then
-                    echo "$me: '$2' is not a directory" >&2
+                    log "'$2' is not a directory"
                     usage
                 fi
                 unpack_dir="$(readlink -f "$2")"
@@ -205,7 +209,7 @@ main () {
                 ;;
 
             (-*)
-                echo "$me: unknown option: $1" >&2
+                log "unknown option: $1"
                 usage
                 ;;
 
@@ -217,7 +221,7 @@ main () {
 
     if [ "$#" -lt 1 ]
     then
-        echo "$me: requires positional parameters" >&2
+        log "this script requires positional parameters"
         usage
     fi
 

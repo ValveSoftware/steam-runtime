@@ -26,10 +26,14 @@ if ! [ -x "$(command -v "${STEAM_ZENITY}" || true)" ]; then
     STEAM_ZENITY=
 fi
 
+log () {
+    echo "setup.sh[$$]: $*" >&2 || :
+}
+
 debug ()
 {
     if [ -n "${STEAM_RUNTIME_VERBOSE-}" ]; then
-        echo "setup.sh: $*" >&2
+        log "$@"
     fi
 }
 
@@ -92,7 +96,7 @@ pin_newer_runtime_libs ()
     if [ "$zenity_progress" = true ]; then
         echo 4
     else
-        printf '\r 4%%    \r' >&2
+        printf '\r 4%%    \r' >&2 || :
     fi
 
     if [[ -n "$identify_library_abi" ]]; then
@@ -134,7 +138,7 @@ pin_newer_runtime_libs ()
         if /sbin/ldconfig -XNv 2> /dev/null | mapfile -t ldconfig_output_array; then
             true  # OK
         else
-            >&2 echo "Warning: An unexpected error occurred while executing \"/sbin/ldconfig -XNv\", the exit status was $?"
+            log "Warning: An unexpected error occurred while executing \"/sbin/ldconfig -XNv\", the exit status was $?"
         fi
 
         ldconfig_num=${#ldconfig_output_array[@]}
@@ -145,7 +149,7 @@ pin_newer_runtime_libs ()
             if [ "$zenity_progress" = true ]; then
                 echo $(( ( 60 * n_done ) / ldconfig_num + 4 ))
             else
-                printf '\r %d%%    \r' $(( ( 60 * n_done ) / ldconfig_num + 4 )) >&2
+                printf '\r %d%%    \r' $(( ( 60 * n_done ) / ldconfig_num + 4 )) >&2 || :
             fi
             (( n_done=n_done+1 ))
             # If line starts with a leading / and contains :, it's a new path prefix
@@ -200,7 +204,7 @@ pin_newer_runtime_libs ()
     if [ "$zenity_progress" = true ]; then
         echo 64
     else
-        printf '\r 64%%    \r' >&2
+        printf '\r 64%%    \r' >&2 || :
     fi
 
     mkdir "$steam_runtime_path/pinned_libs_32"
@@ -220,7 +224,7 @@ pin_newer_runtime_libs ()
         if [ "$zenity_progress" = true ]; then
             echo $(( ( 35 * n_done ) / find_num + 64 ))
         else
-            printf '\r %d%%    \r' $(( ( 35 * n_done ) / find_num + 64 )) >&2
+            printf '\r %d%%    \r' $(( ( 35 * n_done ) / find_num + 64 )) >&2 || :
         fi
         (( n_done=n_done+1 ))
 
@@ -289,7 +293,7 @@ pin_newer_runtime_libs ()
 
         if [[ ! -f $host_library ]]; then continue; fi
 
-        #echo $soname ${host_libraries[$soname]} $r_lib_major $r_lib_minor $r_lib_third >&2
+        #log $soname ${host_libraries[$soname]} $r_lib_major $r_lib_minor $r_lib_third
 
         # Pretty sure the host library already matches, but we need the rematch anyway
         if [[ ! $host_library =~ .*\.so.([[:digit:]]+).([[:digit:]]+).([[:digit:]]+)$ ]]; then continue; fi
@@ -352,9 +356,9 @@ pin_newer_runtime_libs ()
 
         # Print to stderr because zenity is consuming stdout
         if [[ $runtime_version_newer == "yes" ]]; then
-            >&2 echo "Found newer runtime version for $bitness-bit $soname. Host: $h_lib_major.$h_lib_minor.$h_lib_third Runtime: $r_lib_major.$r_lib_minor.$r_lib_third"
+            log "Found newer runtime version for $bitness-bit $soname. Host: $h_lib_major.$h_lib_minor.$h_lib_third Runtime: $r_lib_major.$r_lib_minor.$r_lib_third"
         elif [[ $runtime_version_newer == "forced" ]]; then
-            >&2 echo "Forced use of runtime version for $bitness-bit $soname. Host: $h_lib_major.$h_lib_minor.$h_lib_third Runtime: $r_lib_major.$r_lib_minor.$r_lib_third"
+            log "Forced use of runtime version for $bitness-bit $soname. Host: $h_lib_major.$h_lib_minor.$h_lib_third Runtime: $r_lib_major.$r_lib_minor.$r_lib_third"
         fi
 
         if [[ $runtime_version_newer == "yes" \
@@ -385,7 +389,7 @@ pin_newer_runtime_libs ()
     if [ "$zenity_progress" = true ]; then
         echo 100
     else
-        echo " 100%   " >&2
+        echo " 100%   " >&2 || :
     fi
 }
 
@@ -447,7 +451,7 @@ check_pins ()
 
     if [[ $pins_need_redoing == "yes" ]]
     then
-        echo Updating Steam runtime environment... >&2
+        log "Updating Steam runtime environment..."
         # Is always set at this point, but may be empty if the host lacks zenity
         if [ -n "${STEAM_ZENITY}" ]; then
             pin_newer_runtime_libs "$steam_runtime_path" | "${STEAM_ZENITY}" --progress --auto-close --percentage=0 --no-cancel --width 400 --title="Steam setup" --text="Updating Steam runtime environment..."
@@ -455,7 +459,7 @@ check_pins ()
             pin_newer_runtime_libs "$steam_runtime_path" "false"
         fi
     else
-        echo Steam runtime environment up-to-date! >&2
+        log "Steam runtime environment up-to-date!"
     fi
 }
 
@@ -534,7 +538,7 @@ main ()
                 ;;
 
             (-*)
-                echo "$me: unknown option: $1" >&2
+                log "unknown option: $1"
                 usage 2
                 ;;
 
@@ -546,7 +550,7 @@ main ()
 
     if [ "$#" -gt 0 ]
     then
-        echo "$me does not have positional parameters" >&2
+        log "$me does not have positional parameters"
         usage 2
     fi
 

@@ -13,9 +13,13 @@ STEAM_RUNTIME=$(cd "${0%/*}" && pwd)
 # may not run in the Steam runtime.
 export STEAM_RUNTIME
 
+log () {
+    echo "run.sh[$$]: $*" >&2 || :
+}
+
 # Make sure we have something to run
 if [ "$1" = "" ]; then
-    echo "Usage: $0 program [args]" >&2
+    log "Usage: $0 program [args]"
     exit 1
 fi
 
@@ -75,13 +79,13 @@ set_bin_path()
 host_library_paths=
 
 if [[ "${STEAM_RUNTIME_PREFER_HOST_LIBRARIES-}" == "0" ]]; then
-    echo "STEAM_RUNTIME_PREFER_HOST_LIBRARIES=0 is deprecated, and no longer has an effect." >&2
+    log "STEAM_RUNTIME_PREFER_HOST_LIBRARIES=0 is deprecated, and no longer has an effect."
 fi
 
 exit_status=0
 ldconfig_output=$(/sbin/ldconfig -XNv 2> /dev/null; exit $?) || exit_status=$?
 if [[ $exit_status != 0 ]]; then
-    echo "Warning: An unexpected error occurred while executing \"/sbin/ldconfig -XNv\", the exit status was $exit_status" >&2
+    log "Warning: An unexpected error occurred while executing \"/sbin/ldconfig -XNv\", the exit status was $exit_status"
 fi
 
 # Always prefer host libraries over non-pinned Runtime libraries.
