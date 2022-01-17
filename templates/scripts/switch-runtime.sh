@@ -121,8 +121,16 @@ bootstrap () {
         return 0
     fi
 
-    # Note we're using a subshell here so we don't change the script's cwd
-    if ! ( cd "$unpack_dir" && md5sum -c "$steamrt.tar.xz.checksum" > /dev/null ); then
+    # Compare strings instead of using md5sum -c, because older versions
+    # of md5sum interpret a CRLF (DOS) line-ending as though the filename
+    # to be checked was "steam-runtime.tar.xz\r"
+    local expected actual
+    expected="$(cat "$reference")"
+    expected="${expected%% *}"
+    actual="$(md5sum "$tarball")"
+    actual="${actual%% *}"
+
+    if [ "$expected" != "$actual" ]; then
         log "error: integrity check for $tarball failed"
         EX_SOFTWARE
     fi
