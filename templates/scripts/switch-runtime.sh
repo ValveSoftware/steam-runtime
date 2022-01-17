@@ -33,7 +33,7 @@ here="${me%/*}"
 me="${me##*/}"
 
 log () {
-    echo "$me[$$]: $*" >&2 || :
+    echo "${me}[$$]: $*" >&2 || :
 }
 
 undo_steamrt () {
