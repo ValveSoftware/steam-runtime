@@ -238,6 +238,7 @@ By default, a build environment is created that contains:
 * gcc-4.6
 * gcc-4.8 (default)
 * gcc-5
+* gcc-9
 * clang-3.4
 * clang-3.6
 * clang-3.8
@@ -245,22 +246,22 @@ By default, a build environment is created that contains:
 Switching default compilers can be done by entering the chroot environment:
 
     ~$ schroot --chroot steamrt_scout_i386
-    
-    (steamrt_scout_i386):~$ # for gcc-4.6    
+
+    (steamrt_scout_i386):~$ # for gcc-4.6
     (steamrt_scout_i386):~$ update-alternatives --auto gcc
     (steamrt_scout_i386):~$ update-alternatives --auto g++
     (steamrt_scout_i386):~$ update-alternatives --auto cpp-bin
-    
+
     (steamrt_scout_i386):~$ # for gcc-4.8
     (steamrt_scout_i386):~$ update-alternatives --set gcc /usr/bin/gcc-4.8
     (steamrt_scout_i386):~$ update-alternatives --set g++ /usr/bin/g++-4.8
     (steamrt_scout_i386):~$ update-alternatives --set cpp-bin /usr/bin/cpp-4.8
-    
+
     (steamrt_scout_i386):~$ # for clang-3.4
     (steamrt_scout_i386):~$ update-alternatives --set gcc /usr/bin/clang-3.4
     (steamrt_scout_i386):~$ update-alternatives --set g++ /usr/bin/clang++-3.4
     (steamrt_scout_i386):~$ update-alternatives --set cpp-bin /usr/bin/cpp-4.8
-    
+
     (steamrt_scout_i386):~$ # for clang-3.6
     (steamrt_scout_i386):~$ update-alternatives --set gcc /usr/bin/clang-3.6
     (steamrt_scout_i386):~$ update-alternatives --set g++ /usr/bin/clang++-3.6
