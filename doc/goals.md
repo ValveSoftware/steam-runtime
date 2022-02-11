@@ -108,9 +108,11 @@ released in 2019. It is used to run Proton 5.13 and later versions.
 Running native Linux games in a "pure" soldier container is not
 currently possible, but would be a good improvement.
 
-Steam Runtime version 3, 'sniper', is likely to be based on
-Debian 11 'bullseye', released in 2021, and otherwise work in exactly
-the same way as soldier.
+Steam Runtime version 3, 'sniper', is based on Debian 11 'bullseye',
+released in 2021. It is otherwise similar to soldier.
+
+Similarly, Steam Runtime version 4, 'medic', is likely to be based on
+Debian 12 'bookworm', which is expected to be released in 2023.
 
 #### New glibc
 
