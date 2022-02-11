@@ -691,7 +691,7 @@ Does not solve:
 
 ## Flatpak + pressure-vessel in parallel
 
-This is implemented when using Flatpak 1.11.1 or later.
+This is implemented when using Flatpak 1.12 or later.
 
     |----------------------------
     |                    Host system
@@ -788,12 +788,13 @@ Mostly solves:
 Only partially solves:
 
   * Host system doesn't need uncommon packages installed
-      - Flatpak 1.11.1, which is not yet a stable release, is required
+      - Flatpak 1.12 is a stable release, but is not available in all
+        supported distributions yet
 
 ### Pure Steam Runtime container for game
 
 This is implemented in pressure-vessel >= 0.20210430.0 when used with
-Flatpak 1.11.1 or later and Proton >= 5.13.
+Flatpak 1.12 or later and Proton >= 5.13.
 
     |----------------------------
     |                    Host system
@@ -859,7 +860,7 @@ Does not solve:
 ### Steam Runtime 2 container with `LD_LIBRARY_PATH` runtime inside
 
 This design is used by the "Steam Linux Runtime" compatibility
-tool since mid July 2021, when combined with Flatpak 1.11.1 or later.
+tool since mid July 2021, when combined with Flatpak 1.12 or later.
 
     |----------------------------
     |                    Host system
