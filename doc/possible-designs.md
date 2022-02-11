@@ -32,8 +32,8 @@ the Steam Runtime works, so they are not discussed here:
 
 ## <a name="ldlp-2018">2018 `LD_LIBRARY_PATH` scout runtime</a>
 
-(Status quo for non-Flatpak users running native Linux games, or
-Proton 5.0 or older.)
+(Status quo for non-Flatpak users running most native Linux games with
+default configuration, or Proton 5.0 or older.)
 
     |----------------------------
     |                    Host system
@@ -606,7 +606,8 @@ Does not solve:
 ## <a name="pressure-vessel-scout-on-srt2">2018 `LD_LIBRARY_PATH` scout runtime + newer Platform + scout again</a>
 
 This design is used by the "Steam Linux Runtime" compatibility
-tool since mid July 2021.
+tool since mid July 2021. It is referred to internally as the
+"scout-on-soldier" runtime.
 
     |----------------------------
     |                    Host system
@@ -653,10 +654,10 @@ Entirely solves:
 Mostly solves:
 
   * Old games continue to work
-      - Expected to be fewer regressions than with the
+      - Implementation experience is that this has fewer regressions than with the
         [pure scout container](#pressure-vessel-2019)
   * i386 games continue to work on i386-capable hosts
-      - Expected to be fewer regressions than with pure scout container
+      - Fewer regressions than with pure scout container
   * Open-source (Mesa) graphics drivers continue to work
   * Proprietary (NVIDIA) graphics drivers continue to work
   * Games developed in an impure scout environment continue to work
@@ -808,7 +809,7 @@ Flatpak 1.11.1 or later and Proton >= 5.13.
     |  |          \- The game
 
   * Graphics driver comes from one of:
-      - the Flatpak runtime (this is what is implemented so far)
+      - the Flatpak runtime (this is what is implemented in practice)
       - the host system
   * glibc comes from:
     *newest*(where graphics driver comes from, Steam Runtime)
@@ -817,7 +818,7 @@ Flatpak 1.11.1 or later and Proton >= 5.13.
   * Other libraries come from: Steam Runtime
   * User's home directory comes from one of:
       - host system, unrestricted
-      - ~/.var/app/com.valvesoftware.Steam (this is what is implemented so far)
+      - ~/.var/app/com.valvesoftware.Steam (this is what is implemented in practice)
       - a private directory like ~/.var/app/com.steampowered.App440 per game
 
 Entirely solves:
