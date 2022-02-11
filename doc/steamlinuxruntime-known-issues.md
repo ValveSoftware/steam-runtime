@@ -12,8 +12,9 @@ Using the Steam container runtimes from inside a Flatpak sandbox requires
 features that are not yet available in all Linux distributions. To use
 the container runtimes, you will need:
 
-* An operating system where unprivileged users can create user
-    namespaces (non-setuid bubblewrap)
+* An operating system where
+    [unprivileged users can create user namespaces](https://github.com/flatpak/flatpak/wiki/User-namespace-requirements#unprivileged-bubblewrap)
+    (non-setuid bubblewrap)
 
     * Debian >= 11, but not Debian 10 or older
     * RHEL/CentOS >= 8, but not RHEL/CentOS 7 or older
@@ -75,6 +76,10 @@ on OSs with unusual directory layouts, or use the unofficial Flatpak app
 
 kernel.unprivileged\_userns\_clone
 ----------------------------------
+
+The container runtime has the same
+[user namespace requirements](https://github.com/flatpak/flatpak/wiki/User-namespace-requirements)
+as Flatpak.
 
 On Debian 10 or older and SteamOS, either the `bubblewrap` package
 from the OS must be installed, or the `kernel.unprivileged_userns_clone`
