@@ -31,13 +31,6 @@ the container runtimes, you will need:
         [official backports](https://backports.debian.org/Instructions/),
         and it will be included in Debian 12
 
-* A fully up-to-date version of the Steam Flatpak app, with the
-   `per-app-dev-shm` feature listed in its permissions
-
-* A fully up-to-date version of `SteamLinuxRuntime_soldier`, with
-    `pressure-vessel 0.20210430.0` or
-    later listed in its `VERSIONS.txt` file
-
 As a workaround, users of older versions of Flatpak can try using
 [a community build of Proton](https://github.com/flathub/com.valvesoftware.Steam.CompatibilityTool.Proton)
 which uses the freedesktop.org runtime instead of Steam Runtime 2.
