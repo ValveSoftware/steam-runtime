@@ -49,10 +49,10 @@ Unusual directory layouts and `ld.so` names are not supported.
 The Debian/Ubuntu family, the Fedora/CentOS/Red Hat family, Arch Linux
 and openSUSE are most likely to work.
 
-Exherbo and ClearLinux did not work in the past, but recent versions of
-SteamLinuxRuntime fix this. Please report any regressions. The changes
+Exherbo and ClearLinux have had issues in the past, but are currently
+believed to work successfully. The changes
 made to support these operating systems can be used as a basis to propose
-patches to make it work in other "almost-FHS" environments.
+patches to make pressure-vessel work in other "almost-FHS" environments.
 
 NixOS has its own scripts to set up a FHS-compatible environment to
 run Steam. As of early 2021, very recent versions of this should be
