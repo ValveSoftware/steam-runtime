@@ -9,7 +9,7 @@ Flatpak
 -------
 
 Using the Steam container runtimes from inside a Flatpak sandbox requires
-features that are not yet available in stable Flatpak releases. To use
+features that are not yet available in all Linux distributions. To use
 the container runtimes, you will need:
 
 * An operating system where unprivileged users can create user
@@ -21,12 +21,14 @@ the container runtimes, you will need:
         but not `linux-hardened` and `bubblewrap-suid`
     * Most other recent distributions, e.g. Ubuntu
 
-* Flatpak 1.11.2. This is a development version, so use it at your own risk.
+* Flatpak 1.12
 
     * Ubuntu users can get this from
-        [the PPA](https://launchpad.net/~alexlarsson/+archive/ubuntu/flatpak)
-    * Debian users can get this from
-        [experimental](https://packages.debian.org/source/experimental/flatpak)
+        [the PPA](https://launchpad.net/~flatpak/+archive/ubuntu/stable/),
+        and it will be included in Ubuntu 22.04 LTS
+    * Debian 11 users can get this from
+        [official backports](https://backports.debian.org/Instructions/),
+        and it will be included in Debian 12
 
 * A fully up-to-date version of the Steam Flatpak app, with the
    `per-app-dev-shm` feature listed in its permissions
@@ -69,7 +71,7 @@ Other non-FHS distributions might also not work.
 
 Workaround: don't enable SteamLinuxRuntime or Proton 5.13 (or newer)
 on OSs with unusual directory layouts, or use the unofficial Flatpak app
-(requires Flatpak 1.11.2).
+(requires Flatpak 1.12).
 
 kernel.unprivileged\_userns\_clone
 ----------------------------------
