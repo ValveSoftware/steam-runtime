@@ -59,7 +59,7 @@ run Steam. As of early 2021, very recent versions of this should be
 mostly compatible with pressure-vessel, but some system configurations
 are still problematic.
 
-Guix probably does not work for the same reasons as NixOS.
+Guix is in the same situation as NixOS.
 
 Other non-FHS distributions might also not work.
 
