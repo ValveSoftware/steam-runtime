@@ -288,48 +288,6 @@ Until Steam has been restarted, trying to launch a game with the
 "Steam Linux Runtime" compatibility tool will show an error message
 asking for a Steam restart.
 
-### Games that reset `LD_LIBRARY_PATH`
-
-Several games don't start in the `scout` runtime, because their startup
-scripts completely reset `LD_LIBRARY_PATH`, which is not compatible with
-how the container runtime works. This can also cause problems for games
-that do not run in a container.
-
-In particular, games using the Hashlink interpreter for the Haxe language
-often do this.
-
-Developers of games that have a directory containing extra libraries
-should not overwrite the `LD_LIBRARY_PATH` completely:
-
-```
-#!/bin/sh
-set -e
-# DOES NOT WORK
-export LD_LIBRARY_PATH="./mylibs"
-exec ./bin/main-executable "$@"
-```
-
-Instead, prepending to the `LD_LIBRARY_PATH` is usually correct:
-
-```
-#!/bin/sh
-set -e
-export LD_LIBRARY_PATH="./mylibs${LD_LIBRARY_PATH:+":$LD_LIBRARY_PATH"}"
-exec ./bin/main-executable "$@"
-```
-
-Workaround: Edit the script that launches the game, or don't use the
-container runtime.
-
-Affected games include:
-
-* Dead Cells (Haxe/Hashlink)
-* Evoland Legendary Edition (Haxe/Hashlink)
-* Game Dev Tycoon
-
-([#198](https://github.com/ValveSoftware/steam-runtime/issues/198),
-[#224](https://github.com/ValveSoftware/steam-runtime/issues/224))
-
 Reporting other issues
 ----------------------
 
