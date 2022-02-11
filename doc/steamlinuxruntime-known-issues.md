@@ -92,28 +92,6 @@ sysctl parameter must be set to 1 instead.
 ([#342](https://github.com/ValveSoftware/steam-runtime/issues/342),
 [#297](https://github.com/ValveSoftware/steam-runtime/issues/297))
 
-<a name="issue363"></a>MangoHUD with Mesa 20.3.4 and 21.0.0.rc5
----------------------------------------------------------------
-
-Mesa version 20.3.4, and Mesa release candidates 21.0.0.rc2 to 21.0.0.rc5
-inclusive, have a problematic interaction between Mesa's device selection
-layer and other Vulkan layers, causing Proton/DXVK games to crash or hang
-on startup. The exact conditions to trigger this are complicated and not
-well-understood, but it is known to happen on many systems when Proton/DXVK
-games load the MangoHUD Vulkan layer in the Steam Linux Runtime container.
-
-Mesa versions 21.0.0 and 20.3.5 contain a change that avoids this problem.
-
-It is not clear which component is at fault here: it might be a bug in
-Vulkan-Loader, MangoHUD, Mesa, pressure-vessel or something else. We're
-continuing to investigate.
-
-Workaround: upgrade Mesa to version 20.3.5 or later, or disable MangoHUD
-with environment variable `DISABLE_MANGOHUD=1`.
-
-([#363](https://github.com/ValveSoftware/steam-runtime/issues/363),
-[#365](https://github.com/ValveSoftware/steam-runtime/issues/365))
-
 vkBasalt with shaders in /usr/share
 -----------------------------------
 
