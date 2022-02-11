@@ -128,7 +128,7 @@ select a different branch from your Steam Library, in the same way
 you would for a game: follow the same procedure as
 <https://support.steampowered.com/kb_article.php?ref=9847-WHXC-7326>,
 but instead of the properties of CS:GO, change the properties of the
-Steam Linux Runtime.
+tool named *Steam Linux Runtime - soldier* or *Steam Linux Runtime*.
 
 The branches that are usually available are:
 
