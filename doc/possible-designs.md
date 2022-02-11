@@ -493,36 +493,34 @@ Does not solve:
 
 ## <a name="layered-ldlp">Layered `LD_LIBRARY_PATH` runtime</a>
 
-(This is theoretical, and has not been deployed in practice.)
+(This has not been used for games in practice, but is now used to run
+the `steamwebhelper` component, with A = scout and B = heavy.)
 
     |----------------------------
     |                    Host system
     |    steam.sh
     |     |
     |  .- \-run.sh- - - - - - - - - -
-    |  .    |            steam-runtime (A)
+    |  .    |            steam-runtime (A, in practice scout)
     |  .    |
     |  .    \- steam binary
     |  .       |
-    |  .  .- - \-unruntime.sh - - - - - - - - - -
+    |  .  .- - \-switch-runtime.sh - - - - - - -
     |  .  .       |       Back to host system!
     |  .  .       |
     |  .  .   .- -\-run.sh- - - - - - - - - -
-    |  .  .   .      |     steam-runtime (B)
+    |  .  .   .      |     steam-runtime (B, in practice heavy)
     |  .  .   .      |
-    |  .  .   .      \- Proton (if used)
-    |  .  .   .         \- The game
+    |  .  .   .      \- steamwebhelper (or in theory, Proton or a game)
 
-The Steam client could use an as yet hypothetical `unruntime.sh` to undo
+The Steam client's `steamwebhelper.sh` runs a renamed copy of the
+Steam Runtime's `scripts/switch-runtime.sh` to undo
 what `run.sh` did, wrapping a *different* Steam Runtime's `run.sh`,
-which would redo the Steam Runtime setup for the game. Alternatively,
-we could have a command-line option for `run.sh` to undo and redo the
-Steam Runtime environment variables in a single operation, which would
-be functionally equivalent but would make for a more confusing diagram.
+which redoes the Steam Runtime setup. This allows the execution environment
+to be switched from scout to heavy.
 
-Prior art: `pressure-vessel-unruntime` already does this, as a way to
-"escape from" the Steam Runtime environment to run `pressure-vessel-wrap`
-in a more predictable way.
+In theory this could be used to run games or Proton, but it has practical
+problems that mean we have chosen not to do this.
 
 For the `steam` binary:
 
@@ -548,15 +546,15 @@ For games:
     (B) Steam Runtime and host systems
   * User's home directory comes from: host system, unrestricted
 
-This decouples the Steam Runtime library stacks A and B, and could be
-used to run the game in an older or newer Steam Runtime than the
-Steam client.
+This decouples the Steam Runtime library stacks A and B, allowing
+the Steam client and `steamwebhelper` to run on scout and heavy
+respectively.
 
-It could also be combined with Flatpak in the obvious way.
+If we did the same for games, it would have the properties described here.
+However, we have chosen not to do this, because the container runtime
+has better characteristics.
 
-For newer runtimes (Steam Runtime 2), we would simply choose A != B.
-
-Entirely solves:
+Would entirely solve:
 
   * Open-source (Mesa) graphics drivers continue to work
   * Proprietary (NVIDIA) graphics drivers continue to work
@@ -565,7 +563,7 @@ Entirely solves:
   * New runtimes work on future hardware
       - The host graphics driver is used, so this is a non-issue
 
-Mostly solves:
+Would mostly solve:
 
   * Old games continue to work
       - There can be regressions if host system library behaviour changes
@@ -576,7 +574,7 @@ Mostly solves:
         library dependencies where the abstraction leaks (particularly
         around steamwebhelper/CEF)
 
-Only partially solves:
+Would only partially solve:
 
   * Games developed in an impure scout environment continue to work
       - It is anyone's guess whether they will work
@@ -590,7 +588,7 @@ Only partially solves:
   * Steam can be installed unprivileged
       - No better or worse than single-layer `LD_LIBRARY_PATH`
 
-Does not solve:
+Would not solve:
 
   * Games run in a predictable, robust environment
       - Could get broken by just about anything, particularly in
