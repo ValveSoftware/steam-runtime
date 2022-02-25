@@ -72,9 +72,24 @@ If any of these packages contain runtime dependencies, then you will have to mak
 
 Installation
 ------------
+
+Steam Runtime version 1, 'scout' is automatically installed as part
+of the [Steam Client for Linux][].
+
+Each version of the Steam [container runtime][] is automatically
+downloaded to your Steam library if you install a game or a version of
+Proton that requires it.
+They can also be downloaded by opening `steam://` links with Steam:
+
+* Steam Linux Runtime (scout-compatible): `steam steam://install/1070560`
+* Steam Linux Runtime - soldier: `steam steam://install/1391110`
+* Steam Linux Runtime - sniper: `steam steam://install/1628350`
+
 All the software that makes up the Steam Runtime is available in both source and binary form in the Steam Runtime repository [https://repo.steampowered.com/steamrt](https://repo.steampowered.com/steamrt "")
 
 Included in this repository are scripts for building local copies of the Steam Runtime for testing and scripts for building Linux chroot environments suitable for building applications.
+
+[Steam Client for Linux]: https://github.com/ValveSoftware/steam-for-linux/
 
 Building in the runtime
 -----------------------
