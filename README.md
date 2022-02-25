@@ -6,11 +6,63 @@ A binary compatible runtime environment for Steam applications on Linux.
 Introduction
 ------------
 
-This release of the steam-runtime SDK marks a change to a chroot environment used for building apps. A chroot environment is a standalone Linux environment rooted somewhere in your file system.
+The Linux version of Steam runs on many Linux distributions, ranging
+from the latest rolling-release distributions like Arch Linux to older
+LTS distributions like Ubuntu 14.04.
+To achieve this, it uses a special library stack, the *Steam Runtime*,
+which is installed in `~/.steam/root/ubuntu12_32/steam-runtime`.
+This is Steam Runtime version 1, codenamed `scout` after the Team
+Fortress 2 character class.
 
-[https://en.wikipedia.org/wiki/Chroot](https://en.wikipedia.org/wiki/Chroot "")
+The Steam client itself is run in an environment that adds the shared
+libraries from Steam Runtime 1 'scout' to the library loading path,
+using the `LD_LIBRARY_PATH` environment variable.
+This is referred to as the [`LD_LIBRARY_PATH` runtime][LD_LIBRARY_PATH runtime].
+Most native Linux games available through Steam are also run in this
+environment.
 
-All processes that run within the root run relative to that rooted environment. It is possible to install a differently versioned distribution within a root, than the native distribution. For example, it is possible to install an Ubuntu 12.04 chroot environment on an Ubuntu 14.04 system. Tools and utilities for building apps can be installed in the root using standard package management tools, since from the tool's perspective it is running in a native Linux environment. This makes it well suited for an SDK environment.
+A newer approach to cross-distribution compatibility is to use Linux
+namespace (container) technology, to run games in a more predictable
+environment, even when running on an arbitrary Linux distribution which
+might be old, new or unusually set up.
+This is implemented as a series of Steam Play compatibility tools, and
+is referred to as the Steam [container runtime][], or as the
+*Steam Linux Runtime*.
+
+The Steam Runtime is also used by the [Proton][] Steam Play compatibility
+tools, which run Windows games on Linux systems.
+Older versions of Proton (5.0 or earlier) use the same 'scout'
+[`LD_LIBRARY_PATH` runtime][LD_LIBRARY_PATH runtime] as most native
+Linux games.
+Newer versions of Proton (5.13 or newer) use a [container runtime][]
+with newer library versions: this is Steam Runtime version 2, codenamed
+'soldier'.
+
+More information about the
+[`LD_LIBRARY_PATH` runtime][LD_LIBRARY_PATH runtime] and
+[container runtime][] is available as part of the
+[steam-runtime-tools documentation][].
+
+[LD_LIBRARY_PATH runtime]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/master/docs/ld-library-path-runtime.md
+[container runtime]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/HEAD/docs/container-runtime.md
+[Proton]: https://github.com/ValveSoftware/Proton/
+[steam-runtime-tools documentation]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/tree/master/docs
+
+Reporting bugs and issues
+-------------------------
+
+Please report issues to the [steam-runtime issue tracker][].
+
+The container runtimes have some [known issues][] which do not need to be
+reported again.
+
+The container runtime is quite complicated, so we will need
+[additional information][reporting bugs] to be able to make progress
+on resolving issues.
+
+[steam-runtime issue tracker]: https://github.com/ValveSoftware/steam-runtime
+[known issues]: doc/steamlinuxruntime-known-issues.md
+[reporting bugs]: doc/reporting-steamlinuxruntime-bugs.md
 
 Steam-runtime Repository
 ------------------------
