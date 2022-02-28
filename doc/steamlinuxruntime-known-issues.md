@@ -76,7 +76,8 @@ as Flatpak.
 
 On Debian 10 or older and SteamOS 2, either the `bubblewrap` package
 from the OS must be installed, or the `kernel.unprivileged_userns_clone`
-sysctl parameter must be set to 1. Debian 11 will do this by default.
+sysctl parameter must be set to 1. Debian 11 sets
+`kernel.unprivileged_userns_clone` to 1 by default.
 
 Similarly, on Arch Linux with the non-default `linux-hardened`
 kernel, either the `bubblewrap-suid` package must be installed, or the
