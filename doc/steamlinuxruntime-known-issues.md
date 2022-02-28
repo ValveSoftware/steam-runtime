@@ -74,7 +74,7 @@ The container runtime has the same
 [user namespace requirements](https://github.com/flatpak/flatpak/wiki/User-namespace-requirements)
 as Flatpak.
 
-On Debian 10 or older and SteamOS, either the `bubblewrap` package
+On Debian 10 or older and SteamOS 2, either the `bubblewrap` package
 from the OS must be installed, or the `kernel.unprivileged_userns_clone`
 sysctl parameter must be set to 1. Debian 11 will do this by default.
 

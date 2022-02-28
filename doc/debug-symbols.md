@@ -55,7 +55,7 @@ having difficulty with the PulseAudio libraries, similar to
 ## Getting the debug symbols for the host system
 
 This is the same as it would be without Steam. For a Debian, Ubuntu or
-SteamOS host, `apt install libc6-dbg:i386` is a good start. For
+SteamOS 2 host, `apt install libc6-dbg:i386` is a good start. For
 non-Debian-derived OSs, use whatever is the OS's usual mechanism to get
 detached debug symbols.
 

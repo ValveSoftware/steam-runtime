@@ -297,8 +297,8 @@ uninstalled.
 
 Installing the Steam client should not be OS-specific:
 we don't want to have to build `.deb` packages for Debian, Ubuntu
-and SteamOS, `.rpm` packages for Fedora, *different* `.rpm` packages
-for openSUSE, and so on.
+and SteamOS 2, `.rpm` packages for Fedora, *different* `.rpm` packages
+for openSUSE, Pacman packages for Arch Linux and SteamOS 3, and so on.
 
 ### Steam can be installed unprivileged
 
