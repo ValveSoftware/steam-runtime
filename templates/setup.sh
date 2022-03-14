@@ -221,6 +221,19 @@ pin_newer_runtime_libs ()
 
     for line in "${output_array[@]}"
     do
+        case "$line" in
+            (*/*-linux-gnu/sse2/lib* | */*-linux-gnu/sse/lib* | */*-linux-gnu/i686/cmov/lib*)
+                debug "Library in hwcap directory: $line"
+                ;;
+            (*/*-linux-gnu/lib*)
+                debug "Library in base directory: $line"
+                ;;
+            (*)
+                debug "Skip library in subdirectory: $line"
+                continue
+                ;;
+        esac
+
         if [ "$zenity_progress" = true ]; then
             echo $(( ( 35 * n_done ) / find_num + 64 ))
         else
