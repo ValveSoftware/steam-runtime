@@ -376,7 +376,7 @@ pin_newer_runtime_libs ()
 
         if [[ $runtime_version_newer == "yes" \
               || $runtime_version_newer == "forced" ]]; then
-            ln -s "$final_library" "$steam_runtime_path/pinned_libs_$bitness/$soname"
+            ln -fns "$final_library" "$steam_runtime_path/pinned_libs_$bitness/$soname"
             # Keep track of the exact version name we saw on the system at pinning time to check later
             >&2 echo "$host_soname_symlink" > "$steam_runtime_path/pinned_libs_$bitness/system_$soname"
             >&2 echo "$host_library" >> "$steam_runtime_path/pinned_libs_$bitness/system_$soname"
