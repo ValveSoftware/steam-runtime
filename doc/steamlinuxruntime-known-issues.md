@@ -54,18 +54,20 @@ believed to work successfully. The changes
 made to support these operating systems can be used as a basis to propose
 patches to make pressure-vessel work in other "almost-FHS" environments.
 
-NixOS has its own scripts to set up a FHS-compatible environment to
-run Steam. As of early 2021, very recent versions of this should be
-mostly compatible with pressure-vessel, but some system configurations
-are still problematic.
-
+NixOS has its own scripts to set up a FHS-compatible environment to run
+Steam. As of 2022, this should generally be compatible with pressure-vessel.
 Guix is in the same situation as NixOS.
 
 Other non-FHS distributions might also not work.
+We have prepared a document listing
+[assumptions made about the distribution][distro assumptions], which
+distribution developers might find useful.
 
 Workaround: don't enable SteamLinuxRuntime or Proton 5.13 (or newer)
 on OSs with unusual directory layouts, or use the unofficial Flatpak app
 (requires Flatpak 1.12).
+
+[distro assumptions]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/HEAD/docs/distro-assumptions.md
 
 kernel.unprivileged\_userns\_clone
 ----------------------------------
@@ -74,9 +76,10 @@ The container runtime has the same
 [user namespace requirements](https://github.com/flatpak/flatpak/wiki/User-namespace-requirements)
 as Flatpak.
 
-On Debian 10 or older and SteamOS, either the `bubblewrap` package
+On Debian 10 or older and SteamOS 2, either the `bubblewrap` package
 from the OS must be installed, or the `kernel.unprivileged_userns_clone`
-sysctl parameter must be set to 1. Debian 11 will do this by default.
+sysctl parameter must be set to 1. Debian 11 sets
+`kernel.unprivileged_userns_clone` to 1 by default.
 
 Similarly, on Arch Linux with the non-default `linux-hardened`
 kernel, either the `bubblewrap-suid` package must be installed, or the

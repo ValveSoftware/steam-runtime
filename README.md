@@ -98,15 +98,17 @@ To prevent libraries from development and build machines 'leaking'
 into your applications, you should build within a Steam Runtime container
 or chroot environment.
 
-We recommend using a [Docker](https://docs.docker.com/get-docker/)
-or [rootless Podman](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md)
+We recommend using a
+[Toolbx](https://containertoolbx.org/),
+[rootless Podman](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md)
+or [Docker](https://docs.docker.com/get-docker/)
 container for this:
 
-    sudo docker pull registry.gitlab.steamos.cloud/steamrt/scout/sdk
+    podman pull registry.gitlab.steamos.cloud/steamrt/scout/sdk
 
 or
 
-    podman pull registry.gitlab.steamos.cloud/steamrt/scout/sdk
+    sudo docker pull registry.gitlab.steamos.cloud/steamrt/scout/sdk
 
 For more details, please consult the
 [Steam Runtime SDK](https://gitlab.steamos.cloud/steamrt/scout/sdk/-/blob/steamrt/scout/README.md)
