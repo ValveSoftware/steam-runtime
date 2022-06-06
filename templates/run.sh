@@ -83,9 +83,18 @@ if [[ "${STEAM_RUNTIME_PREFER_HOST_LIBRARIES-}" == "0" ]]; then
 fi
 
 exit_status=0
-ldconfig_output=$(/sbin/ldconfig -XNv 2> /dev/null; exit $?) || exit_status=$?
+
+ldconfig_options=(-XNv)
+
+if [ -f /run/pressure-vessel/ldso/ld.so.conf ]; then
+    # workaround for Solus ldconfig not using the ld.so.conf we expect:
+    # https://github.com/ValveSoftware/Dota-2/issues/2047
+    ldconfig_options=("${ldconfig_options[@]}" -f /run/pressure-vessel/ldso/ld.so.conf)
+fi
+
+ldconfig_output=$(/sbin/ldconfig "${ldconfig_options[@]}" 2> /dev/null; exit $?) || exit_status=$?
 if [[ $exit_status != 0 ]]; then
-    log "Warning: An unexpected error occurred while executing \"/sbin/ldconfig -XNv\", the exit status was $exit_status"
+    log "Warning: An unexpected error occurred while executing \"/sbin/ldconfig ${ldconfig_options[*]}\", the exit status was $exit_status"
 fi
 
 # Always prefer host libraries over non-pinned Runtime libraries.
