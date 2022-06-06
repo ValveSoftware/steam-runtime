@@ -15,6 +15,8 @@ import subprocess
 import tarfile
 import tempfile
 import time
+from pathlib import Path
+
 from debian import deb822
 from debian.debian_support import Version
 import argparse
@@ -783,6 +785,11 @@ def check_consistency(
 				print('WARNING: Binary package %s in %s but not depended on by %s on %s' % (name, args.packages_from, args.metapackages, arch))
 
 
+def get_output_dir_for_arch(arch: str) -> Path:
+	"""Generates the canonical output directory for the provided architecture"""
+	return Path(args.output) / arch
+
+
 def install_binaries(binaries_by_arch, binarylists, manifest):
 	skipped = 0
 
@@ -795,6 +802,8 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 		dir = os.path.join(top,destdir,"binary" if not args.debug else "debug", arch)
 		if not os.access(dir, os.W_OK):
 			os.makedirs(dir)
+
+		out_dir = get_output_dir_for_arch(arch)
 
 		for p, binaries in sorted(arch_binaries.items()):
 			if p in installset:
@@ -828,9 +837,11 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 						)
 					)[0],
 					dest_deb,
-					os.path.join(args.output, arch)
+					str(out_dir)
 				)
 				installset.remove(p)
+
+		prune_files(out_dir)
 
 		for p in installset:
 			#
@@ -847,7 +858,7 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 		# templates/scripts/check-runtime-conflicts.sh) and installed
 		# which is only metadata anyway
 		for pattern in ('*', 'usr/*'):
-			for dir in glob.glob(os.path.join(args.output, arch, pattern)):
+			for dir in glob.glob(str(out_dir / pattern)):
 				if dir.endswith(('/bin', '/sbin', '/usr')):
 					# Don't merge bin, sbin - they
 					# will definitely collide.
@@ -859,7 +870,7 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 				for (dirpath, dirnames, filenames) in os.walk(dir):
 					relative_path = os.path.relpath(
 						dirpath,
-						os.path.join(args.output, arch),
+						str(out_dir),
 					)
 
 					for member in dirnames:
@@ -890,7 +901,7 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 				# ../usr/lib, etc.
 				relative_path = os.path.relpath(
 					dir,
-					os.path.join(args.output, arch),
+					str(out_dir),
 				)
 				merged = os.path.join(
 					args.output,
@@ -906,12 +917,7 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 				)
 
 		for pattern in ('bin/{}-*', 'usr/bin/{}-*'):
-			for exe in glob.glob(
-				os.path.join(
-					args.output, arch,
-					pattern.format(ARCHITECTURES[arch]),
-				)
-			):
+			for exe in glob.glob(str(out_dir / pattern.format(ARCHITECTURES[arch]))):
 				# Populate OUTPUT/usr/bin with symlinks
 				# to OUTPUT/amd64/[usr/]bin/x86_64-linux-gnu-*
 				# and OUTPUT/i386/[usr/]bin/i386-linux-gnu-*
@@ -927,6 +933,15 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 
 	if skipped > 0:
 		print("Skipped downloading %i file(s) that were already present." % skipped)
+
+
+def prune_files(directory: Path) -> None:
+	"""Remove files that are considered to be unnecessary"""
+	try:
+		shutil.rmtree(directory / 'usr' / 'share' / 'doc' / 'nvidia-cg-toolkit' / 'examples')
+	except OSError as e:
+		if e.errno != errno.ENOENT:
+			raise
 
 
 def install_deb (basename, deb, dest_dir):
@@ -951,16 +966,6 @@ def install_deb (basename, deb, dest_dir):
 	#
 	os.chdir(top)
 	subprocess.check_call(['dpkg-deb', '-x', deb, dest_dir])
-	try:
-		shutil.rmtree(
-			os.path.join(
-				dest_dir, 'usr', 'share', 'doc',
-				'nvidia-cg-toolkit', 'examples',
-			)
-		)
-	except OSError as e:
-		if e.errno != errno.ENOENT:
-			raise
 
 
 def install_symbols(dbgsym_by_arch, binarylist, manifest):
@@ -973,6 +978,8 @@ def install_symbols(dbgsym_by_arch, binarylist, manifest):
 		dir = os.path.join(top,destdir, "symbols", arch)
 		if not os.access(dir, os.W_OK):
 			os.makedirs(dir)
+
+		out_dir = get_output_dir_for_arch(arch)
 
 		for p, binaries in sorted(arch_binaries.items()):
 			if not p.endswith('-dbgsym'):
@@ -1037,8 +1044,10 @@ def install_symbols(dbgsym_by_arch, binarylist, manifest):
 							dbgsym.stanza['Filename'])
 					)[0],
 					dest_deb,
-					os.path.join(args.output, arch)
+					str(out_dir)
 				)
+
+		prune_files(out_dir)
 
 	if skipped > 0:
 		print("Skipped downloading %i symbol deb(s) that were already present." % skipped)
