@@ -937,9 +937,26 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 
 def prune_files(directory: Path) -> None:
 	"""Remove files that are considered to be unnecessary"""
+
+	usr_share = directory / 'usr' / 'share'
+	doc = usr_share / 'doc'
 	paths: list[Path] = [
-		# Nvidia cg toolkit examples
-		directory / 'usr' / 'share' / 'doc' / 'nvidia-cg-toolkit' / 'examples',
+		# Nvidia cg toolkit manuals, tutorials and documentation
+		doc / 'nvidia-cg-toolkit' / 'html',
+		*doc.glob('nvidia-cg-toolkit/*.pdf.gz'),
+		# Sample code
+		*doc.glob('**/examples'),
+		# Debian bug reporting scripts
+		usr_share / 'bug',
+		# Debian documentation metadata
+		usr_share / 'doc-base',
+		# Debian QA metadata
+		usr_share / 'lintian',
+		# Programs and utilities manuals
+		usr_share / 'man',
+		# Remove the localized messages that are likely never going to be used.
+		# Keep only "en", because that's the default language we are using.
+		*[x for x in usr_share.glob('locale/*') if x.name != 'en'],
 	]
 
 	for path in paths:
