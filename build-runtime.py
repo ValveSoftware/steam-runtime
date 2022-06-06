@@ -937,11 +937,16 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 
 def prune_files(directory: Path) -> None:
 	"""Remove files that are considered to be unnecessary"""
-	try:
-		shutil.rmtree(directory / 'usr' / 'share' / 'doc' / 'nvidia-cg-toolkit' / 'examples')
-	except OSError as e:
-		if e.errno != errno.ENOENT:
-			raise
+	paths: list[Path] = [
+		# Nvidia cg toolkit examples
+		directory / 'usr' / 'share' / 'doc' / 'nvidia-cg-toolkit' / 'examples',
+	]
+
+	for path in paths:
+		if path.is_dir():
+			shutil.rmtree(path)
+		else:
+			path.unlink(missing_ok=True)
 
 
 def install_deb (basename, deb, dest_dir):
