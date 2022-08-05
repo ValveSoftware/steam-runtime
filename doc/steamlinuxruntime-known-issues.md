@@ -268,7 +268,8 @@ for system-level directories (outside the home directory).
 
 If a directory that will be shared with the container is a symbolic link
 to some other directory, please make sure that the target of the symbolic
-link is also in a directory that is shared with the container.
+link is also in a directory that is
+[shared with the container](#sharing-directories-with-the-container).
 
 When using Proton, please avoid using symbolic links to redirect part of
 an emulated Windows drive to a different location. This can easily break
