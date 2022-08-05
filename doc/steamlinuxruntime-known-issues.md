@@ -75,6 +75,8 @@ kernel.unprivileged\_userns\_clone
 The container runtime has the same
 [user namespace requirements](https://github.com/flatpak/flatpak/wiki/User-namespace-requirements)
 as Flatpak.
+Modern operating systems in their default configuration usually meet these
+requirements.
 
 On Debian 10 or older and SteamOS 2, either the `bubblewrap` package
 from the OS must be installed, or the `kernel.unprivileged_userns_clone`
