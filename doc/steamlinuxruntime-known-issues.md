@@ -24,9 +24,9 @@ the container runtimes, you will need:
 
 * Flatpak 1.12
 
-    * Ubuntu users can get this from
+    * Ubuntu 18.04 and 20.04 users can get this from
         [the PPA](https://launchpad.net/~flatpak/+archive/ubuntu/stable/),
-        and it will be included in Ubuntu 22.04 LTS
+        and it is included in Ubuntu 22.04 LTS
     * Debian 11 users can get this from
         [official backports](https://backports.debian.org/Instructions/),
         and it will be included in Debian 12
