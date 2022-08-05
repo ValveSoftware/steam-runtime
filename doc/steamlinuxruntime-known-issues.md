@@ -232,8 +232,19 @@ shared between the real system and the container:
 * the installation directory for Steam itself
 * the shader cache
 
+Since the 2022-08-04 beta release of "Steam Linux Runtime - soldier"
+and "Steam Linux Runtime - sniper", the following paths are also
+shared:
+
+* `/home`
+* `/media`
+* `/mnt`
+* `/opt`
+* `/run/media`
+* `/srv`
+
 However, directories outside those areas are usually not shared with
-the container. In particular, this affects games that ask you to browse
+the container. In particular, this can affect games that ask you to browse
 for a directory to be used for storage, like Microsoft Flight Simulator.
 
 You can force them to be shared by setting the environment variable
@@ -245,7 +256,7 @@ to a colon-separated list of paths. Paths in
 Example:
 
     export PRESSURE_VESSEL_FILESYSTEMS_RO="$MANGOHUD_CONFIGFILE"
-    export PRESSURE_VESSEL_FILESYSTEMS_RW="/media/ssd:/media/hdd"
+    export PRESSURE_VESSEL_FILESYSTEMS_RW="/hdd:/archival:/stuff/games"
     steam
 
 Symbolic links between directories
