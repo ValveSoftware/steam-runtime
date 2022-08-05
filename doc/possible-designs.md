@@ -313,9 +313,12 @@ Does not solve:
     |  .  |          \- The game
 
 This design is used by the "Steam Linux Runtime - soldier" compatibility
-tool, currently used to run Proton 5.13 or later. It could potentially be
-used to run native Linux games in future, if Steam gains a way to mark
-games as targeting scout rather than soldier.
+tool to run Proton 5.13 or later.
+
+This design is also used by some native Linux games, to run in the
+"Steam Linux Runtime - sniper" compatibility tool.
+Early adopters include Battle for Wesnoth (1.17.x branch) and Retroarch.
+We expect that more native Linux games will be set up like this in future.
 
 This is also what the "Steam Linux Runtime" compatibility tool did
 until mid July 2021, but with a scout container instead of a soldier
@@ -337,8 +340,12 @@ However, games run in a container via the pressure-vessel tool:
       - host system, unrestricted
       - a private directory like ~/.var/app/com.steampowered.App440 per game
 
-As currently deployed, the container runtime is soldier, but it could
-be anything.
+The container runtime can be any source of shared libraries with a suitable
+balance between being up-to-date and being long-term-stable.
+The "Steam Linux Runtime - soldier" compatibility tool uses container
+runtime libraries from Steam Runtime 2 (soldier), based on Debian 10 (2019).
+The "Steam Linux Runtime - sniper" compatibility tool uses container
+runtime libraries from Steam Runtime 3 (sniper), based on Debian 11 (2021).
 
 Entirely solves:
 
