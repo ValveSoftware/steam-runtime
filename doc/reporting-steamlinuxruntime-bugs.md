@@ -8,7 +8,13 @@ It consists of:
 * pressure-vessel, a container launching tool
 * a *runtime*, providing a set of libraries for games to use
 
-There are currently two runtimes available:
+There are currently three runtimes available:
+
+* [Steam Runtime 3 'sniper'](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/sniper/README.md),
+    [app ID 1628350](https://steamdb.info/app/1628350/)
+    is used to run a few native Linux games such as Battle for Wesnoth
+    (1.17.x branch) and Retroarch.
+    We expect it to be used for other newer native Linux games in future.
 
 * [Steam Runtime 2 'soldier'](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/soldier/README.md),
     [app ID 1391110](https://steamdb.info/app/1391110/)
@@ -128,7 +134,8 @@ select a different branch from your Steam Library, in the same way
 you would for a game: follow the same procedure as
 <https://support.steampowered.com/kb_article.php?ref=9847-WHXC-7326>,
 but instead of the properties of CS:GO, change the properties of the
-tool named *Steam Linux Runtime - soldier* or *Steam Linux Runtime*.
+tool named *Steam Linux Runtime - sniper*, *Steam Linux Runtime - soldier*
+or *Steam Linux Runtime*.
 
 The branches that are usually available are:
 
@@ -155,6 +162,7 @@ If something works in one branch but fails in another branch, that's
 very useful information to include in issue reports. Please be as clear
 as you can about which version works and which version fails. You can
 check the current version by looking at
+`SteamLinuxRuntime_sniper/VERSIONS.txt`,
 `SteamLinuxRuntime_soldier/VERSIONS.txt` or
 `SteamLinuxRuntime/VERSIONS.txt`.
 
