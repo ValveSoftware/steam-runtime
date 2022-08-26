@@ -112,6 +112,33 @@ environment variable `DISABLE_VKBASALT=1`.
 ([#381](https://github.com/ValveSoftware/steam-runtime/issues/381),
 [vkBasalt#146](https://github.com/DadSchoorse/vkBasalt/issues/146))
 
+Older NVIDIA drivers
+--------------------
+
+Older versions of the proprietary NVIDIA drivers are incompatible with
+Proton, and have been observed to trigger crashes in the container runtime
+even when not using Proton.
+
+The 390.x drivers are known **not** to work with the container runtime.
+Unfortunately, this is the newest series supporting
+[GPUs based on the Fermi microarchitecture][fermi] (GFxxx, NVC0, 2010-2012),
+such as the GeForce GTX 470 and GTX 590, so users of Fermi or older GPUs
+will be unable to use the container runtime.
+
+[fermi]: https://sources.debian.org/src/nvidia-graphics-drivers/470.129.06-6~deb11u1/debian/end-of-life-390.list/
+
+If your GPU is supported by a later NVIDIA driver version, please upgrade
+to the newer driver.
+For users of [GPUs based on the Kepler microarchitecture][kepler]
+(GKxxx, NVE0, 2012-2014), the [470.x legacy drivers][nvidia-archive] are
+recommended.
+For users of newer GPUs, either 470.x or a newer version is recommended.
+
+[kepler]: https://sources.debian.org/src/nvidia-graphics-drivers/470.129.06-6~deb11u1/debian/end-of-life-470.list/
+[nvidia-archive]: https://www.nvidia.com/en-us/drivers/unix/
+
+([#420](https://github.com/ValveSoftware/steam-runtime/issues/420))
+
 <a name="issue312"></a> Multiple-GPU systems
 --------------------------------------------
 
