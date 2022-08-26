@@ -233,11 +233,6 @@ shared between the real system and the container:
 * the directory containing Proton, if used
 * the installation directory for Steam itself
 * the shader cache
-
-Since the 2022-08-04 beta release of "Steam Linux Runtime - soldier"
-and "Steam Linux Runtime - sniper", the following paths are also
-shared:
-
 * `/home`
 * `/media`
 * `/mnt`
@@ -245,9 +240,11 @@ shared:
 * `/run/media`
 * `/srv`
 
-However, directories outside those areas are usually not shared with
+Directories outside those areas are usually not shared with
 the container. In particular, this can affect games that ask you to browse
-for a directory to be used for storage, like Microsoft Flight Simulator.
+for a directory to be used for storage, like Microsoft Flight Simulator,
+if your large storage directory is mounted at a custom location such
+as `/hdd`.
 
 You can force them to be shared by setting the environment variable
 `PRESSURE_VESSEL_FILESYSTEMS_RO` and/or `PRESSURE_VESSEL_FILESYSTEMS_RW`
