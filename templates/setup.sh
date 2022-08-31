@@ -397,6 +397,8 @@ pin_newer_runtime_libs ()
             # with libcurl-gnutls.so.3, so pin it under both names.
             ln -fns libcurl-gnutls.so.4 "$steam_runtime_path/pinned_libs_$bitness/libcurl-gnutls.so.3"
         fi
+
+        touch "$steam_runtime_path/pinned_libs_$bitness/done"
     done
 
     if [ "$zenity_progress" = true ]; then
@@ -425,8 +427,9 @@ check_pins ()
 
     pins_need_redoing="no"
 
-    # If we had the runtime previously unpacked but never ran the pin code, do it now
-    if [[ ! -d "$steam_runtime_path/pinned_libs_32" ]]
+    # If we had the runtime previously unpacked but never ran the pin code,
+    # or if a previous attempt failed or was cancelled, do it now
+    if ! [[ -e "$steam_runtime_path/pinned_libs_32/done" && -e "$steam_runtime_path/pinned_libs_64/done" ]]
     then
         pins_need_redoing="yes"
     fi
