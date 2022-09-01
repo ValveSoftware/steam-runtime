@@ -9,6 +9,7 @@ set -u
 set -o pipefail
 
 identify_library_abi=
+libcurl_compat_setup=
 
 # Check if set, which is normally done by steam.sh, but will not be set when invoked directly
 if [ -z "${STEAM_ZENITY+x}" ]; then
@@ -210,6 +211,15 @@ pin_newer_runtime_libs ()
     mkdir "$steam_runtime_path/pinned_libs_32"
     mkdir "$steam_runtime_path/pinned_libs_64"
 
+    # Give steamrt a chance to fix libcurl ABI conflicts in a cleverer way.
+    # This will only work for glibc >= 2.30, but if it does work, it will
+    # create a pinned_libs_${bitness}/libcurl.so.4 that is better than
+    # anything we can do from this shell script.
+    if [[ -x "$libcurl_compat_setup" && -n "${STEAM_RUNTIME_USE_LIBCURL_SHIM-}" ]]; then
+        debug "Using shim library to support more than one libcurl ABI"
+        "$libcurl_compat_setup" "$steam_runtime_path"
+    fi
+
     if [[ -n "$identify_library_abi" ]]; then
         mapfile -t output_array < <($identify_library_abi --directory "$steam_runtime_path" --skip-unversioned  2>/dev/null)
     else
@@ -302,6 +312,12 @@ pin_newer_runtime_libs ()
         # Do we have a host library found for the same SONAME?
         if [[ ! -f $host_soname_symlink || $bitness == "unknown" ]]; then continue; fi
 
+        # If libcurl-compat-setup already gave us something better, don't
+        # overwrite it
+        if [ -e "$steam_runtime_path/pinned_libs_$bitness/$soname" ]; then
+            continue
+        fi
+
         host_library=$(readlink -f "$host_soname_symlink")
 
         if [[ ! -f $host_library ]]; then continue; fi
@@ -363,6 +379,10 @@ pin_newer_runtime_libs ()
                 # built against the Steam Runtime will expect the old SONAME
                 # and versioned symbols; make sure we use the Steam Runtime
                 # version.
+                #
+                # (If steamrt-libcurl-compat already fixed this for us, then
+                # it will have created the libcurl.so.4 symlink and as a
+                # result we'll never get here.)
                 runtime_version_newer="forced"
                 ;;
         esac
@@ -580,6 +600,7 @@ main ()
     esac
 
     identify_library_abi="$top/$arch/usr/bin/steam-runtime-identify-library-abi"
+    libcurl_compat_setup="$top/$arch/usr/bin/steam-runtime-libcurl-compat-setup"
 
     if [[ ! -x "$identify_library_abi" ]]; then
         identify_library_abi="$top/$arch/bin/steam-runtime-identify-library-abi"
