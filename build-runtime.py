@@ -288,10 +288,10 @@ def parse_args():
 			args.architectures = sorted(ARCHITECTURES.keys())
 
 	if not args.packages_from and not args.metapackages:
+		args.metapackages = ['steamrt-ld-library-path', 'steamrt-libs']
+
 		if args.suite in ('scout', 'scout_beta'):
-			args.metapackages = ['steamrt-legacy', 'steamrt-libs']
-		else:
-			args.metapackages = ['steamrt-ld-library-path', 'steamrt-libs']
+			args.metapackages.append('steamrt-legacy')
 
 		if args.debug:
 			args.metapackages.append('steamrt-libdevel')
