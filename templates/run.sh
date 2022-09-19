@@ -105,6 +105,14 @@ host_library_paths="${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}$host_library_paths
 
 host_library_paths="$STEAM_RUNTIME/pinned_libs_32:$STEAM_RUNTIME/pinned_libs_64:$host_library_paths"
 
+case "${DEBUGGER-}" in
+    (valgrind* | callgrind* | helgrind* | drd* | memcheck*)
+        if [ -z "${STEAM_RUNTIME_USE_LIBCURL_SHIM-}" ]; then
+            export STEAM_RUNTIME_USE_LIBCURL_SHIM=1
+        fi
+        ;;
+esac
+
 case "${STEAM_RUNTIME_USE_LIBCURL_SHIM-}" in
     (1)
         host_library_paths="$STEAM_RUNTIME/libcurl_compat_32:$STEAM_RUNTIME/libcurl_compat_64:$host_library_paths"
