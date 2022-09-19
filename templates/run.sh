@@ -105,6 +105,17 @@ host_library_paths="${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}$host_library_paths
 
 host_library_paths="$STEAM_RUNTIME/pinned_libs_32:$STEAM_RUNTIME/pinned_libs_64:$host_library_paths"
 
+case "${STEAM_RUNTIME_USE_LIBCURL_SHIM-}" in
+    (1)
+        host_library_paths="$STEAM_RUNTIME/libcurl_compat_32:$STEAM_RUNTIME/libcurl_compat_64:$host_library_paths"
+        ;;
+    (0 | '')
+        ;;
+    (*)
+        log "Warning: \$STEAM_RUNTIME_USE_LIBCURL_SHIM should be 0, 1 or empty, not '$STEAM_RUNTIME_USE_LIBCURL_SHIM'"
+        ;;
+esac
+
 steam_runtime_library_paths="$host_library_paths$STEAM_RUNTIME/lib/i386-linux-gnu:$STEAM_RUNTIME/usr/lib/i386-linux-gnu:$STEAM_RUNTIME/lib/x86_64-linux-gnu:$STEAM_RUNTIME/usr/lib/x86_64-linux-gnu:$STEAM_RUNTIME/lib:$STEAM_RUNTIME/usr/lib"
 
 if [[ -n "${STEAM_COMPAT_INSTALL_PATH-}" && -n "${STEAM_COMPAT_FLAGS-}" ]]; then

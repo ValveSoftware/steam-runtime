@@ -86,6 +86,8 @@ pin_newer_runtime_libs ()
     local soname_fullpath
     local soname_symlink
 
+    rm -rf "$steam_runtime_path/libcurl_compat_32"
+    rm -rf "$steam_runtime_path/libcurl_compat_64"
     rm -rf "$steam_runtime_path/pinned_libs_32"
     rm -rf "$steam_runtime_path/pinned_libs_64"
 
@@ -213,11 +215,12 @@ pin_newer_runtime_libs ()
 
     # Give steamrt a chance to fix libcurl ABI conflicts in a cleverer way.
     # This will only work for glibc >= 2.30, but if it does work, it will
-    # create a pinned_libs_${bitness}/libcurl.so.4 that is better than
-    # anything we can do from this shell script.
-    if [[ -x "$libcurl_compat_setup" && -n "${STEAM_RUNTIME_USE_LIBCURL_SHIM-}" ]]; then
-        debug "Using shim library to support more than one libcurl ABI"
-        "$libcurl_compat_setup" "$steam_runtime_path"
+    # create a libcurl_compat_${bitness}/libcurl.so.4 that is better than
+    # anything we can do from this shell script. This relies on tricky
+    # implementation details of glibc, so we're not using it by default yet
+    # (see run.sh for the opt-in mechanism).
+    if [[ -x "$libcurl_compat_setup" ]] && "$libcurl_compat_setup" --runtime-optional "$steam_runtime_path"; then
+        debug "run.sh can optionally use shim library to support more than one libcurl ABI"
     fi
 
     if [[ -n "$identify_library_abi" ]]; then
@@ -311,12 +314,6 @@ pin_newer_runtime_libs ()
 
         # Do we have a host library found for the same SONAME?
         if [[ ! -f $host_soname_symlink || $bitness == "unknown" ]]; then continue; fi
-
-        # If libcurl-compat-setup already gave us something better, don't
-        # overwrite it
-        if [ -e "$steam_runtime_path/pinned_libs_$bitness/$soname" ]; then
-            continue
-        fi
 
         host_library=$(readlink -f "$host_soname_symlink")
 
