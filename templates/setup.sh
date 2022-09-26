@@ -382,6 +382,17 @@ pin_newer_runtime_libs ()
                 # result we'll never get here.)
                 runtime_version_newer="forced"
                 ;;
+
+            (libcurl-gnutls.so.4)
+                # Similar to the above, the GNUTLS variant of libcurl has
+                # Debian-specific symbol-versioning. We didn't have a
+                # problem with this until recently, because most OSs either
+                # don't ship a GNUTLS variant at all (Red Hat), ship it
+                # without versioned symbols (Arch), or are Debian-derived
+                # (Debian/Ubuntu), but apparently OpenMandriva has a
+                # non-Debian-compatible GNUTLS variant.
+                runtime_version_newer="forced"
+                ;;
         esac
 
         # Print to stderr because zenity is consuming stdout
