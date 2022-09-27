@@ -43,10 +43,10 @@ More information about the
 [container runtime][] is available as part of the
 [steam-runtime-tools documentation][].
 
-[LD_LIBRARY_PATH runtime]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/master/docs/ld-library-path-runtime.md
-[container runtime]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/HEAD/docs/container-runtime.md
+[LD_LIBRARY_PATH runtime]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/ld-library-path-runtime.md
+[container runtime]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/container-runtime.md
 [Proton]: https://github.com/ValveSoftware/Proton/
-[steam-runtime-tools documentation]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/tree/master/docs
+[steam-runtime-tools documentation]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/tree/main/docs
 
 Reporting bugs and issues
 -------------------------
