@@ -67,7 +67,7 @@ Workaround: don't enable SteamLinuxRuntime or Proton 5.13 (or newer)
 on OSs with unusual directory layouts, or use the unofficial Flatpak app
 (requires Flatpak 1.12).
 
-[distro assumptions]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/HEAD/docs/distro-assumptions.md
+[distro assumptions]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/distro-assumptions.md
 
 kernel.unprivileged\_userns\_clone
 ----------------------------------
