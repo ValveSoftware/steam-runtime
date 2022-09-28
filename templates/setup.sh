@@ -287,60 +287,29 @@ pin_newer_runtime_libs ()
 
         soname=${soname_symlink##*/}
 
-        # If we had entries in our arrays, get them
-        if [[ -n "${host_libraries_32[$soname]+isset}" ||
-              -n "${host_libraries_64[$soname]+isset}" ]]
+        if [[ -z $soname_details ]]; then
+            soname_details=$(file -L "$final_library")
+        fi
+
+        if [[ $soname_details == *"32-bit"* || $soname_details == "i386-linux-gnu" ]]
         then
-            if [[ -z $soname_details ]]; then
-                soname_details=$(file -L "$final_library")
-            fi
-
-            if [[ $soname_details == *"32-bit"* || $soname_details == "i386-linux-gnu" ]]
+            if [ -n "${host_libraries_32[$soname]+isset}" ]
             then
-                if [ -n "${host_libraries_32[$soname]+isset}" ]
-                then
-                    host_soname_symlink=${host_libraries_32[$soname]}
-                fi
-                bitness="32"
-            elif [[ $soname_details == *"64-bit"* || $soname_details == "x86_64-linux-gnu" ]]
-            then
-                if [ -n "${host_libraries_64[$soname]+isset}" ]
-                then
-                    host_soname_symlink=${host_libraries_64[$soname]}
-                fi
-                bitness="64"
+                host_soname_symlink=${host_libraries_32[$soname]}
             fi
-       fi
+            bitness="32"
+        elif [[ $soname_details == *"64-bit"* || $soname_details == "x86_64-linux-gnu" ]]
+        then
+            if [ -n "${host_libraries_64[$soname]+isset}" ]
+            then
+                host_soname_symlink=${host_libraries_64[$soname]}
+            fi
+            bitness="64"
+        fi
 
-        # Do we have a host library found for the same SONAME?
-        if [[ ! -f $host_soname_symlink || $bitness == "unknown" ]]; then continue; fi
-
-        host_library=$(readlink -f "$host_soname_symlink")
-
-        if [[ ! -f $host_library ]]; then continue; fi
-
-        #log $soname ${host_libraries[$soname]} $r_lib_major $r_lib_minor $r_lib_third
-
-        # Pretty sure the host library already matches, but we need the rematch anyway
-        if [[ ! $host_library =~ .*\.so.([[:digit:]]+).([[:digit:]]+).([[:digit:]]+)$ ]]; then continue; fi
-
-        h_lib_major=$((10#${BASH_REMATCH[1]}))
-        h_lib_minor=$((10#${BASH_REMATCH[2]}))
-        h_lib_third=$((10#${BASH_REMATCH[3]}))
+        if [[ $bitness == "unknown" ]]; then continue; fi
 
         runtime_version_newer="no"
-
-        if [[ $h_lib_major -lt $r_lib_major ]]; then
-            runtime_version_newer="yes"
-        fi
-
-        if [[ $h_lib_major -eq $r_lib_major && $h_lib_minor -lt $r_lib_minor ]]; then
-            runtime_version_newer="yes"
-        fi
-
-        if [[ $h_lib_major -eq $r_lib_major && $h_lib_minor -eq $r_lib_minor && $h_lib_third -lt $r_lib_third ]]; then
-            runtime_version_newer="yes"
-        fi
 
         # There's a set of libraries that have to work together to yield a working dock
         # We're reasonably convinced our set works well, and only pinning a handful would
@@ -395,15 +364,56 @@ pin_newer_runtime_libs ()
                 ;;
         esac
 
+        # If the library is one of the ones we force, we need to
+        # do that even if we are not aware of an equivalent on the host
+        # system, because continuing uncertainty about the ABIs of these
+        # libraries means that it might have an unexpected SONAME.
+        # For instance, some versions of OpenMandriva's lib64curl-gnutls4
+        # contained a libcurl-gnutls.so.4 with SONAME libcurl.so.4.
+        if [ "$runtime_version_newer" = forced ]; then
+            log "Forced use of runtime version for $bitness-bit $soname"
+            ln -fns "$final_library" "$steam_runtime_path/pinned_libs_$bitness/$soname"
+            # For similar historical reasons, our libcurl*.so.3 are equivalent
+            # to libcurl*.so.4
+            case "$soname" in
+                (libcurl*.so.4)
+                    ln -fns "$final_library" "$steam_runtime_path/pinned_libs_$bitness/${soname%.4}.3"
+                    ;;
+            esac
+            continue
+        fi
+
+        # Do we have a host library found for the same SONAME?
+        if [[ ! -f $host_soname_symlink ]]; then continue; fi
+
+        host_library=$(readlink -f "$host_soname_symlink")
+
+        if [[ ! -f $host_library ]]; then continue; fi
+
+        #log $soname ${host_libraries[$soname]} $r_lib_major $r_lib_minor $r_lib_third
+
+        # Pretty sure the host library already matches, but we need the rematch anyway
+        if [[ ! $host_library =~ .*\.so.([[:digit:]]+).([[:digit:]]+).([[:digit:]]+)$ ]]; then continue; fi
+
+        h_lib_major=$((10#${BASH_REMATCH[1]}))
+        h_lib_minor=$((10#${BASH_REMATCH[2]}))
+        h_lib_third=$((10#${BASH_REMATCH[3]}))
+
+        if [[ $h_lib_major -lt $r_lib_major ]]; then
+            runtime_version_newer="yes"
+        fi
+
+        if [[ $h_lib_major -eq $r_lib_major && $h_lib_minor -lt $r_lib_minor ]]; then
+            runtime_version_newer="yes"
+        fi
+
+        if [[ $h_lib_major -eq $r_lib_major && $h_lib_minor -eq $r_lib_minor && $h_lib_third -lt $r_lib_third ]]; then
+            runtime_version_newer="yes"
+        fi
+
         # Print to stderr because zenity is consuming stdout
         if [[ $runtime_version_newer == "yes" ]]; then
             log "Found newer runtime version for $bitness-bit $soname. Host: $h_lib_major.$h_lib_minor.$h_lib_third Runtime: $r_lib_major.$r_lib_minor.$r_lib_third"
-        elif [[ $runtime_version_newer == "forced" ]]; then
-            log "Forced use of runtime version for $bitness-bit $soname. Host: $h_lib_major.$h_lib_minor.$h_lib_third Runtime: $r_lib_major.$r_lib_minor.$r_lib_third"
-        fi
-
-        if [[ $runtime_version_newer == "yes" \
-              || $runtime_version_newer == "forced" ]]; then
             ln -fns "$final_library" "$steam_runtime_path/pinned_libs_$bitness/$soname"
             # Keep track of the exact version name we saw on the system at pinning time to check later
             >&2 echo "$host_soname_symlink" > "$steam_runtime_path/pinned_libs_$bitness/system_$soname"
@@ -413,19 +423,6 @@ pin_newer_runtime_libs ()
     done
 
     for bitness in 32 64; do
-        if [ -L "$steam_runtime_path/pinned_libs_$bitness/libcurl.so.4" ]; then
-            # The version of libcurl.so.4 in the Steam Runtime is actually
-            # binary-compatible with the older libcurl.so.3 in Debian/Ubuntu,
-            # so pin it under both names.
-            ln -fns libcurl.so.4 "$steam_runtime_path/pinned_libs_$bitness/libcurl.so.3"
-        fi
-
-        if [ -L "$steam_runtime_path/pinned_libs_$bitness/libcurl-gnutls.so.4" ]; then
-            # Similarly, libcurl-gnutls.so.4 is actually binary-compatible
-            # with libcurl-gnutls.so.3, so pin it under both names.
-            ln -fns libcurl-gnutls.so.4 "$steam_runtime_path/pinned_libs_$bitness/libcurl-gnutls.so.3"
-        fi
-
         touch "$steam_runtime_path/pinned_libs_$bitness/done"
     done
 
