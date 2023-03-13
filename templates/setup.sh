@@ -329,16 +329,6 @@ pin_newer_runtime_libs ()
                 fi
                 ;;
 
-            (libdbus-1.so.3 | libgtk-x11-2.0.so.0)
-                # When avoiding #4795 we historically forced these to be the
-                # Steam Runtime copy too. That shouldn't be necessary,
-                # since they are long-term backwards-compatible, but keep
-                # historical behaviour for now.
-                if [ "$bitness" = 32 ]; then
-                    runtime_version_newer="forced"
-                fi
-                ;;
-
             (libcurl.so.4)
                 # libcurl in the Steam Runtime is internally identified
                 # as libcurl.so.4, but with a symlink at libcurl.so.3
