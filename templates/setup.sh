@@ -311,21 +311,34 @@ pin_newer_runtime_libs ()
 
         runtime_version_newer="no"
 
-        # There's a set of libraries that have to work together to yield a working dock
-        # We're reasonably convinced our set works well, and only pinning a handful would
-        # induce a mismatch and break the dock, so always pin all of these for Steam (32-bit)
-        if [[ $bitness == "32" ]]
-        then
-            if [[     "$soname" == "libgtk-x11-2.0.so.0"  || \
-                    "$soname" == "libdbusmenu-gtk.so.4"  || \
-                    "$soname" == "libdbusmenu-glib.so.4" || \
-                    "$soname" == "libdbus-1.so.3" ]]
-            then
-                runtime_version_newer="forced"
-            fi
-        fi
-
         case "$soname" in
+            (libdbusmenu-glib.so.4 | libdbusmenu-gtk.so.4)
+                # These two libraries are built from the same source package
+                # and assume that the other library is a matching version.
+                # If the host system has a newer 32-bit libdbusmenu-glib.so.4
+                # but does not have 32-bit libdbusmenu-gtk.so.4, then our
+                # usual pinning logic would result in using the new
+                # ldm-glib with the old ldm-gtk, a version mismatch with
+                # the symptom of breaking the menu that should appear when
+                # you right-click the Steam tray icon. Avoid this mismatch
+                # by always using the Steam Runtime's copy for the 32-bit
+                # Steam executable.
+                # https://github.com/ValveSoftware/steam-for-linux/issues/4795
+                if [ "$bitness" = 32 ]; then
+                    runtime_version_newer="forced"
+                fi
+                ;;
+
+            (libdbus-1.so.3 | libgtk-x11-2.0.so.0)
+                # When avoiding #4795 we historically forced these to be the
+                # Steam Runtime copy too. That shouldn't be necessary,
+                # since they are long-term backwards-compatible, but keep
+                # historical behaviour for now.
+                if [ "$bitness" = 32 ]; then
+                    runtime_version_newer="forced"
+                fi
+                ;;
+
             (libcurl.so.4)
                 # libcurl in the Steam Runtime is internally identified
                 # as libcurl.so.4, but with a symlink at libcurl.so.3
