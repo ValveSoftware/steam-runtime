@@ -139,21 +139,6 @@ case "${STEAM_RUNTIME_PIN_32BIT_LIBDBUS-}" in
         ;;
 esac
 
-case "${STEAM_RUNTIME_PIN_32BIT_GTK-}" in
-    (1)
-        log "Warning: \$STEAM_RUNTIME_PIN_32BIT_GTK will be removed in a future version."
-        log "Warning: Report a bug at https://github.com/ValveSoftware/steam-runtime/issues if you need this option."
-        host_library_paths="$STEAM_RUNTIME/pinned_32bit_gtk:$host_library_paths"
-        [ -d "$STEAM_RUNTIME/pinned_32bit_gtk" ] || mkdir "$STEAM_RUNTIME/pinned_32bit_gtk"
-        ln -fns ../usr/lib/i386-linux-gnu/libgtk-x11-2.0.so.0 "$STEAM_RUNTIME/pinned_32bit_gtk/"
-        ;;
-    (0 | '')
-        ;;
-    (*)
-        log "Warning: \$STEAM_RUNTIME_PIN_32BIT_GTK should be 0, 1 or empty, not '$STEAM_RUNTIME_PIN_32BIT_GTK'"
-        ;;
-esac
-
 steam_runtime_library_paths="$host_library_paths$STEAM_RUNTIME/lib/i386-linux-gnu:$STEAM_RUNTIME/usr/lib/i386-linux-gnu:$STEAM_RUNTIME/lib/x86_64-linux-gnu:$STEAM_RUNTIME/usr/lib/x86_64-linux-gnu:$STEAM_RUNTIME/lib:$STEAM_RUNTIME/usr/lib"
 
 if [[ -n "${STEAM_COMPAT_INSTALL_PATH-}" && -n "${STEAM_COMPAT_FLAGS-}" ]]; then

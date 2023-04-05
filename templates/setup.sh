@@ -329,6 +329,16 @@ pin_newer_runtime_libs ()
                 fi
                 ;;
 
+            (libgtk-x11-2.0.so.0)
+                # This seems to be tied up with #4795 as well.
+                # Potentially related:
+                # https://github.com/ValveSoftware/steam-for-linux/issues/8577
+                # https://github.com/ValveSoftware/steam-for-linux/issues/9324
+                if [ "$bitness" = 32 ]; then
+                    runtime_version_newer="forced"
+                fi
+                ;;
+
             (libcurl.so.4)
                 # libcurl in the Steam Runtime is internally identified
                 # as libcurl.so.4, but with a symlink at libcurl.so.3
