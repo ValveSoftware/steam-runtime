@@ -38,6 +38,22 @@ debug ()
     fi
 }
 
+progress ()
+{
+    local percent="$1"
+    local zenity_progress="$2"
+
+    # Suppress "broken pipe" error message if any, and fall back to
+    # TUI progress reporting on stderr.
+    if [ "$zenity_progress" = true ] && echo "$percent" 2>/dev/null; then
+        return 0
+    elif [ "$percent" = 100 ]; then
+        echo " 100%   " >&2 || :
+    else
+        printf '\r %d%%    \r' "$percent" >&2 || :
+    fi
+}
+
 pin_newer_runtime_libs ()
 {
     # Set separator to newline just for this function
@@ -55,6 +71,12 @@ pin_newer_runtime_libs ()
     # Second optional argument is the zenity print progress flag
     if [[ "$#" -gt 1 ]]; then
         zenity_progress=$2
+    fi
+
+    if [ "$zenity_progress" = true ]; then
+        # Don't get killed by SIGPIPE if zenity has crashed or otherwise
+        # failed
+        trap '' PIPE || :
     fi
 
     # Associative array; indices are the SONAME, values are final path
@@ -96,11 +118,7 @@ pin_newer_runtime_libs ()
     # The ldconfig, 60% of the total
     # The pinning, 35% of the total
     # And at the end we just print 100%
-    if [ "$zenity_progress" = true ]; then
-        echo 4
-    else
-        printf '\r 4%%    \r' >&2 || :
-    fi
+    progress 4 "$zenity_progress"
 
     if [[ -n "$identify_library_abi" ]]; then
         local executable_output_array
@@ -149,11 +167,7 @@ pin_newer_runtime_libs ()
 
         for ldconfig_output in "${ldconfig_output_array[@]}"
         do
-            if [ "$zenity_progress" = true ]; then
-                echo $(( ( 60 * n_done ) / ldconfig_num + 4 ))
-            else
-                printf '\r %d%%    \r' $(( ( 60 * n_done ) / ldconfig_num + 4 )) >&2 || :
-            fi
+            progress $(( ( 60 * n_done ) / ldconfig_num + 4 )) "$zenity_progress"
             (( n_done=n_done+1 ))
             # If line starts with a leading / and contains :, it's a new path prefix
             if [[ "$ldconfig_output" =~ ^/.*: ]]
@@ -204,11 +218,7 @@ pin_newer_runtime_libs ()
         done
     fi
 
-    if [ "$zenity_progress" = true ]; then
-        echo 64
-    else
-        printf '\r 64%%    \r' >&2 || :
-    fi
+    progress 64 "$zenity_progress"
 
     mkdir "$steam_runtime_path/pinned_libs_32"
     mkdir "$steam_runtime_path/pinned_libs_64"
@@ -247,11 +257,7 @@ pin_newer_runtime_libs ()
                 ;;
         esac
 
-        if [ "$zenity_progress" = true ]; then
-            echo $(( ( 35 * n_done ) / find_num + 64 ))
-        else
-            printf '\r %d%%    \r' $(( ( 35 * n_done ) / find_num + 64 )) >&2 || :
-        fi
+        progress $(( ( 35 * n_done ) / find_num + 64 )) "$zenity_progress"
         (( n_done=n_done+1 ))
 
         if [[ -n "$identify_library_abi" ]]; then
@@ -439,11 +445,7 @@ pin_newer_runtime_libs ()
         touch "$steam_runtime_path/pinned_libs_$bitness/done"
     done
 
-    if [ "$zenity_progress" = true ]; then
-        echo 100
-    else
-        echo " 100%   " >&2 || :
-    fi
+    progress 100 "$zenity_progress"
 }
 
 check_pins ()
