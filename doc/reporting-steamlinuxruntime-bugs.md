@@ -190,7 +190,7 @@ If you know your way around a Linux system, including using terminal
 commands, there are a few things you can try to help us get more
 information about games that aren't working.
 
-### <a name="test-ui" id="test-ui">The test-UI</a>
+### <a name="test-ui" id="test-ui">The test-UI (steam-runtime-launch-options)</a>
 
 pressure-vessel has a very basic user interface for testing and debugging.
 This is a control panel for advanced options, most of which will break
@@ -199,8 +199,9 @@ for everyone already. Use it at your own risk!
 
 To enable this, install PyGObject and the GLib and GTK 3
 GObject-Introspection data (that's `python3-gi` and `gir1.2-gtk-3.0` on
-Debian-derived systems), then run Steam with the `PRESSURE_VESSEL_WRAP_GUI`
-environment variable set to `1`.
+Debian-derived systems), then set a game's launch options to:
+
+    steam-runtime-launch-options -- %command%
 
 This mode does not work in situations where pressure-vessel would have
 been run non-interactively, such as for *Help -> System Information*
