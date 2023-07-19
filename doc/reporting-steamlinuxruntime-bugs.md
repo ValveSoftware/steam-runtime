@@ -12,13 +12,13 @@ There are currently three runtimes available:
 
 * [Steam Runtime 3 'sniper'](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/sniper/README.md),
     [app ID 1628350](https://steamdb.info/app/1628350/)
-    is used to run a few native Linux games such as Battle for Wesnoth
-    (1.17.x branch) and Retroarch.
+    is used to run official releases of Proton 8.0 or newer,
+    and some native Linux games such as Dota 2, Endless Sky and Retroarch.
     We expect it to be used for other newer native Linux games in future.
 
 * [Steam Runtime 2 'soldier'](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/soldier/README.md),
     [app ID 1391110](https://steamdb.info/app/1391110/)
-    is used to run official releases of Proton 5.13 or newer.
+    is used to run official releases of Proton versions 5.13 to 7.0.
 
     It is also used to run native Linux games that target
     Steam Runtime 1 'scout', if the "Steam Linux Runtime" compatibility
