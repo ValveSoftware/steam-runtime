@@ -180,7 +180,7 @@ same ELF `DT_SONAME`) but are in fact not compatible, for example:
     feature or dependency can result in symbols disappearing from
     its ABI, resulting in games that reference those symbols crashing
 
-- There is a fairly subtle interaction between libdbus,
+- There is a fairly subtle interaction between
     libdbusmenu-gtk, libdbusmenu-glib and Ubuntu's patched GTK 2
     that has resulted in these libraries being forced to be taken
     from the Steam Runtime, to avoid breaking the Unity dock
