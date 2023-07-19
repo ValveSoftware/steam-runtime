@@ -5,6 +5,36 @@ Some issues involving the SteamLinuxRuntime framework and the
 pressure-vessel container-launcher are not straightforward to fix.
 Here are some that are likely to affect multiple users:
 
+Labelling of Steam Linux Runtime versions
+-----------------------------------------
+
+The naming used for the various branches of the Steam Linux Runtime is
+not always obvious.
+
+The term "Steam Play" is used in the Steam user interface to refer to
+all compatibility tools, including
+the Steam container runtime framework
+(a mechanism to run native Linux games on older or newer Linux distributions),
+Proton (a mechanism to run Windows games on Linux),
+and potentially other compatibility tools in future.
+
+The term "Steam Linux Runtime" is used in the Steam user interface to refer
+to the container runtime framework.
+
+The "Steam Linux Runtime" compatibility tool (application ID 1070560) is
+actually Steam Linux Runtime version 1,
+which combines Steam Runtime 1 libraries with a Steam Runtime 2 container,
+and is used to run historical native Linux games.
+
+The "Steam Linux Runtime - soldier" tool (application ID 1391110) is
+Steam Linux Runtime version 2,
+which is used to run Proton 5.13 up to 7.0 and is also used internally
+by the "Steam Linux Runtime" tool.
+
+The "Steam Linux Runtime - sniper" tool (application ID 1628350) is
+Steam Linux Runtime version 3,
+which is used to run Proton 8.0 and some newer native Linux games.
+
 Disabling Steam Play disables all Steam Linux Runtime tools
 -----------------------------------------------------------
 
