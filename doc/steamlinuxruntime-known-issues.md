@@ -5,6 +5,56 @@ Some issues involving the SteamLinuxRuntime framework and the
 pressure-vessel container-launcher are not straightforward to fix.
 Here are some that are likely to affect multiple users:
 
+Disabling Steam Play disables all Steam Linux Runtime tools
+-----------------------------------------------------------
+
+In Steam's global settings, there is an option to turn off all Steam Play
+compatibility tools.
+As well as disabling Proton, this also disables Steam Linux Runtime version 3
+(sniper), which will result in games that require this runtime being
+launched in a way that does not work.
+This is a Steam client issue: it should not allow launching the affected
+games in this configuration.
+
+Games affected by this include Dota 2, Endless Sky and Retroarch.
+
+Workaround: in Steam's global Settings window, go to the Compatibility tab
+and ensure that "Enable Steam Play for supported titles" is checked.
+
+([steam-for-linux#9852](https://github.com/ValveSoftware/steam-for-linux/issues/9852))
+
+Switching Steam Linux Runtime branch sometimes requires a Steam restart
+-----------------------------------------------------------------------
+
+When a game that was previously using an older runtime environment switches
+to Steam Linux Runtime version 3 (sniper), sometimes the Steam client will
+continue to run that game in the older runtime until it is restarted.
+This is a Steam client issue: it should switch to the new runtime
+automatically.
+
+Games affected by this include Dota 2, Endless Sky and Retroarch.
+
+Workaround: allow Steam to download the updated game, then completely exit
+from Steam, and launch Steam again. This will only need to be done once:
+all subsequent game launches should work correctly.
+
+([steam-for-linux#9835](https://github.com/ValveSoftware/steam-for-linux/issues/9835))
+
+Forcing use of Steam Linux Runtime 1 for games requiring SLR 3
+--------------------------------------------------------------
+
+It is currently possible for users to configure games to be run
+under Steam Linux Runtime version 1, even if the game requires
+Steam Linux Runtime version 3 (sniper), which often will not work.
+This is a Steam client issue: it should not allow this configuration.
+
+Games affected by this include Dota 2, Endless Sky and Retroarch.
+
+Workaround: in the game's Properties, go to the Compatibility tab and
+ensure that "Force the use of a specific compatibility tool" is unchecked.
+
+([steam-for-linux#9844](https://github.com/ValveSoftware/steam-for-linux/issues/9844))
+
 Flatpak
 -------
 
