@@ -272,7 +272,7 @@ invented when the runtime's base distribution was released.
 ### i386 games work on non-i386 hosts
 
 Older games were compiled for the IA32 ABI (e.g. Debian i386).
-They should work on modern x86-64 systems (e.g. Debian amd64) even
+They should ideally work on modern x86-64 systems (e.g. Debian amd64) even
 if the modern system *does not* provide basic i386 packages like
 glibc and graphics drivers, as long as the container runtime *does*.
 
