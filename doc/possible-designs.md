@@ -313,11 +313,12 @@ Does not solve:
     |  .  |          \- The game
 
 This design is used by the "Steam Linux Runtime - soldier" compatibility
-tool to run Proton 5.13 or later.
+tool to run Proton 5.13 up to 7.0, and the "Steam Linux Runtime - sniper"
+compatibility tool to run Proton 8.0 or later.
 
 This design is also used by some native Linux games, to run in the
 "Steam Linux Runtime - sniper" compatibility tool.
-Early adopters include Battle for Wesnoth (1.17.x branch) and Retroarch.
+Early adopters include Dota 2, Endless Sky and Retroarch.
 We expect that more native Linux games will be set up like this in future.
 
 This is also what the "Steam Linux Runtime" compatibility tool did
@@ -747,7 +748,7 @@ and how it would work. For old (scout) games, it could be:
     [2018 `LD_LIBRARY_PATH` scout runtime + pressure-vessel container](#pressure-vessel-2019)
     above, with graphics drivers from the host system or a Flatpak runtime
     (presumably the same one the Steam client uses)
-  * a Steam Runtime 2 container with the `LD_LIBRARY_PATH`
+  * a Steam Runtime 2 or 3 container with the `LD_LIBRARY_PATH`
     scout runtime inside, similar to
     [2018 `LD_LIBRARY_PATH` scout runtime + newer Platform + scout again](#pressure-vessel-scout-on-srt2)
     above, with graphics drivers from the host system or a Flatpak runtime
@@ -755,17 +756,17 @@ and how it would work. For old (scout) games, it could be:
   * a Flatpak runtime with the `LD_LIBRARY_PATH`
     scout runtime inside, similar to
     [2018 `LD_LIBRARY_PATH` scout runtime + newer Platform + scout again](#pressure-vessel-scout-on-srt2)
-    above but using a Flatpak runtime instead of Steam Runtime 2, with
+    above but using a Flatpak runtime instead of Steam Runtime 2 or 3, with
     graphics drivers from the host system or that same Flatpak runtime
 
-and for new (Steam Runtime 2) games, it could be:
+and for new (Steam Runtime 2 or 3) games, it would be:
 
-  * a pure Steam Runtime 2 container,
+  * a pure Steam Runtime 2 or 3 container,
     [2018 `LD_LIBRARY_PATH` scout runtime + pressure-vessel container](#pressure-vessel-2019),
     with graphics drivers from the host system or a Flatpak runtime
     (as of mid July 2021, this is what is implemented in practice)
   * a Flatpak runtime with an `LD_LIBRARY_PATH`
-    Steam Runtime 2 runtime inside, analogous to
+    Steam Runtime 2 or 3 runtime inside, analogous to
     [Layered `LD_LIBRARY_PATH` runtime](#layered-ldlp) above,
     with graphics drivers from the host system or that same
     Flatpak runtime
@@ -809,7 +810,7 @@ Flatpak 1.12 or later and Proton >= 5.13.
     |  flatpak-portal service <===== IPC from pressure-vessel-wrap
     |       |
     |  |----\-bwrap-----
-    |  |       |      Steam Runtime 2
+    |  |       |      Steam Runtime 2 or 3
     |  |       |
     |  |       \- Proton, if used
     |  |          \- The game
