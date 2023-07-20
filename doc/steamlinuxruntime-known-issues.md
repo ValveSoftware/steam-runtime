@@ -5,6 +5,99 @@ Some issues involving the SteamLinuxRuntime framework and the
 pressure-vessel container-launcher are not straightforward to fix.
 Here are some that are likely to affect multiple users:
 
+Labelling of Steam Linux Runtime versions
+-----------------------------------------
+
+The naming used for the various branches of the Steam Linux Runtime is
+not always obvious.
+
+The term "Steam Play" is used in the Steam user interface to refer to
+all compatibility tools, including
+the Steam container runtime framework
+(a mechanism to run native Linux games on older or newer Linux distributions),
+Proton (a mechanism to run Windows games on Linux),
+and potentially other compatibility tools in future.
+
+The term "Steam Linux Runtime" is used in the Steam user interface to refer
+to the container runtime framework.
+
+The "Steam Linux Runtime" compatibility tool (application ID 1070560) is
+actually Steam Linux Runtime version 1,
+which combines Steam Runtime 1 libraries with a Steam Runtime 2 container,
+and is used to run historical native Linux games.
+
+The "Steam Linux Runtime - soldier" tool (application ID 1391110) is
+Steam Linux Runtime version 2,
+which is used to run Proton 5.13 up to 7.0 and is also used internally
+by the "Steam Linux Runtime" tool.
+
+The "Steam Linux Runtime - sniper" tool (application ID 1628350) is
+Steam Linux Runtime version 3,
+which is used to run Proton 8.0 and some newer native Linux games.
+
+Disabling Steam Play disables all Steam Linux Runtime tools
+-----------------------------------------------------------
+
+In Steam's global settings, there is an option to turn off all Steam Play
+compatibility tools.
+As well as disabling Proton, this also disables Steam Linux Runtime version 3
+(sniper), which will result in games that require this runtime being
+launched in a way that does not work.
+This is a Steam client issue: it should not allow launching the affected
+games in this configuration.
+
+Games affected by this include Dota 2, Endless Sky and Retroarch.
+
+Workaround: in Steam's global Settings window, go to the Compatibility tab
+and ensure that "Enable Steam Play for supported titles" is checked.
+
+([steam-for-linux#9852](https://github.com/ValveSoftware/steam-for-linux/issues/9852))
+
+Switching Steam Linux Runtime branch sometimes requires a Steam restart
+-----------------------------------------------------------------------
+
+When a game that was previously using an older runtime environment switches
+to Steam Linux Runtime version 3 (sniper), sometimes the Steam client will
+continue to run that game in the older runtime until it is restarted.
+This is a Steam client issue: it should switch to the new runtime
+automatically.
+
+Games affected by this include Dota 2, Endless Sky and Retroarch.
+
+Workaround: allow Steam to download the updated game, then completely exit
+from Steam, and launch Steam again. This will only need to be done once:
+all subsequent game launches should work correctly.
+
+([steam-for-linux#9835](https://github.com/ValveSoftware/steam-for-linux/issues/9835))
+
+Forcing use of Steam Linux Runtime 1 for games requiring SLR 3
+--------------------------------------------------------------
+
+It is currently possible for users to configure games to be run
+under Steam Linux Runtime version 1, even if the game requires
+Steam Linux Runtime version 3 (sniper), which often will not work.
+This is a Steam client issue: it should not allow this configuration.
+
+Games affected by this include Dota 2, Endless Sky and Retroarch.
+
+Workaround: in the game's Properties, go to the Compatibility tab and
+ensure that "Force the use of a specific compatibility tool" is unchecked.
+
+([steam-for-linux#9844](https://github.com/ValveSoftware/steam-for-linux/issues/9844))
+
+libbz2 on Fedora
+----------------
+
+If the `nvidia-vaapi-driver` package is installed on a Fedora-derived
+system, then games that depend on `libbz2.so.1.0` and use a Steam
+Linux Runtime-based environment, such as Dota 2, will fail to start.
+This is a container runtime framework issue, which will be fixed in a
+future release.
+
+Workaround: uninstall `nvidia-vaapi-driver`.
+
+([Dota-2#2392](https://github.com/ValveSoftware/Dota-2/issues/2392))
+
 Flatpak
 -------
 

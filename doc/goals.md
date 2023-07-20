@@ -15,7 +15,7 @@ These are things that are already more or less true in the
 ### Old games continue to work
 
 Older games like Half-Life and Portal, developed circa Ubuntu 12.04,
-must work on modern systems like Ubuntu 20.04 without needing ongoing
+must work on modern systems like Ubuntu 22.04 without needing ongoing
 maintenance.
 
 This is particularly important in cases like Torchlight where the
@@ -62,10 +62,10 @@ or the AMD Radeon series), games should work on it.
 
 For recent GPUs, this means the game must be able to use a suitably
 recent driver version that supports the GPU: for example, we cannot
-expect a 2021 GPU to be supported by a 2012 version of Mesa.
+expect a 2023 GPU to be supported by a 2012 version of Mesa.
 
 Meeting this goal is likely to be particularly problematic in designs
-that would require us to compile a 2021 graphics driver in the 2012
+that would require us to compile a 2023 graphics driver in the 2012
 runtime/SDK environment.
 
 ### Proprietary (NVIDIA) graphics drivers continue to work
@@ -104,15 +104,15 @@ introduce a new runtime for games and support it longer-term, we should
 aim higher than 2015.
 
 Steam Runtime version 2, 'soldier', is based on Debian 10 'buster',
-released in 2019. It is used to run Proton 5.13 and later versions.
-Running native Linux games in a "pure" soldier container is not
-currently possible, but would be a good improvement.
+released in 2019. It is used to run Proton 5.13 up to 7.0.
 
 Steam Runtime version 3, 'sniper', is based on Debian 11 'bullseye',
 released in 2021. It is otherwise similar to soldier.
+It is used to run Proton 8.0 or later, and some native Linux games
+such as Dota 2, Endless Sky and Retroarch.
 
 Similarly, Steam Runtime version 4, 'medic', is likely to be based on
-Debian 12 'bookworm', which is expected to be released in 2023.
+Debian 12 'bookworm', which was released in 2023.
 
 #### New glibc
 
@@ -180,7 +180,7 @@ same ELF `DT_SONAME`) but are in fact not compatible, for example:
     feature or dependency can result in symbols disappearing from
     its ABI, resulting in games that reference those symbols crashing
 
-- There is a fairly subtle interaction between libdbus,
+- There is a fairly subtle interaction between
     libdbusmenu-gtk, libdbusmenu-glib and Ubuntu's patched GTK 2
     that has resulted in these libraries being forced to be taken
     from the Steam Runtime, to avoid breaking the Unity dock
@@ -272,7 +272,7 @@ invented when the runtime's base distribution was released.
 ### i386 games work on non-i386 hosts
 
 Older games were compiled for the IA32 ABI (e.g. Debian i386).
-They should work on modern x86-64 systems (e.g. Debian amd64) even
+They should ideally work on modern x86-64 systems (e.g. Debian amd64) even
 if the modern system *does not* provide basic i386 packages like
 glibc and graphics drivers, as long as the container runtime *does*.
 
