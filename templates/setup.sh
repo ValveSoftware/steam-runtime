@@ -430,6 +430,12 @@ pin_newer_runtime_libs ()
             runtime_version_newer="yes"
         fi
 
+        if [[ "$soname" == libudev.so.0 && "$h_lib_major.$h_lib_minor.$h_lib_third" == 0.0.9999 ]]; then
+            # Work around https://github.com/archlinux/libudev0-shim/issues/4
+            debug "Treating libudev0-shim as newer than runtime version"
+            runtime_version_newer="no"
+        fi
+
         # Print to stderr because zenity is consuming stdout
         if [[ $runtime_version_newer == "yes" ]]; then
             log "Found newer runtime version for $bitness-bit $soname. Host: $h_lib_major.$h_lib_minor.$h_lib_third Runtime: $r_lib_major.$r_lib_minor.$r_lib_third"
