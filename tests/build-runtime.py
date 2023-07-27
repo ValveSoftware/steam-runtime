@@ -42,7 +42,12 @@ class TestBuildRuntime(unittest.TestCase):
         self.assertEqual(o['packages_from'], [])
         self.assertEqual(
             sorted(o['metapackages']),
-            sorted(['steamrt-libs', 'steamrt-legacy']))
+            sorted([
+                'steamrt-libs',
+                'steamrt-ld-library-path',
+                'steamrt-legacy',
+            ]),
+        )
 
     def test_architectures(self):
         j = subprocess.check_output([
