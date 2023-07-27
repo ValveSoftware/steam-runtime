@@ -1,3 +1,0 @@
-Tests: setup-chroot.py
-Depends: bsdutils, debootstrap, python3, python3-debian, schroot, sudo
-Restrictions: allow-stderr, breaks-testbed, isolation-machine, needs-root

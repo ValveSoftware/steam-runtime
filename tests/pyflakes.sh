@@ -13,7 +13,6 @@ if [ "${PYFLAKES:=pyflakes3}" = false ] || \
     echo "1..0 # SKIP pyflakes3 not found"
 elif "${PYFLAKES}" \
     ./*.py \
-    debian/tests/*.py \
     tests/*.py \
     >&2; then
     echo "1..1"

@@ -3,7 +3,6 @@
 SCRIPT="$(readlink -f "$0")"
 SCRIPTNAME="$(basename "$SCRIPT")"
 SCRIPT_DIR="$(dirname "$SCRIPT")"
-BOOTSTRAP_SCRIPT="$SCRIPT_DIR/scripts/bootstrap-runtime.sh"
 LOGFILE=""
 CHROOT_PREFIX="steamrt_"
 CHROOT_DIR="/var/chroots"
@@ -40,8 +39,8 @@ prebuild_chroot()
 	local name
 
 	# install some packages
-	echo -e "\\n${COLOR_ON}Installing debootstrap schroot...${COLOR_OFF}"
-	sudo -E apt-get install -y debootstrap schroot
+	echo -e "\\n${COLOR_ON}Installing schroot...${COLOR_OFF}"
+	sudo -E apt-get install -y schroot
 
 	# Check if there are any active schroot sessions right now and warn if so...
 	schroot_list=$(schroot --list --all-sessions | head -n 1)
@@ -107,72 +106,6 @@ copy_apt_settings ()
 	if [ -f /etc/apt/apt.conf ]; then sudo cp "/etc/apt/apt.conf" "$sysroot/etc/apt"; fi
 }
 
-build_chroot()
-{
-	# build_chroot {--amd64 | --i386} [setup options...]
-	# Build a chroot for the specified architecture.
-
-	# Check that we are running in the right environment
-	if [[ ! -x $BOOTSTRAP_SCRIPT ]]; then
-		echo >&2 "!! Required helper script not found: \"$BOOTSTRAP_SCRIPT\""
-	fi
-
-	case "$1" in
-		"--i386" )
-			pkg="i386"
-			personality="linux32"
-			;;
-		"--amd64" )
-			pkg="amd64"
-			personality="linux"
-			;;
-		* )
-			echo "Error: Unrecognized argument: $1"
-			exit 1
-			;;
-	esac
-
-	shift
-	# Remaining arguments are for $BOOTSTRAP_SCRIPT
-
-	local name
-
-	if [ -n "$CHROOT_NAME" ]; then
-		name="$CHROOT_NAME"
-	else
-		name="${CHROOT_PREFIX}${pkg}"
-	fi
-
-	# blow away existing directories and recreate empty ones
-	echo -e "\\n${COLOR_ON}Creating ${CHROOT_DIR}/${name}..."
-	sudo rm -rf "${CHROOT_DIR}/${name}"
-	sudo mkdir -p "${CHROOT_DIR}/${name}"
-
-	# Create our schroot .conf file
-	echo -e "\\n${COLOR_ON}Creating /etc/schroot/chroot.d/${name}.conf...${COLOR_OFF}"
-	printf '[%s]\ndescription=Ubuntu 12.04 Precise for %s\ndirectory=%s/%s\npersonality=%s\ngroups=sudo\nroot-groups=sudo\npreserve-environment=true\ntype=directory\n' "${name}" "${pkg}" "${CHROOT_DIR}" "${name}" "${personality}" | sudo tee "/etc/schroot/chroot.d/${name}.conf"
-
-	# Create our chroot
-	echo -e "\\n${COLOR_ON}Bootstrap the chroot...${COLOR_OFF}"
-	sudo -E debootstrap --arch="${pkg}" --include=wget --keyring="${SCRIPT_DIR}/ubuntu-archive-keyring.gpg" precise "${CHROOT_DIR}/${name}" http://old-releases.ubuntu.com/ubuntu/
-
-	copy_apt_settings "${CHROOT_DIR}/${name}"
-
-	echo -e "\\n${COLOR_ON}Running ${BOOTSTRAP_SCRIPT}$(printf ' %q' "$@")...${COLOR_OFF}"
-
-	# The chroot has access to /tmp so copy the script there and run it with --configure
-	TMPNAME="$(basename "$BOOTSTRAP_SCRIPT")"
-	TMPNAME="${TMPNAME%.*}-$$.sh"
-	cp -f "$BOOTSTRAP_SCRIPT" "/tmp/${TMPNAME}"
-	chmod +x "/tmp/${TMPNAME}"
-	schroot --chroot ${name} -d /tmp --user root -- "/tmp/${TMPNAME}" --chroot "$@"
-	rm -f "/tmp/${TMPNAME}"
-	cp -f "$SCRIPT_DIR/write-manifest" "/tmp/${TMPNAME}"
-	chmod +x "/tmp/${TMPNAME}"
-	schroot --chroot ${name} -d /tmp --user root -- "/tmp/${TMPNAME}" /
-	rm -f "/tmp/${TMPNAME}"
-}
-
 untar_chroot ()
 {
 	# untar_chroot {--amd64 | --i386} TARBALL
@@ -221,8 +154,7 @@ untar_chroot ()
 
 	copy_apt_settings "$sysroot"
 
-	# We don't run $BOOTSTRAP_SCRIPT here, so reimplement
-	# --extra-apt-source.
+	# Implement --extra-apt-source
 	if [ -n "${extra_apt_sources+set}" ]; then
 		for line in "${extra_apt_sources[@]}"; do
 			printf '%s\n' "$line"
@@ -257,7 +189,7 @@ usage()
 		exec >&2
 	fi
 
-	echo "Usage: $0 [--beta | --suite SUITE] [--name NAME] [--extra-apt-source 'deb http://MIRROR SUITE COMPONENT...'] [--output-dir <DIRNAME>] [--logfile FILE] [--tarball TARBALL] --i386 | --amd64"
+	echo "Usage: $0 [--beta | --suite SUITE] [--name NAME] [--extra-apt-source 'deb http://MIRROR SUITE COMPONENT...'] [--output-dir <DIRNAME>] [--logfile FILE] --tarball TARBALL --i386|--amd64"
 	exit "$1"
 }
 
@@ -270,7 +202,7 @@ main()
 	eval set -- "$getopt_temp"
 	unset getopt_temp
 
-	local -a arch_arguments=()
+	local arch=
 	local -a setup_arguments=()
 	local suite=scout
 	local suite_suffix=
@@ -287,7 +219,11 @@ main()
 				;;
 
 			(--amd64|--i386)
-				arch_arguments+=("$1")
+				if [ -n "$arch" ] && [ "$arch" != "$1" ]; then
+					echo "Error: $1 conflicts with $arch" >&2
+					usage 2
+				fi
+				arch="$1"
 				shift
 				;;
 
@@ -367,56 +303,20 @@ main()
 
 	CHROOT_PREFIX="${CHROOT_PREFIX}${suite}${suite_suffix}_"
 
-	case "$suite" in
-		(scout*)
-			# We still support doing this the hard way for scout but show a
-			# deprecated warning.
-			if [ -z "$tarball" ]; then
-				echo "WARNING: The usage of this script without the option \"--tarball\" " \
-				     "is deprecated and should not be used anymore!" >&2
-				echo "Use --tarball to provide a pre-prepared sysroot as explained in the " \
-				     "\"Using schroot\" section of the README.md" >&2
-			fi
-			;;
-
-		(demoman*|engineer*|heavy*|medic*|pyro*|sniper*|soldier*|spy*)
-			# The other TF2 class names are reserved for future Steam Runtime
-			# versions, which will almost certainly be based on a suite newer
-			# than Ubuntu 12.04 'precise', and will almost certainly break
-			# assumptions made by scripts/bootstrap-runtime.sh. Require
-			# a pre-prepared sysroot tarball instead.
-			if [ -z "$tarball" ]; then
-				echo "This script cannot bootstrap chroots for future runtime versions." >&2
-				echo "Use --tarball to provide a pre-prepared sysroot." >&2
-				usage 2
-			fi
-			;;
-	esac
-
-	if [ -z "${arch_arguments+set}" ]; then
+	if [ -z "$tarball" ]; then
+		echo "This script no longer bootstraps chroots from first principles." >&2
+		echo "Use --tarball to provide a pre-prepared sysroot." >&2
 		usage 2
 	fi
 
-	if [ "${arch_arguments[1]+set}" ] && [ -n "$tarball" ]; then
-		echo "Only one of --amd64 or --i386 can be combined with --tarball" >&2
-		usage 2
-	fi
-
-	if [ "${arch_arguments[1]+set}" ] && [ -n "$CHROOT_NAME" ]; then
-		echo "Only one of --amd64 or --i386 can be combined with --name" >&2
+	if [ -z "$arch" ]; then
 		usage 2
 	fi
 
 	# Building root(s)
-	prebuild_chroot "${arch_arguments[@]}"
+	prebuild_chroot "$arch"
 	trap cleanup EXIT
-	for var in "${arch_arguments[@]}"; do
-		if [ -n "$tarball" ]; then
-			untar_chroot "$var" "$tarball"
-		else
-			build_chroot "$var" ${setup_arguments+"${setup_arguments[@]}"}
-		fi
-	done
+	untar_chroot "$arch" "$tarball"
 	trap - EXIT
 
 	echo -e "\\n${COLOR_ON}Done...${COLOR_OFF}"

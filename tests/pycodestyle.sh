@@ -33,7 +33,6 @@ else
 fi
 
 if "${PYCODESTYLE}" \
-    debian/tests/*.py \
     tests/*.py \
     >&2; then
     echo "ok 2 - $PYCODESTYLE reported no issues"

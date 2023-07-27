@@ -13,7 +13,6 @@ export MYPYPATH="${PYTHONPATH:=$(pwd)}"
 i=0
 for script in \
     build-runtime.py \
-    debian/tests/*.py \
     tests/*.py \
 ; do
     i=$((i + 1))
