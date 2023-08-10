@@ -125,6 +125,27 @@ which uses the freedesktop.org runtime instead of Steam Runtime 2.
 [flatpak#3797](https://github.com/flatpak/flatpak/issues/3797),
 [flatpak#4286](https://github.com/flatpak/flatpak/issues/4286))
 
+Snap app limitations
+--------------------
+
+Steam has been packaged as a Snap app by Canonical, but this Snap app is
+not officially supported by Valve.
+
+Using the Steam container runtimes from inside a Snap sandbox is
+relatively fragile, because its AppArmor profile depends on specific
+paths and operations. Some of the paths used are implementation details
+of Steam which can change over time, and some are likely to be different
+for different user configurations.
+
+In particular, installing the container runtimes into a Steam library
+outside `/home` is known not to work in the Snap app.
+
+([#586](https://github.com/ValveSoftware/steam-runtime/issues/586),
+[#602](https://github.com/ValveSoftware/steam-runtime/issues/602),
+[steam-snap#27](https://github.com/canonical/steam-snap/issues/27),
+[steam-snap#126](https://github.com/canonical/steam-snap/issues/126),
+[steam-snap#289](https://github.com/canonical/steam-snap/issues/289))
+
 Non-FHS operating systems
 -------------------------
 
