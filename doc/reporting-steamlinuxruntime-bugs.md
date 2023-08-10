@@ -79,7 +79,9 @@ log. The easiest way to get this is:
 
 * Find the Steam Library directory where the runtime is installed,
     typically `~/.local/share/Steam/steamapps/common/SteamLinuxRuntime_soldier`
-    for soldier
+    for Steam Runtime 2 'soldier' or
+    `~/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper`
+    for Steam Runtime 3 'sniper'
 
 * Version numbers for some important runtime components are in `VERSIONS.txt`
 
