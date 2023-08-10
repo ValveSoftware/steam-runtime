@@ -85,19 +85,6 @@ ensure that "Force the use of a specific compatibility tool" is unchecked.
 
 ([steam-for-linux#9844](https://github.com/ValveSoftware/steam-for-linux/issues/9844))
 
-libbz2 on Fedora
-----------------
-
-If the `nvidia-vaapi-driver` package is installed on a Fedora-derived
-system, then games that depend on `libbz2.so.1.0` and use a Steam
-Linux Runtime-based environment, such as Dota 2, will fail to start.
-This is a container runtime framework issue, which will be fixed in a
-future release.
-
-Workaround: uninstall `nvidia-vaapi-driver`.
-
-([Dota-2#2392](https://github.com/ValveSoftware/Dota-2/issues/2392))
-
 Flatpak
 -------
 
