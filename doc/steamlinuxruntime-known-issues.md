@@ -85,8 +85,11 @@ ensure that "Force the use of a specific compatibility tool" is unchecked.
 
 ([steam-for-linux#9844](https://github.com/ValveSoftware/steam-for-linux/issues/9844))
 
-Flatpak
--------
+Flatpak app limitations
+-----------------------
+
+Steam has been packaged as a Flatpak app by the Flathub community, but
+this Flatpak app is not officially supported by Valve.
 
 Using the Steam container runtimes from inside a Flatpak sandbox requires
 features that are not yet available in all Linux distributions. To use
@@ -102,14 +105,14 @@ the container runtimes, you will need:
         but not `linux-hardened` and `bubblewrap-suid`
     * Most other recent distributions, e.g. Ubuntu
 
-* Flatpak 1.12
+* Flatpak 1.12 or later
 
     * Ubuntu 18.04 and 20.04 users can get this from
         [the PPA](https://launchpad.net/~flatpak/+archive/ubuntu/stable/),
         and it is included in Ubuntu 22.04 LTS
     * Debian 11 users can get this from
         [official backports](https://backports.debian.org/Instructions/),
-        and it will be included in Debian 12
+        and it is included in Debian 12
 
 As a workaround, users of older versions of Flatpak can try using
 [a community build of Proton](https://github.com/flathub/com.valvesoftware.Steam.CompatibilityTool.Proton)
