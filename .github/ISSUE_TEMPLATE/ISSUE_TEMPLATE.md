@@ -8,8 +8,7 @@ about: Issues with the Steam runtime
 
 * Steam Runtime Version: 
 * Distribution (e.g. Ubuntu 18.04): 
-* Link to your full system information (Help -> System Information) in a [Gist](https://gist.github.com/): 
-  <!-- Please wait for the extended system infomation to be collected by Steam -->
+* Link to your full system information (Help -> Steam Runtime Diagnostics) in a [Gist](https://gist.github.com/): 
 * Have you checked for system updates?: [Yes/No]
 * What compatibility tool are you using?: [None / Steam Linux Runtime / Proton 5.13+ / older Proton]
 * What versions are listed in `steamapps/common/SteamLinuxRuntime/VERSIONS.txt`?
