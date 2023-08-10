@@ -49,10 +49,16 @@ Essential information
 ---------------------
 
 We will need to know some information about your system. Please make sure
-to include full system information (*Help -> System Information*) in your
-report. If the text ends with a line like "The runtime information tool
-is preparing a report, please wait...", please wait for it to be
-replaced by the full version of the report.
+to include full system information in your report.
+In the desktop Steam user interface, this can be copied from
+*Help -> Steam Runtime Diagnostics*. Wait for the diagnostic tool to run,
+then click on *Copy* to copy it to the clipboard, and paste it into a
+text editor. The same information is also saved in a file named
+`steam-runtime-system-info-*.txt` in `~/.steam/root/logs`.
+
+In Big Picture mode or on the Steam Deck, the same information is in
+*Menu -> Settings -> System*: scroll to the end, and click on
+*Run Diagnostics*.
 
 When reporting bugs in the container runtime, please include a debug
 log. Since version 0.20210105.0, the easiest way to get this is:
@@ -165,9 +171,9 @@ check the current version by looking at
 `SteamLinuxRuntime_soldier/VERSIONS.txt` or
 `SteamLinuxRuntime/VERSIONS.txt`.
 
-It is very useful if you can show us a System Information report and a
-log for the version that fails, then switch to the version that works
-(without changing anything else!) and capture a new System Information
+It is very useful if you can show us a Steam Runtime Diagnostics report
+and a log for the version that fails, then switch to the version that works
+(without changing anything else!) and capture a new Steam Runtime Diagnostics
 report and a new log, so that we can compare them.
 
 Common issues and workarounds
@@ -220,7 +226,7 @@ that would have been used to run the game. You can use `"$@"` (including
 the double quotes!) to run the game inside the interactive shell.
 
 This mode does not work in situations where pressure-vessel would have
-been run non-interactively, such as for *Help -> System Information*.
+been run non-interactively, such as for *Help -> Steam Runtime Diagnostics*.
 It partially works for Proton games: the shell will not open until the
 game's setup commands have finished.
 
