@@ -61,7 +61,7 @@ In Big Picture mode or on the Steam Deck, the same information is in
 *Run Diagnostics*.
 
 When reporting bugs in the container runtime, please include a debug
-log. Since version 0.20210105.0, the easiest way to get this is:
+log. The easiest way to get this is:
 
 * Completely exit from Steam
 
@@ -90,12 +90,8 @@ log. Since version 0.20210105.0, the easiest way to get this is:
 * For native Linux games that use scout, the version number in
     `~/.steam/root/ubuntu12_32/steam-runtime/version.txt is also important
 
-For Proton games, you can combine this with `PROTON_LOG=1` to capture a
-Proton log file too.
-
-For Proton games, putting `STEAM_LINUX_RUNTIME_LOG=1` in the game's
-*Launch Options* will not give us all the information we need, so please
-set it globally as described here.
+For Proton games, you can combine `STEAM_LINUX_RUNTIME_LOG=1` with
+`PROTON_LOG=1` to capture a Proton log file too.
 
 You can censor the system information and the log (usernames, directory
 names etc.) if you need to, as long as it's obvious what you have
@@ -105,7 +101,7 @@ directory, please keep it obvious that they are different - for example
 replace one with `/media/REDACTED1` and the other with
 `/media/REDACTED2` in a consistent way.
 
-### Older method
+### If no log is produced
 
 If pressure-vessel is crashing on startup and does not produce a log,
 please do this instead:
@@ -114,7 +110,7 @@ please do this instead:
 
 * Run a terminal emulator such as GNOME Terminal, Konsole or xterm
 
-* Run Steam with the `PRESSURE_VESSEL_VERBOSE` environment variable
+* Run Steam with the `STEAM_LINUX_RUNTIME_VERBOSE` environment variable
     set to 1
 
 * Capture Steam's output in a file
@@ -124,12 +120,9 @@ please do this instead:
 * Exit from Steam
 
 For example, this command will leave Steam output in a file named
-`pressure-vessel.log` in your home directory:
+`slr.log` in your home directory:
 
-    PRESSURE_VESSEL_VERBOSE=1 steam 2>&1 | tee ~/pressure-vessel.log
-
-Again, doing this via the *Launch Options* does not provide all the
-information we need for Proton games.
+    STEAM_LINUX_RUNTIME_VERBOSE=1 steam 2>&1 | tee ~/slr.log
 
 Using a beta or an older version
 --------------------------------
