@@ -76,30 +76,34 @@ set_bin_path()
     export PATH="${unique_steam_runtime_paths}${PATH}"
 }
 
-host_library_paths=
+set_bin_path
 
 if [[ "${STEAM_RUNTIME_PREFER_HOST_LIBRARIES-}" == "0" ]]; then
     log "STEAM_RUNTIME_PREFER_HOST_LIBRARIES=0 is deprecated, and no longer has an effect."
 fi
 
-exit_status=0
-ldconfig_output=$(/sbin/ldconfig -XNv 2> /dev/null; exit $?) || exit_status=$?
-if [[ $exit_status != 0 ]]; then
-    log "Warning: An unexpected error occurred while executing \"/sbin/ldconfig -XNv\", the exit status was $exit_status"
-fi
-
-# Always prefer host libraries over non-pinned Runtime libraries.
-# (In older versions this was conditional, but if we don't do this,
-# it usually breaks Mesa drivers' dependencies.)
-while read -r line; do
-    # If line starts with a leading / and contains :, it's a new path prefix
-    if [[ "$line" =~ ^/.*: ]]
-    then
-        library_path_prefix=$(echo "$line" | cut -d: -f1)
-
-        host_library_paths=$host_library_paths$library_path_prefix:
+if host_library_paths="$(steam-runtime-identify-library-abi --ldconfig-paths --one-line --quiet)"; then
+    # Code below assumes a trailing ":"
+    host_library_paths="${host_library_paths}:"
+else
+    log "steam-runtime-identify-library-abi --ldconfig-paths failed, falling back to ldconfig"
+    host_library_paths=
+    exit_status=0
+    ldconfig_output=$(/sbin/ldconfig -XNv 2> /dev/null; exit $?) || exit_status=$?
+    if [[ $exit_status != 0 ]]; then
+        log "Warning: An unexpected error occurred while executing \"/sbin/ldconfig -XNv\", the exit status was $exit_status"
     fi
-done <<< "$ldconfig_output"
+
+    while read -r line; do
+        # If line starts with a leading / and contains :, it's a new path prefix
+        if [[ "$line" =~ ^/.*: ]]
+        then
+            library_path_prefix=$(echo "$line" | cut -d: -f1)
+
+            host_library_paths=$host_library_paths$library_path_prefix:
+        fi
+    done <<< "$ldconfig_output"
+fi
 
 host_library_paths="${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}$host_library_paths"
 
@@ -139,6 +143,9 @@ case "${STEAM_RUNTIME_PIN_32BIT_LIBDBUS-}" in
         ;;
 esac
 
+# Always prefer host libraries over non-pinned Runtime libraries.
+# (In older versions this was conditional, but if we don't do this,
+# it usually breaks Mesa drivers' dependencies.)
 steam_runtime_library_paths="$host_library_paths$STEAM_RUNTIME/lib/i386-linux-gnu:$STEAM_RUNTIME/usr/lib/i386-linux-gnu:$STEAM_RUNTIME/lib/x86_64-linux-gnu:$STEAM_RUNTIME/usr/lib/x86_64-linux-gnu:$STEAM_RUNTIME/lib:$STEAM_RUNTIME/usr/lib"
 
 if [[ -n "${STEAM_COMPAT_INSTALL_PATH-}" && -n "${STEAM_COMPAT_FLAGS-}" ]]; then
@@ -158,8 +165,6 @@ if [ "$1" = "--print-steam-runtime-library-paths" ]; then
 fi
 
 export LD_LIBRARY_PATH="$steam_runtime_library_paths"
-
-set_bin_path
 
 exec "$@"
 
