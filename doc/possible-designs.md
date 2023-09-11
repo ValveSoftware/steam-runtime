@@ -312,16 +312,16 @@ Does not solve:
     |  .  |       \- Proton (if used)
     |  .  |          \- The game
 
-This design is used by the "Steam Linux Runtime - soldier" compatibility
-tool to run Proton 5.13 up to 7.0, and the "Steam Linux Runtime - sniper"
+This design is used by the "Steam Linux Runtime 2.0 (soldier)" compatibility
+tool to run Proton 5.13 up to 7.0, and the "Steam Linux Runtime 3.0 (sniper)"
 compatibility tool to run Proton 8.0 or later.
 
 This design is also used by some native Linux games, to run in the
-"Steam Linux Runtime - sniper" compatibility tool.
+"Steam Linux Runtime 3.0 (sniper)" compatibility tool.
 Early adopters include Dota 2, Endless Sky and Retroarch.
 We expect that more native Linux games will be set up like this in future.
 
-This is also what the "Steam Linux Runtime" compatibility tool did
+This is also what the "Steam Linux Runtime 1.0 (scout)" compatibility tool did
 until mid July 2021, but with a scout container instead of a soldier
 container. Since mid July 2021,
 [a different design](#pressure-vessel-scout-on-srt2)
@@ -343,9 +343,9 @@ However, games run in a container via the pressure-vessel tool:
 
 The container runtime can be any source of shared libraries with a suitable
 balance between being up-to-date and being long-term-stable.
-The "Steam Linux Runtime - soldier" compatibility tool uses container
+The "Steam Linux Runtime 2.0 (soldier)" compatibility tool uses container
 runtime libraries from Steam Runtime 2 (soldier), based on Debian 10 (2019).
-The "Steam Linux Runtime - sniper" compatibility tool uses container
+The "Steam Linux Runtime 3.0 (sniper)" compatibility tool uses container
 runtime libraries from Steam Runtime 3 (sniper), based on Debian 11 (2021).
 
 Entirely solves:
@@ -611,7 +611,7 @@ Would not solve:
 
 ## <a name="pressure-vessel-scout-on-srt2">2018 `LD_LIBRARY_PATH` scout runtime + newer Platform + scout again</a>
 
-This design is used by the "Steam Linux Runtime" compatibility
+This design is used by the "Steam Linux Runtime 1.0 (scout)" compatibility
 tool since mid July 2021. It is referred to internally as the
 "scout-on-soldier" runtime.
 
@@ -867,7 +867,7 @@ Does not solve:
 
 ### Steam Runtime 2 container with `LD_LIBRARY_PATH` runtime inside
 
-This design is used by the "Steam Linux Runtime" compatibility
+This design is used by the "Steam Linux Runtime 1.0 (scout)" compatibility
 tool since mid July 2021, when combined with Flatpak 1.12 or later.
 
     |----------------------------

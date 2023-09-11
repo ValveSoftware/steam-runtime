@@ -81,9 +81,9 @@ downloaded to your Steam library if you install a game or a version of
 Proton that requires it.
 They can also be downloaded by opening `steam://` links with Steam:
 
-* Steam Linux Runtime (scout-compatible): `steam steam://install/1070560`
-* Steam Linux Runtime - soldier: `steam steam://install/1391110`
-* Steam Linux Runtime - sniper: `steam steam://install/1628350`
+* Steam Linux Runtime 1.0 (scout): `steam steam://install/1070560`
+* Steam Linux Runtime 2.0 (soldier): `steam steam://install/1391110`
+* Steam Linux Runtime 3.0 (sniper): `steam steam://install/1628350`
 
 All the software that makes up the Steam Runtime is available in both source and binary form in the Steam Runtime repository [https://repo.steampowered.com/steamrt](https://repo.steampowered.com/steamrt "")
 
