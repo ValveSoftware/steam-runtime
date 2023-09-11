@@ -10,21 +10,21 @@ It consists of:
 
 There are currently three runtimes available:
 
-* [Steam Runtime 3 'sniper'](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/sniper/README.md),
+* [Steam Linux Runtime 3.0 (sniper)](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/sniper/README.md),
     [app ID 1628350](https://steamdb.info/app/1628350/)
     is used to run official releases of Proton 8.0 or newer,
     and some native Linux games such as Dota 2, Endless Sky and Retroarch.
     We expect it to be used for other newer native Linux games in future.
 
-* [Steam Runtime 2 'soldier'](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/soldier/README.md),
+* [Steam Linux Runtime 2.0 (soldier)](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/soldier/README.md),
     [app ID 1391110](https://steamdb.info/app/1391110/)
     is used to run official releases of Proton versions 5.13 to 7.0.
 
     It is also used to run native Linux games that target
-    Steam Runtime 1 'scout', if the "Steam Linux Runtime" compatibility
-    tool is selected for them.
+    Steam Runtime 1 'scout', if the "Steam Linux Runtime 1.0 (scout)"
+    compatibility tool (formerly "Steam Linux Runtime") is selected for them.
 
-* [Steam Runtime 1 'scout'](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/scout/README.md),
+* [Steam Linux Runtime 1.0 (scout)](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/scout/README.md),
     [app ID 1070560](https://steamdb.info/app/1070560/)
     can be used on an opt-in basis to run native Linux games in a
     container. It uses the same libraries as the traditional
@@ -134,8 +134,9 @@ select a different branch from your Steam Library, in the same way
 you would for a game: follow the same procedure as
 <https://support.steampowered.com/kb_article.php?ref=9847-WHXC-7326>,
 but instead of the properties of CS:GO, change the properties of the
-tool named *Steam Linux Runtime - sniper*, *Steam Linux Runtime - soldier*
-or *Steam Linux Runtime*.
+tool named *Steam Linux Runtime 3.0 (sniper)*,
+*Steam Linux Runtime 2.0 (soldier)*
+or *Steam Linux Runtime 1.0 (scout)*.
 
 The branches that are usually available are:
 
@@ -238,7 +239,7 @@ and unpack the tarball into that directory so that you have files like
 `SteamLinuxRuntime_soldier/my_soldier_platform_0.20200604.0/files/bin/env`.
 Then select it from the list of runtimes in [the test-UI](#test-ui).
 
-For the "Steam Linux Runtime" scout environment, the closest equivalent
+For the "Steam Linux Runtime 1.0 (scout)" environment, the closest equivalent
 is to download a file named `steam-runtime.tar.xz` from
 from <https://repo.steampowered.com/steamrt-images-scout/snapshots/>
 and unpack it into the `SteamLinuxRuntime` directory, so that you have

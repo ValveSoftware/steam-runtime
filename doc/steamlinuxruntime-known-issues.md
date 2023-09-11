@@ -8,8 +8,8 @@ Here are some that are likely to affect multiple users:
 Labelling of Steam Linux Runtime versions
 -----------------------------------------
 
-The naming used for the various branches of the Steam Linux Runtime is
-not always obvious.
+The naming used for the various branches of the Steam Linux Runtime has
+not always been obvious.
 
 The term "Steam Play" is used in the Steam user interface to refer to
 all compatibility tools, including
@@ -19,28 +19,30 @@ Proton (a mechanism to run Windows games on Linux),
 and potentially other compatibility tools in future.
 
 The term "Steam Linux Runtime" is used in the Steam user interface to refer
-to the container runtime framework.
+to the container runtime framework specifically.
 
-The "Steam Linux Runtime" compatibility tool (application ID 1070560) is
-actually Steam Linux Runtime version 1,
-which combines Steam Runtime 1 libraries with a Steam Runtime 2 container,
+The "Steam Linux Runtime 1.0 (scout)" compatibility tool
+(application ID 1070560)
+combines Steam Runtime 1 libraries with a Steam Runtime 2 container,
 and is used to run historical native Linux games.
+Before September 2023, this was (confusingly) labelled "Steam Linux Runtime".
+The old name might still appear in some contexts.
 
-The "Steam Linux Runtime - soldier" tool (application ID 1391110) is
-Steam Linux Runtime version 2,
-which is used to run Proton 5.13 up to 7.0 and is also used internally
+The "Steam Linux Runtime 2.0 (soldier)" tool (application ID 1391110) is
+used to run Proton 5.13 up to 7.0 and is also used internally
 by the "Steam Linux Runtime" tool.
+Before September 2023, this was labelled "Steam Linux Runtime - soldier".
 
-The "Steam Linux Runtime - sniper" tool (application ID 1628350) is
-Steam Linux Runtime version 3,
-which is used to run Proton 8.0 and some newer native Linux games.
+The "Steam Linux Runtime 3.0 (sniper)" tool (application ID 1628350) is
+used to run Proton 8.0 and some newer native Linux games.
+Before September 2023, this was labelled "Steam Linux Runtime - sniper".
 
 Disabling Steam Play disables all Steam Linux Runtime tools
 -----------------------------------------------------------
 
 In Steam's global settings, there is an option to turn off all Steam Play
 compatibility tools.
-As well as disabling Proton, this also disables Steam Linux Runtime version 3
+As well as disabling Proton, this also disables Steam Linux Runtime 3.0
 (sniper), which will result in games that require this runtime being
 launched in a way that does not work.
 This is a Steam client issue: it should not allow launching the affected
@@ -57,7 +59,7 @@ Switching Steam Linux Runtime branch sometimes requires a Steam restart
 -----------------------------------------------------------------------
 
 When a game that was previously using an older runtime environment switches
-to Steam Linux Runtime version 3 (sniper), sometimes the Steam client will
+to Steam Linux Runtime 3.0 (sniper), sometimes the Steam client will
 continue to run that game in the older runtime until it is restarted.
 This is a Steam client issue: it should switch to the new runtime
 automatically.
@@ -70,12 +72,12 @@ all subsequent game launches should work correctly.
 
 ([steam-for-linux#9835](https://github.com/ValveSoftware/steam-for-linux/issues/9835))
 
-Forcing use of Steam Linux Runtime 1 for games requiring SLR 3
---------------------------------------------------------------
+Forcing use of Steam Linux Runtime 1.0 (scout) for games requiring SLR 3
+------------------------------------------------------------------------
 
 It is currently possible for users to configure games to be run
-under Steam Linux Runtime version 1, even if the game requires
-Steam Linux Runtime version 3 (sniper), which often will not work.
+under Steam Linux Runtime 1.0 (scout), even if the game requires
+Steam Linux Runtime 3.0 (sniper), which often will not work.
 This is a Steam client issue: it should not allow this configuration.
 
 Games affected by this include Dota 2, Endless Sky and Retroarch.
@@ -167,7 +169,7 @@ We have prepared a document listing
 [assumptions made about the distribution][distro assumptions], which
 distribution developers might find useful.
 
-Workaround: don't enable SteamLinuxRuntime or Proton 5.13 (or newer)
+Workaround: don't enable Steam Linux Runtime or Proton 5.13 (or newer)
 on OSs with unusual directory layouts, or use the unofficial Flatpak app
 (requires Flatpak 1.12).
 
@@ -335,7 +337,7 @@ Non-Steam games
 
 Non-Steam games are not currently supported.
 
-Workaround: don't use SteamLinuxRuntime for those games yet.
+Workaround: don't use Steam Linux Runtime for those games yet.
 
 ([#228](https://github.com/ValveSoftware/steam-runtime/issues/228))
 
@@ -424,13 +426,13 @@ experimental, and is not expected to work for all games. Native Linux
 games that were compiled for Steam Runtime 1 `scout` are intended to be
 run in the older `LD_LIBRARY_PATH`-based Steam Runtime.
 
-### Updating "Steam Linux Runtime" compatibility tool
+### Updating "Steam Linux Runtime 1.0 (scout)" compatibility tool
 
 Due to a Steam limitation, after updating to version 0.20210630.32 or
 later, it is necessary to exit from Steam completely and re-launch Steam,
 so that the updated compatibility tool configuration will be loaded.
 Until Steam has been restarted, trying to launch a game with the
-"Steam Linux Runtime" compatibility tool will show an error message
+"Steam Linux Runtime 1.0 (scout)" compatibility tool will show an error message
 asking for a Steam restart.
 
 Reporting other issues
