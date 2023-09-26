@@ -411,12 +411,24 @@ pin_newer_runtime_libs ()
 
         #log $soname ${host_libraries[$soname]} $r_lib_major $r_lib_minor $r_lib_third
 
-        # Pretty sure the host library already matches, but we need the rematch anyway
-        if [[ ! $host_library =~ .*\.so.([[:digit:]]+).([[:digit:]]+).([[:digit:]]+)$ ]]; then continue; fi
-
-        h_lib_major=$((10#${BASH_REMATCH[1]}))
-        h_lib_minor=$((10#${BASH_REMATCH[2]}))
-        h_lib_third=$((10#${BASH_REMATCH[3]}))
+        if [[ "$soname" = "libcrypt.so.1" \
+              && $host_library =~ libcrypt-2\.[[:digit:]]+\.so \
+              && $final_library =~ libcrypt\.so\.1\.* ]]
+        then
+            # Steam Runtime libxcrypt libcrypt.so.1 counts as newer than
+            # host glibc libcrypt.so.1, so behave as though the host version
+            # was arbitrarily old
+            debug "Treating libxcrypt libcrypt.so.1 as newer than host glibc version"
+            h_lib_major=0
+            h_lib_minor=0
+            h_lib_third=0
+        elif [[ $host_library =~ .*\.so.([[:digit:]]+).([[:digit:]]+).([[:digit:]]+)$ ]]; then
+            h_lib_major=$((10#${BASH_REMATCH[1]}))
+            h_lib_minor=$((10#${BASH_REMATCH[2]}))
+            h_lib_third=$((10#${BASH_REMATCH[3]}))
+        else
+            continue
+        fi
 
         if [[ $h_lib_major -lt $r_lib_major ]]; then
             runtime_version_newer="yes"
