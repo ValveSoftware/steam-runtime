@@ -795,6 +795,16 @@ def get_output_dir_for_arch(arch: str) -> Path:
 	return Path(args.output) / arch
 
 
+def keep_only_primary_arch(relative_path: str) -> bool:
+	# For some paths below /usr/libexec it's unimportant whether we have
+	# a 32- or 64-bit executable, so silently keep the one from the
+	# primary architecture, without logging a warning.
+	return relative_path.startswith((		# any of these prefixes:
+		'usr/libexec/flatpak-xdg-utils/',
+		'usr/libexec/steam-runtime-tools-0/',
+	))
+
+
 def install_binaries(binaries_by_arch, binarylists, manifest):
 	skipped = 0
 
@@ -897,7 +907,8 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 							member,
 						)
 						if os.path.exists(merged):
-							warn_if_different(source, merged)
+							if not keep_only_primary_arch(relative_path):
+								warn_if_different(source, merged)
 						else:
 							os.makedirs(os.path.dirname(merged), exist_ok=True)
 							shutil.move(source, merged)
