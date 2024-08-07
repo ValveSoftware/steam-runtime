@@ -805,7 +805,7 @@ def keep_only_primary_arch(relative_path: str) -> bool:
 	))
 
 
-def install_binaries(binaries_by_arch, binarylists, manifest):
+def install_binaries(architectures, binaries_by_arch, binarylists, manifest):
 	skipped = 0
 
 	for arch, arch_binaries in sorted(binaries_by_arch.items()):
@@ -946,6 +946,25 @@ def install_binaries(binaries_by_arch, binarylists, manifest):
 						os.path.basename(exe),
 					)
 				)
+
+	out_dir = Path(args.output)
+
+	# We want some executables to be in the PATH for apps/games, but not
+	# for Steam components, to avoid a cyclic dependency.
+	(out_dir / 'game-bin').mkdir(exist_ok=True, mode=0o755, parents=True)
+
+	for exe, name in (
+		('usr/bin/steam-runtime-steam-remote', 'steam'),
+		('usr/bin/steam-runtime-urlopen', 'xdg-open'),
+		# TODO: Maybe consider this too?
+		# ('usr/libexec/flatpak-xdg-utils/xdg-email', 'xdg-email'),
+	):
+		if (out_dir / exe).exists():
+			(out_dir / 'game-bin' / name).symlink_to('../' + exe)
+		elif (out_dir / architectures[0] / exe).exists():
+			(out_dir / 'game-bin' / name).symlink_to(
+				'../%s/%s' % (architectures[0], exe)
+			)
 
 	if skipped > 0:
 		print("Skipped downloading %i file(s) that were already present." % skipped)
@@ -1461,7 +1480,7 @@ for arch in binaries_by_arch:
 	binary_pkgs[arch] = binaries_from_apt[arch] | binaries_from_lists
 	source_pkgs |= sources_from_apt
 
-install_binaries(binaries_by_arch, binary_pkgs, manifest)
+install_binaries(args.architectures, binaries_by_arch, binary_pkgs, manifest)
 
 if args.source:
 	install_sources(apt_sources, source_pkgs)
