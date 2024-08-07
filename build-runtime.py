@@ -435,7 +435,7 @@ def install_sources(apt_sources, sourcelist):
 		os.path.join(args.output, 'source', 'sources.deb822.gz'), 'wb'
 	) as gz_writer:
 		with gzip.GzipFile(
-			filename='', fileobj=gz_writer, mtime=0
+			filename='', mode='wb', fileobj=gz_writer, mtime=0
 		) as stanza_writer:
 			done_one = False
 
@@ -515,7 +515,8 @@ def list_binaries(
 					url_file_handle = gzip.GzipFile(
 						fileobj=BytesIO(
 							urlopen(url).read()
-						)
+						),
+						mode='rb',
 					)
 				except Exception as e:
 					if dbgsym:
@@ -1134,7 +1135,12 @@ def write_manifests(manifest):
 	# manifest.deb822: The full Packages stanza for each installed package,
 	# suitable for later analysis.
 	with open(os.path.join(args.output, 'manifest.deb822.gz'), 'wb') as out:
-		with gzip.GzipFile(filename='', fileobj=out, mtime=0) as writer:
+		with gzip.GzipFile(
+			filename='',
+			fileobj=out,
+			mode='wb',
+			mtime=0,
+		) as writer:
 			for key, binary in sorted(manifest.items()):
 				if key in done:
 					continue
