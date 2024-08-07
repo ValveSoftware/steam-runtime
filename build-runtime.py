@@ -47,6 +47,9 @@ ONE_MEGABYTE = 1024 * 1024
 SPLIT_MEGABYTES = 50
 MIN_PARTS = 3
 
+# Order is significant: the first architecture is considered primary
+DEFAULT_ARCHITECTURES = ('amd64', 'i386')
+
 ARCHITECTURES = {
 	'amd64': 'x86_64-linux-gnu',
 	'i386': 'i386-linux-gnu',
@@ -240,7 +243,7 @@ def parse_args():
 		help='Also generate an archive split into 50M parts')
 	parser.add_argument(
 		'--architecture', '--arch',
-		help='include architecture',
+		help='include architecture (the first is assumed to be primary)',
 		action='append', dest='architectures', default=[],
 	)
 	parser.add_argument(
@@ -285,7 +288,7 @@ def parse_args():
 		if args.suite in ('heavy', 'heavy_beta'):
 			args.architectures = ['amd64']
 		else:
-			args.architectures = sorted(ARCHITECTURES.keys())
+			args.architectures = list(DEFAULT_ARCHITECTURES)
 
 	if not args.packages_from and not args.metapackages:
 		args.metapackages = ['steamrt-ld-library-path', 'steamrt-libs']
@@ -663,12 +666,13 @@ def ignore_transitive_dependency(name):
 	)
 
 
-def expand_metapackages(binaries_by_arch, metapackages):
+def expand_metapackages(architectures, binaries_by_arch, metapackages):
 	sources_from_apt = set()
 	binaries_from_apt = {}
 	error = False
 
-	for arch, arch_binaries in sorted(binaries_by_arch.items()):
+	for arch in architectures:
+		arch_binaries = binaries_by_arch[arch]
 		binaries_from_apt[arch] = set()
 
 		for metapackage in metapackages:
@@ -1431,7 +1435,10 @@ manifest = {}		# type: typing.Dict[typing.Tuple[str, str], Binary]
 binaries_by_arch = list_binaries(apt_sources)
 
 sources_from_apt, binaries_from_apt = expand_metapackages(
-	binaries_by_arch, args.metapackages)
+	args.architectures,
+	binaries_by_arch,
+	args.metapackages,
+)
 
 if args.packages_from and args.metapackages:
 	check_consistency(binaries_from_apt, binaries_from_lists)
