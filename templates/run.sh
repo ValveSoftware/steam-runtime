@@ -128,21 +128,6 @@ case "${STEAM_RUNTIME_USE_LIBCURL_SHIM-}" in
         ;;
 esac
 
-case "${STEAM_RUNTIME_PIN_32BIT_LIBDBUS-}" in
-    (1)
-        log "Warning: \$STEAM_RUNTIME_PIN_32BIT_LIBDBUS will be removed in a future version."
-        log "Warning: Report a bug at https://github.com/ValveSoftware/steam-runtime/issues if you need this option."
-        host_library_paths="$STEAM_RUNTIME/pinned_32bit_libdbus:$host_library_paths"
-        [ -d "$STEAM_RUNTIME/pinned_32bit_libdbus" ] || mkdir "$STEAM_RUNTIME/pinned_32bit_libdbus"
-        ln -fns ../lib/i386-linux-gnu/libdbus-1.so.3 "$STEAM_RUNTIME/pinned_32bit_libdbus/"
-        ;;
-    (0 | '')
-        ;;
-    (*)
-        log "Warning: \$STEAM_RUNTIME_PIN_32BIT_LIBDBUS should be 0, 1 or empty, not '$STEAM_RUNTIME_PIN_32BIT_LIBDBUS'"
-        ;;
-esac
-
 # Always prefer host libraries over non-pinned Runtime libraries.
 # (In older versions this was conditional, but if we don't do this,
 # it usually breaks Mesa drivers' dependencies.)
