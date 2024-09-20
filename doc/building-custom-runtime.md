@@ -74,8 +74,9 @@ what appears in Help -> System Information in Steam, if your runtime is in
     ~/rttest/run.sh ~/rttest/usr/bin/steam-runtime-system-info
 
 Or to launch Steam itself (and any Steam applications) within your runtime,
-set the `STEAM_RUNTIME` environment variable to point to your runtime directory;
+set both the `STEAM_RUNTIME_SCOUT` and `STEAM_RUNTIME` environment variables
+to point to your runtime directory:
 
-    ~/.local/share/Steam$ STEAM_RUNTIME=~/rttest ./steam.sh
+    $ STEAM_RUNTIME_SCOUT=~/rttest STEAM_RUNTIME="$STEAM_RUNTIME_SCOUT" ./steam.sh
     Running Steam on ubuntu 14.04 64-bit
     STEAM_RUNTIME has been set by the user to: /home/username/rttest
