@@ -1,7 +1,7 @@
-steam runtime SDK
+steam runtime SDK ![](https://img.shields.io/badge/src-public-green) ![](https://img.shields.io/github/forks/ValveSoftware/steam-runtime) ![](https://img.shields.io/github/stars/ValveSoftware/steam-runtime) ![](	https://img.shields.io/github/issues/ValveSoftware/steam-runtime)
 =================
 
-A binary compatible runtime environment for Steam applications on Linux.
+A binary compatible runtime environment for Steam applications on [Linux](https://www.linux.org/).
 
 Introduction
 ------------
