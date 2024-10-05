@@ -48,6 +48,18 @@ More information about the
 [Proton]: https://github.com/ValveSoftware/Proton/
 [steam-runtime-tools documentation]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/tree/main/docs
 
+## Why to use Steam Runtime SDK?
+
+
+Ensures your application finds the correct libraries for smooth operation on different Linux systems.
+Prevents conflicts between development libraries on your machine and the libraries your application needs.
+
+
+## Understanding Steam Runtime SDK
+
+The Steam Runtime SDK provides a development environment for building applications that run on Steam for Linux. It ensures compatibility across different Linux distributions.
+
+
 Reporting bugs and issues
 -------------------------
 
@@ -70,26 +82,43 @@ Steam-runtime Repository
 The Steam-runtime SDK relies on an APT repository that Valve has created that holds the packages contained within the steam-runtime. A single package, steamrt-dev, lists all the steam-runtime development packages (i.e. packages that contain headers and files required to build software with those libraries, and whose names end in -dev) as dependencies. Conceptually, a base chroot environment is created in the traditional way using debootstrap, steamrt-dev is then installed into this, and then a set of commonly used compilers and build tools are installed. It is expected that after this script sets the environment up, developers may want to install other packages / tools they may need into the chroot environment.
 If any of these packages contain runtime dependencies, then you will have to make sure to satisfy these yourself, as only the runtime dependencies of the steamrt-dev packages are included in the steam-runtime. 
 
-Installation
-------------
+## Installation
 
-Steam Runtime version 1, 'scout' is automatically installed as part
-of the [Steam Client for Linux][].
 
-Each version of the Steam [container runtime][] is automatically
-downloaded to your Steam library if you install a game or a version of
-Proton that requires it.
-They can also be downloaded by opening `steam://` links with Steam:
+1. Download the SDK:
 
-* Steam Linux Runtime 1.0 (scout): `steam steam://install/1070560`
-* Steam Linux Runtime 2.0 (soldier): `steam steam://install/1391110`
-* Steam Linux Runtime 3.0 (sniper): `steam steam://install/1628350`
+Container-Based:
+Podman:
 
-All the software that makes up the Steam Runtime is available in both source and binary form in the Steam Runtime repository [https://repo.steampowered.com/steamrt](https://repo.steampowered.com/steamrt "")
+```bash 
+sudo podman pull registry.gitlab.steamos.cloud/steamrt/scout/sdk
+```
 
-Included in this repository are scripts for building local copies of the Steam Runtime for testing and scripts for building Linux chroot environments suitable for building applications.
+Docker:
 
-[Steam Client for Linux]: https://github.com/ValveSoftware/steam-for-linux/
+```bash
+sudo docker pull registry.gitlab.steamos.cloud/steamrt/scout/sdk
+```
+
+Chroot-Based:
+Download the appropriate chroot image from the Steam Runtime repository: https://repo.steampowered.com/steamrt
+
+
+2. Create a Container or Chroot Environment:
+
+Podman:
+
+```bash
+podman run -it --rm --name steamrt-sdk registry.gitlab.steamos.cloud/steamrt/scout/sdk /bin/bash
+```
+
+Docker:
+
+```bash
+sudo docker run -it --rm --name steamrt-sdk registry.gitlab.steamos.cloud/steamrt/scout/sdk /bin/bash
+```
+
+Chroot: Follow the instructions provided with the downloaded chroot image.
 
 Building in the runtime
 -----------------------
