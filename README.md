@@ -47,30 +47,33 @@ Before you begin, ensure you have the following installed on your system:
 ```bash
 sudo apt update
 sudo apt install docker.io
-Download the SDK:
 ```
+## Download the SDK:
+
 
 ## Depending on the container tool you chose, run one of the following commands:
 
-For Podman:
+## For Podman:
 
 ```bash
 podman pull registry.gitlab.steamos.cloud/steamrt/scout/sdk
-For Docker:
 ```
+## For Docker:
+
 ```bash
 sudo docker pull registry.gitlab.steamos.cloud/steamrt/scout/sdk
-Create a Container Environment:
 ```
+## Create a Container Environment:
+
 Once the download is complete, create a new container environment by running:
 
-For Podman:
+## For Podman:
 
 ```bash
 podman run -it --rm --name steamrt-sdk registry.gitlab.steamos.cloud/steamrt/scout/sdk /bin/bash
 ```
 
-For Docker:
+## For Docker:
 
 ```bash
 sudo docker run -it --rm --name steamrt-sdk registry.gitlab.steamos.cloud/steamrt/scout/sdk /bin/bash
