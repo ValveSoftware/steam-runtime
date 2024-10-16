@@ -117,4 +117,51 @@ Please report issues to the steam-runtime issue tracker.
 
 The container runtimes have some known issues which do not need to be reported again.
 
-The container runtime is quite complicated, so we will need additional information to be able to make progress on resolving issues. this convert into markdown
+## Steam-runtime Repository
+The Steam-runtime SDK relies on an APT repository that Valve has created that holds the packages contained within the steam-runtime. A single package, steamrt-dev, lists all the steam-runtime development packages (i.e., packages that contain headers and files required to build software with those libraries, and whose names end in -dev) as dependencies. Conceptually, a base chroot environment is created in the traditional way using debootstrap; steamrt-dev is then installed into this, and a set of commonly used compilers and build tools are installed. It is expected that after this script sets the environment up, developers may want to install other packages/tools they may need into the chroot environment. If any of these packages contain runtime dependencies, then you will have to make sure to satisfy these yourself, as only the runtime dependencies of the steamrt-dev packages are included in the steam-runtime.
+
+## Building in the Runtime
+To prevent libraries from development and build machines 'leaking' into your applications, you should build within a Steam Runtime container or chroot environment.
+
+We recommend using a Toolbox, rootless Podman, or Docker container for this:
+
+## For Podman:
+
+```bash
+
+podman pull registry.gitlab.steamos.cloud/steamrt/scout/sdk
+```
+## For Docker:
+
+```bash
+
+sudo docker pull registry.gitlab.steamos.cloud/steamrt/scout/sdk
+```
+For more details, please consult the Steam Runtime SDK documentation.
+
+Using a Debugger in the Build Environment
+To get the detached debug symbols that are required for gdb and similar tools, you can download the matching com.valvesoftware.SteamRuntime.Sdk-amd64,i386-scout-debug.tar.gz, unpack it (preserving directory structure), and use its files/ directory as the chroot or container's /usr/lib/debug.
+
+For example, with Docker, you might unpack the tarball in /tmp/scout-dbgsym-0.20191024.0 and use something like:
+
+```bash
+
+sudo docker run \
+--rm \
+--init \
+-v /home:/home \
+-v /tmp/scout-dbgsym-0.20191024.0/files:/usr/lib/debug \
+-e HOME=/home/user \
+-u $(id -u):$(id -g) \
+-h $(hostname) \
+-v /tmp:/tmp \
+-it \
+steamrt_scout_amd64:latest \
+/dev/init -sg -- /bin/bash
+Or with schroot, you might create /var/chroots/steamrt_scout_amd64/usr/lib/debug/ and move the contents of files/ into it.
+```
+## Using Detached Debug Symbols
+Please see doc/debug-symbols.md.
+
+
+
