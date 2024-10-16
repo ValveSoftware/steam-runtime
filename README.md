@@ -1,177 +1,117 @@
-steam runtime SDK
-=================
+# Steam Runtime SDK
 
 A binary compatible runtime environment for Steam applications on Linux.
 
-Introduction
-------------
+## Introduction
 
-The Linux version of Steam runs on many Linux distributions, ranging
-from the latest rolling-release distributions like Arch Linux to older
-LTS distributions like Ubuntu 14.04.
-To achieve this, it uses a special library stack, the *Steam Runtime*,
-which is installed in `~/.steam/root/ubuntu12_32/steam-runtime`.
-This is Steam Runtime version 1, codenamed `scout` after the Team
-Fortress 2 character class.
+The Linux version of Steam runs on many Linux distributions, ranging from the latest rolling-release distributions like Arch Linux to older LTS distributions like Ubuntu 14.04. To achieve this, it uses a special library stack, the *Steam Runtime*, which is installed in `~/.steam/root/ubuntu12_32/steam-runtime`. This is Steam Runtime version 1, codenamed `scout` after the Team Fortress 2 character class.
 
-The Steam client itself is run in an environment that adds the shared
-libraries from Steam Runtime 1 'scout' to the library loading path,
-using the `LD_LIBRARY_PATH` environment variable.
-This is referred to as the [`LD_LIBRARY_PATH` runtime][LD_LIBRARY_PATH runtime].
-Most native Linux games available through Steam are also run in this
-environment.
+The Steam client itself is run in an environment that adds the shared libraries from Steam Runtime 1 'scout' to the library loading path, using the `LD_LIBRARY_PATH` environment variable. This is referred to as the [`LD_LIBRARY_PATH` runtime][LD_LIBRARY_PATH runtime]. Most native Linux games available through Steam are also run in this environment.
 
-A newer approach to cross-distribution compatibility is to use Linux
-namespace (container) technology, to run games in a more predictable
-environment, even when running on an arbitrary Linux distribution which
-might be old, new or unusually set up.
-This is implemented as a series of Steam Play compatibility tools, and
-is referred to as the Steam [container runtime][], or as the
-*Steam Linux Runtime*.
+A newer approach to cross-distribution compatibility is to use Linux namespace (container) technology, to run games in a more predictable environment, even when running on an arbitrary Linux distribution which might be old, new, or unusually set up. This is implemented as a series of Steam Play compatibility tools and is referred to as the Steam [container runtime][container runtime] or the *Steam Linux Runtime*.
 
-The Steam Runtime is also used by the [Proton][] Steam Play compatibility
-tools, which run Windows games on Linux systems.
-Older versions of Proton (5.0 or earlier) use the same 'scout'
-[`LD_LIBRARY_PATH` runtime][LD_LIBRARY_PATH runtime] as most native
-Linux games.
-Newer versions of Proton (5.13 or newer) use a [container runtime][]
-with newer library versions: this is Steam Runtime version 2, codenamed
-'soldier'.
+The Steam Runtime is also used by the [Proton][Proton] Steam Play compatibility tools, which run Windows games on Linux systems. Older versions of Proton (5.0 or earlier) use the same 'scout' [`LD_LIBRARY_PATH` runtime][LD_LIBRARY_PATH runtime] as most native Linux games. Newer versions of Proton (5.13 or newer) use a [container runtime][container runtime] with newer library versions: this is Steam Runtime version 2, codenamed 'soldier'.
 
-More information about the
-[`LD_LIBRARY_PATH` runtime][LD_LIBRARY_PATH runtime] and
-[container runtime][] is available as part of the
-[steam-runtime-tools documentation][].
+More information about the [`LD_LIBRARY_PATH` runtime][LD_LIBRARY_PATH runtime] and [container runtime][container runtime] is available as part of the [steam-runtime-tools documentation][steam-runtime-tools documentation].
 
-[LD_LIBRARY_PATH runtime]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/ld-library-path-runtime.md
-[container runtime]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/container-runtime.md
-[Proton]: https://github.com/ValveSoftware/Proton/
-[steam-runtime-tools documentation]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/tree/main/docs
+## Why Use Steam Runtime SDK?
 
-## Why to use Steam Runtime SDK?
+- Ensures your application finds the correct libraries for smooth operation on different Linux systems.
+- Prevents conflicts between development libraries on your machine and the libraries your application needs.
 
+## Detailed Installation Instructions
 
-Ensures your application finds the correct libraries for smooth operation on different Linux systems.
-Prevents conflicts between development libraries on your machine and the libraries your application needs.
+### Prerequisites
 
+Before you begin, ensure you have the following installed on your system:
 
-## Understanding Steam Runtime SDK
+- **Podman or Docker**: Choose one of these container tools. Installation instructions for both can be found here:
+  - [Install Podman](https://podman.io/getting-started/installation)
+  - [Install Docker](https://docs.docker.com/get-docker/)
 
-The Steam Runtime SDK provides a development environment for building applications that run on Steam for Linux. It ensures compatibility across different Linux distributions.
+- **Basic Command Line Knowledge**: Familiarity with terminal commands will help you navigate the installation process.
 
+### Step-by-Step Installation
 
-Reporting bugs and issues
--------------------------
+1. **Install Podman or Docker** (if not already installed):
 
-Please report issues to the [steam-runtime issue tracker][].
+   For **Ubuntu/Debian**:
 
-The container runtimes have some [known issues][] which do not need to be
-reported again.
+   ```bash
+   sudo apt update
+   sudo apt install podman
+    ```
 
-The container runtime is quite complicated, so we will need
-[additional information][reporting bugs] to be able to make progress
-on resolving issues.
-
-[steam-runtime issue tracker]: https://github.com/ValveSoftware/steam-runtime
-[known issues]: doc/steamlinuxruntime-known-issues.md
-[reporting bugs]: doc/reporting-steamlinuxruntime-bugs.md
-
-Steam-runtime Repository
-------------------------
-
-The Steam-runtime SDK relies on an APT repository that Valve has created that holds the packages contained within the steam-runtime. A single package, steamrt-dev, lists all the steam-runtime development packages (i.e. packages that contain headers and files required to build software with those libraries, and whose names end in -dev) as dependencies. Conceptually, a base chroot environment is created in the traditional way using debootstrap, steamrt-dev is then installed into this, and then a set of commonly used compilers and build tools are installed. It is expected that after this script sets the environment up, developers may want to install other packages / tools they may need into the chroot environment.
-If any of these packages contain runtime dependencies, then you will have to make sure to satisfy these yourself, as only the runtime dependencies of the steamrt-dev packages are included in the steam-runtime. 
-
-## Installation
-
-
-1. Download the SDK:
-
-Container-Based:
-Podman:
-
-```bash 
-sudo podman pull registry.gitlab.steamos.cloud/steamrt/scout/sdk
-```
-
-Docker:
+## or for Docker:
 
 ```bash
-sudo docker pull registry.gitlab.steamos.cloud/steamrt/scout/sdk
+sudo apt update
+sudo apt install docker.io
+Download the SDK:
 ```
 
-Chroot-Based:
-Download the appropriate chroot image from the Steam Runtime repository: https://repo.steampowered.com/steamrt
+## Depending on the container tool you chose, run one of the following commands:
 
+For Podman:
 
-2. Create a Container or Chroot Environment:
+```bash
+podman pull registry.gitlab.steamos.cloud/steamrt/scout/sdk
+For Docker:
+```
+```bash
+sudo docker pull registry.gitlab.steamos.cloud/steamrt/scout/sdk
+Create a Container Environment:
+```
+Once the download is complete, create a new container environment by running:
 
-Podman:
+For Podman:
 
 ```bash
 podman run -it --rm --name steamrt-sdk registry.gitlab.steamos.cloud/steamrt/scout/sdk /bin/bash
 ```
 
-Docker:
+For Docker:
 
 ```bash
 sudo docker run -it --rm --name steamrt-sdk registry.gitlab.steamos.cloud/steamrt/scout/sdk /bin/bash
 ```
+## (Optional) Chroot Environment:
 
-Chroot: Follow the instructions provided with the downloaded chroot image.
+If you prefer a chroot environment, download the appropriate image from the Steam Runtime repository: Steam Runtime Repository. Follow the instructions provided with the downloaded image to set up the chroot.
 
-Building in the runtime
------------------------
+## Common Troubleshooting Tips
+Permission Denied Errors: If you encounter permission issues, ensure that you are running the commands with the correct privileges (e.g., using sudo for Docker).
 
-To prevent libraries from development and build machines 'leaking'
-into your applications, you should build within a Steam Runtime container
-or chroot environment.
+Container Fails to Start: If the container fails to start, check your installation of Podman or Docker. Verify that it’s running correctly by checking the service status:
 
-We recommend using a
-[Toolbx](https://containertoolbx.org/),
-[rootless Podman](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md)
-or [Docker](https://docs.docker.com/get-docker/)
-container for this:
+### For Docker:
 
-    podman pull registry.gitlab.steamos.cloud/steamrt/scout/sdk
+```bash
+sudo systemctl status docker
+```
 
-or
+For Podman:
 
-    sudo docker pull registry.gitlab.steamos.cloud/steamrt/scout/sdk
+```bash
+systemctl --user status podman
+```
 
-For more details, please consult the
-[Steam Runtime SDK](https://gitlab.steamos.cloud/steamrt/scout/sdk/-/blob/steamrt/scout/README.md)
-documentation.
+## Outdated Libraries: Ensure your system packages are up to date. Run:
 
-### Using a debugger in the build environment
+```bash
+sudo apt update
+sudo apt upgrade
+```
+### Further Resources
+For more detailed information on using the Steam Runtime SDK, refer to the official documentation.
 
-To get the detached debug symbols that are required for `gdb` and
-similar tools, you can download the matching
-`com.valvesoftware.SteamRuntime.Sdk-amd64,i386-scout-debug.tar.gz`,
-unpack it (preserving directory structure), and use its `files/`
-directory as the schroot or container's `/usr/lib/debug`.
+If you run into issues, check the steam-runtime issue tracker for potential solutions or report a new issue.
 
-For example, with Docker, you might unpack the tarball in
-`/tmp/scout-dbgsym-0.20191024.0` and use something like:
+### Additional Information
+Debugging: If you need to use debugging tools like gdb, follow the instructions in the section on using detached debug symbols.
+Reporting Bugs and Issues
+Please report issues to the steam-runtime issue tracker.
 
-    sudo docker run \
-    --rm \
-    --init \
-    -v /home:/home \
-    -v /tmp/scout-dbgsym-0.20191024.0/files:/usr/lib/debug \
-    -e HOME=/home/user \
-    -u $(id -u):$(id -g) \
-    -h $(hostname) \
-    -v /tmp:/tmp \
-    -it \
-    steamrt_scout_amd64:latest \
-    /dev/init -sg -- /bin/bash
+The container runtimes have some known issues which do not need to be reported again.
 
-or with schroot, you might create
-`/var/chroots/steamrt_scout_amd64/usr/lib/debug/` and move the contents
-of `files/` into it.
-
-Using detached debug symbols
-----------------------------
-
-Please see [doc/debug-symbols.md](doc/debug-symbols.md).
+The container runtime is quite complicated, so we will need additional information to be able to make progress on resolving issues. this convert into markdown
