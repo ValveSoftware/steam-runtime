@@ -287,6 +287,11 @@ def parse_args():
 	if not args.architectures:
 		args.architectures = list(DEFAULT_ARCHITECTURES)
 
+	if args.suite not in ('scout', 'scout_beta'):
+		parser.error(
+			'This script is only used for the scout LD_LIBRARY_PATH runtime'
+		)
+
 	if not args.packages_from and not args.metapackages:
 		args.metapackages = ['steamrt-ld-library-path', 'steamrt-libs']
 
