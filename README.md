@@ -90,12 +90,6 @@ on resolving issues.
 [known issues]: doc/steamlinuxruntime-known-issues.md
 [reporting bugs]: doc/reporting-steamlinuxruntime-bugs.md
 
-Steam-runtime Repository
-------------------------
-
-The Steam-runtime SDK relies on an APT repository that Valve has created that holds the packages contained within the steam-runtime. A single package, steamrt-dev, lists all the steam-runtime development packages (i.e. packages that contain headers and files required to build software with those libraries, and whose names end in -dev) as dependencies. Conceptually, a base chroot environment is created in the traditional way using debootstrap, steamrt-dev is then installed into this, and then a set of commonly used compilers and build tools are installed. It is expected that after this script sets the environment up, developers may want to install other packages / tools they may need into the chroot environment.
-If any of these packages contain runtime dependencies, then you will have to make sure to satisfy these yourself, as only the runtime dependencies of the steamrt-dev packages are included in the steam-runtime. 
-
 Installation
 ------------
 
@@ -175,3 +169,17 @@ Using detached debug symbols
 ----------------------------
 
 Please see [doc/debug-symbols.md](doc/debug-symbols.md).
+
+Steam Runtime apt repositories
+------------------------------
+
+Each Steam Runtime suite has an associated apt repository:
+
+* [`deb https://repo.steampowered.com/steamrt3/apt sniper main contrib non-free`](https://repo.steampowered.com/steamrt3/apt)
+* [`deb https://repo.steampowered.com/steamrt2/apt soldier main contrib non-free`](https://repo.steampowered.com/steamrt2/apt)
+* [`deb https://repo.steampowered.com/steamrt1/apt scout main`](https://repo.steampowered.com/steamrt1/apt)
+
+These apt repositories are preconfigured in the SDK container images.
+
+A beta branch is also available for each suite.
+Please see the corresponding SDK documentation for more details.
