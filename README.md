@@ -8,7 +8,7 @@ Introduction
 
 The Linux version of Steam runs on many Linux distributions, ranging
 from the latest rolling-release distributions like Arch Linux to older
-LTS distributions like Ubuntu 14.04.
+LTS distributions like Ubuntu 16.04.
 To achieve this, it uses a special library stack, the *Steam Runtime*,
 which is installed in `~/.steam/root/ubuntu12_32/steam-runtime`.
 This is Steam Runtime version 1, codenamed `scout` after the Team
