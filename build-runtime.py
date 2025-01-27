@@ -285,10 +285,7 @@ def parse_args():
 			% args.output)
 
 	if not args.architectures:
-		if args.suite in ('heavy', 'heavy_beta'):
-			args.architectures = ['amd64']
-		else:
-			args.architectures = list(DEFAULT_ARCHITECTURES)
+		args.architectures = list(DEFAULT_ARCHITECTURES)
 
 	if not args.packages_from and not args.metapackages:
 		args.metapackages = ['steamrt-ld-library-path', 'steamrt-libs']
@@ -1287,12 +1284,6 @@ apt_sources = [
 ]
 seen_apt_lines = set()		# type: typing.Set[str]
 
-if args.suite in ('heavy', 'heavy_beta') and not args.upstream_apt_sources:
-	args.upstream_apt_sources = [
-		'both https://deb.debian.org/debian jessie main',
-		'both https://deb.debian.org/debian-security jessie/updates main',
-	]
-
 for line in list(args.upstream_apt_sources) + list(args.extra_apt_sources):
 	if line in seen_apt_lines:
 		continue
@@ -1417,8 +1408,6 @@ with open(os.path.join(args.output, 'version.txt'), 'w') as writer:
 if args.debug_url is None:
 	if args.suite in ('scout', 'scout_beta'):
 		args.debug_url = 'https://repo.steampowered.com/steamrt-images-scout/snapshots/'
-	elif args.suite in ('heavy', 'heavy_beta'):
-		args.debug_url = 'https://repo.steampowered.com/steamrt-images-heavy/snapshots/'
 
 if args.debug_url:
 	# Note where people can get the debug version of this runtime
