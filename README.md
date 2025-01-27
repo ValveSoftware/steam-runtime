@@ -1,5 +1,5 @@
-steam runtime SDK
-=================
+Steam Runtime
+=============
 
 A binary compatible runtime environment for Steam applications on Linux.
 
@@ -95,24 +95,26 @@ Building in the runtime
 -----------------------
 
 To prevent libraries from development and build machines 'leaking'
-into your applications, you should build within a Steam Runtime container
-or chroot environment.
+into your applications, you should build within a Steam Runtime container.
 
 We recommend using a
 [Toolbx](https://containertoolbx.org/),
 [rootless Podman](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md)
 or [Docker](https://docs.docker.com/get-docker/)
-container for this:
+container for this.
+All of these environments are compatible with the official Steam Runtime
+SDK images,
+which we provide in OCI format.
 
-    podman pull registry.gitlab.steamos.cloud/steamrt/scout/sdk
+If targeting Steam Linux Runtime 3.0 'sniper',
+please consult the
+[Steam Runtime 3 'sniper' SDK](https://gitlab.steamos.cloud/steamrt/sniper/sdk/-/blob/steamrt/sniper/README.md)
+documentation for details.
 
-or
-
-    sudo docker pull registry.gitlab.steamos.cloud/steamrt/scout/sdk
-
-For more details, please consult the
-[Steam Runtime SDK](https://gitlab.steamos.cloud/steamrt/scout/sdk/-/blob/steamrt/scout/README.md)
-documentation.
+If targeting the legacy 'scout' runtime,
+please consult the
+[Steam Runtime 1 'scout' SDK](https://gitlab.steamos.cloud/steamrt/scout/sdk/-/blob/steamrt/scout/README.md)
+documentation instead.
 
 ### Using a debugger in the build environment
 
