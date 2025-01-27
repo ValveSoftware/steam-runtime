@@ -53,12 +53,12 @@ but we now recommend that developers should target sniper instead.
 
 The Steam Runtime is also used by the [Proton][] Steam Play compatibility
 tools, which run Windows games on Linux systems.
-Older versions of Proton (5.0 or earlier) use the same 'scout'
-[`LD_LIBRARY_PATH` runtime][LD_LIBRARY_PATH runtime] as most native
-Linux games.
-Newer versions of Proton (5.13 or newer) use a [container runtime][]
-with newer library versions: this is Steam Runtime version 2, codenamed
-'soldier'.
+Current versions of Proton (8.0 or newer) use the Steam Runtime 3 'sniper'
+container runtime.
+Older versions of Proton (5.13, 6.3 and 7.0) use the
+Steam Runtime 2 'soldier' container runtime.
+The oldest versions of Proton (5.0 or earlier) use the legacy
+Steam Runtime 1 'scout' `LD_LIBRARY_PATH` runtime.
 
 More information about the
 [`LD_LIBRARY_PATH` runtime][LD_LIBRARY_PATH runtime] and
