@@ -9,17 +9,16 @@ Introduction
 The Linux version of Steam runs on many Linux distributions, ranging
 from the latest rolling-release distributions like Arch Linux to older
 LTS distributions like Ubuntu 16.04.
-To achieve this, it uses a special library stack, the *Steam Runtime*,
-which is installed in `~/.steam/root/ubuntu12_32/steam-runtime`.
+To achieve this, it uses a special library stack, the *Steam Runtime*.
+
+The original version of the Steam Runtime is installed in
+`~/.steam/root/ubuntu12_32/steam-runtime`.
 This is Steam Runtime version 1, codenamed `scout` after the Team
 Fortress 2 character class.
-
 The Steam client itself is run in an environment that adds the shared
 libraries from Steam Runtime 1 'scout' to the library loading path,
-using the `LD_LIBRARY_PATH` environment variable.
-This is referred to as the [`LD_LIBRARY_PATH` runtime][LD_LIBRARY_PATH runtime].
-Most native Linux games available through Steam are also run in this
-environment.
+using the `LD_LIBRARY_PATH` environment variable:
+this is referred to as the [`LD_LIBRARY_PATH` runtime][LD_LIBRARY_PATH runtime].
 
 A newer approach to cross-distribution compatibility is to use Linux
 namespace (container) technology, to run games in a more predictable
@@ -28,6 +27,29 @@ might be old, new or unusually set up.
 This is implemented as a series of Steam Play compatibility tools, and
 is referred to as the Steam [container runtime][], or as the
 *Steam Linux Runtime*.
+
+Newer native Linux games such as Counter-Strike 2 and Dota 2
+run in an environment referred to as `Steam Linux Runtime 3.0 (sniper)`,
+which is a [Steam Runtime 3 'sniper'][sniper] container.
+This is the recommended environment for developers of new native Linux games.
+To target this environment,
+developers should compile their games in the [sniper SDK][],
+then set up a Launch Option that supports Linux,
+and use the Installation → Linux Runtime menu item in the Steamworks
+partner web interface to select the sniper runtime.
+
+Older native Linux games normally run in an environment referred to as
+`Steam Linux Runtime 1.0 (scout)`, which is a
+[Steam Runtime 2 'soldier'][soldier] container combined with the
+Steam Runtime 1 'scout' [`LD_LIBRARY_PATH` runtime][LD_LIBRARY_PATH runtime].
+They can also be switched to run in an environment referred to as
+`Legacy runtime 1.0`, which is the Steam Runtime 1 'scout' `LD_LIBRARY_PATH`
+runtime used on its own.
+To target either of these environments,
+developers should compile their games in the [scout SDK][].
+For backwards compatibility,
+this is still the default when a developer publishes a native Linux game,
+but we now recommend that developers should target sniper instead.
 
 The Steam Runtime is also used by the [Proton][] Steam Play compatibility
 tools, which run Windows games on Linux systems.
@@ -46,6 +68,10 @@ More information about the
 [LD_LIBRARY_PATH runtime]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/ld-library-path-runtime.md
 [container runtime]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/container-runtime.md
 [Proton]: https://github.com/ValveSoftware/Proton/
+[scout SDK]: https://gitlab.steamos.cloud/steamrt/scout/sdk
+[sniper]: https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/sniper/README.md
+[sniper SDK]: https://gitlab.steamos.cloud/steamrt/sniper/sdk
+[soldier]: https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/soldier/README.md
 [steam-runtime-tools documentation]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/tree/main/docs
 
 Reporting bugs and issues
