@@ -107,8 +107,6 @@ They can also be downloaded by opening `steam://` links with Steam:
 
 All the software that makes up the Steam Runtime is available in both source and binary form in the Steam Runtime repository [https://repo.steampowered.com/steamrt](https://repo.steampowered.com/steamrt "")
 
-Included in this repository are scripts for building local copies of the Steam Runtime for testing and scripts for building Linux chroot environments suitable for building applications.
-
 [Steam Client for Linux]: https://github.com/ValveSoftware/steam-for-linux/
 
 Building in the runtime
@@ -183,3 +181,25 @@ These apt repositories are preconfigured in the SDK container images.
 
 A beta branch is also available for each suite.
 Please see the corresponding SDK documentation for more details.
+
+Code in this repository
+-----------------------
+
+This repository contains scripts for building local copies of the
+`LD_LIBRARY_PATH` Steam Runtime for testing.
+This is not usually necessary: using the official runtime is normally
+more appropriate.
+
+This repository also contains scripts for building Linux chroot
+environments suitable for building applications.
+These scripts are deprecated,
+and are not usually necessary.
+Using the official container-based SDKs (see above) is recommended.
+
+The container runtimes and the official container-based SDKs are not
+built using the scripts in this repository:
+instead,
+they are built using
+[flatdeb-steam](https://gitlab.steamos.cloud/steamrt/flatdeb-steam).
+It is not usually necessary for individual developers to rebuild these.
+Using the official container-based SDKs (see above) is recommended.
