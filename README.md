@@ -28,15 +28,26 @@ This is implemented as a series of Steam Play compatibility tools, and
 is referred to as the Steam [container runtime][], or as the
 *Steam Linux Runtime*.
 
-Newer native Linux games such as Counter-Strike 2 and Dota 2
-run in an environment referred to as `Steam Linux Runtime 3.0 (sniper)`,
-which is a [Steam Runtime 3 'sniper'][sniper] container.
-This is the recommended environment for developers of new native Linux games.
+Newer native Linux games can run in an environment referred to as
+`Steam Linux Runtime 4.0`,
+which is a [Steam Runtime 4 'steamrt4'][steamrt4]
+container.
+This is the recommended environment for developers of new native Linux games,
+and developers of existing games can switch to it as part of a game update
+if desired.
 To target this environment,
-developers should compile their games in the [sniper SDK][],
+developers should compile their games in the
+[steamrt4 SDK][],
 then set up a Launch Option that supports Linux,
 and use the Installation → Linux Runtime menu item in the Steamworks
-partner web interface to select the sniper runtime.
+partner web interface to select the SLR 4.0 runtime.
+
+`Steam Linux Runtime 3.0 (sniper)` is an older runtime using a
+[Steam Runtime 3 'sniper'][sniper] container.
+To target this environment,
+developers should compile their games in the
+[sniper SDK][],
+and use the Steamworks partner web interface to select the SLR 3.0 runtime.
 
 Older native Linux games normally run in an environment referred to as
 `Steam Linux Runtime 1.0 (scout)`, which is a
@@ -49,13 +60,14 @@ To target either of these environments,
 developers should compile their games in the [scout SDK][].
 For backwards compatibility,
 this is still the default when a developer publishes a native Linux game,
-but we now recommend that developers should target sniper instead.
+but we now recommend that developers should target steamrt4 instead.
 
 The Steam Runtime is also used by the [Proton][] Steam Play compatibility
 tools, which run Windows games on Linux systems.
-Current versions of Proton (8.0 or newer) use the Steam Runtime 3 'sniper'
+The most recent versions of Proton (11 or newer) use the Steam Runtime 4
 container runtime.
-Older versions of Proton (5.13, 6.3 and 7.0) use the
+Proton 8, 9 and 10 use the Steam Runtime 3 'sniper' container runtime,
+while Proton 5.13, 6.3 and 7.0 use the
 Steam Runtime 2 'soldier' container runtime.
 The oldest versions of Proton (5.0 or earlier) use the legacy
 Steam Runtime 1 'scout' `LD_LIBRARY_PATH` runtime.
@@ -71,6 +83,8 @@ More information about the
 [scout SDK]: https://gitlab.steamos.cloud/steamrt/scout/sdk
 [sniper]: https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/sniper/README.md
 [sniper SDK]: https://gitlab.steamos.cloud/steamrt/sniper/sdk
+[steamrt4]: https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/steamrt4/README.md
+[steamrt4 SDK]: https://gitlab.steamos.cloud/steamrt/steamrt4/sdk
 [soldier]: https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/soldier/README.md
 [steam-runtime-tools documentation]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/tree/main/docs
 
@@ -104,6 +118,7 @@ They can also be downloaded by opening `steam://` links with Steam:
 * Steam Linux Runtime 1.0 (scout): `steam steam://install/1070560`
 * Steam Linux Runtime 2.0 (soldier): `steam steam://install/1391110`
 * Steam Linux Runtime 3.0 (sniper): `steam steam://install/1628350`
+* Steam Linux Runtime 4.0: `steam steam://install/4183110`
 
 All the software that makes up the Steam Runtime is available in both source and binary form in the Steam Runtime repository [https://repo.steampowered.com/steamrt](https://repo.steampowered.com/steamrt "")
 
@@ -125,10 +140,15 @@ All of these environments are compatible with the official Steam Runtime
 SDK images,
 which we provide in OCI format.
 
+If targeting Steam Linux Runtime 4.0,
+please consult the
+[Steam Runtime 4 SDK](https://gitlab.steamos.cloud/steamrt/steamrt4/sdk/-/blob/steamrt/steamrt4/README.md)
+documentation for details.
+
 If targeting Steam Linux Runtime 3.0 'sniper',
 please consult the
 [Steam Runtime 3 'sniper' SDK](https://gitlab.steamos.cloud/steamrt/sniper/sdk/-/blob/steamrt/sniper/README.md)
-documentation for details.
+documentation instead.
 
 If targeting the legacy 'scout' runtime,
 please consult the
@@ -173,6 +193,7 @@ Steam Runtime apt repositories
 
 Each Steam Runtime suite has an associated apt repository:
 
+* [`deb https://repo.steampowered.com/steamrt4/apt steamrt4 main contrib non-free`](https://repo.steampowered.com/steamrt4/apt)
 * [`deb https://repo.steampowered.com/steamrt3/apt sniper main contrib non-free`](https://repo.steampowered.com/steamrt3/apt)
 * [`deb https://repo.steampowered.com/steamrt2/apt soldier main contrib non-free`](https://repo.steampowered.com/steamrt2/apt)
 * [`deb https://repo.steampowered.com/steamrt1/apt scout main`](https://repo.steampowered.com/steamrt1/apt)
