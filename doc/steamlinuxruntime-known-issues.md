@@ -40,7 +40,9 @@ Switching Steam Linux Runtime branch sometimes requires a Steam restart
 -----------------------------------------------------------------------
 
 When a game that was previously using an older runtime environment switches
-to Steam Linux Runtime 3.0 (sniper), sometimes the Steam client will
+to Steam Linux Runtime 3.0 (sniper)
+or Steam Linux Runtime 4.0,
+sometimes the Steam client will
 continue to run that game in the older runtime until it is restarted.
 This is a Steam client issue: it should switch to the new runtime
 automatically.
