@@ -359,23 +359,6 @@ fixed the easier cases). Workaround: use bind mounts instead.
 [#321](https://github.com/ValveSoftware/steam-runtime/issues/321),
 [#368](https://github.com/ValveSoftware/steam-runtime/issues/368))
 
-Common issues and workarounds specific to 'scout'
--------------------------------------------------
-
-Using the Steam Runtime 1 `scout` runtime in a container is considered
-experimental, and is not expected to work for all games. Native Linux
-games that were compiled for Steam Runtime 1 `scout` are intended to be
-run in the older `LD_LIBRARY_PATH`-based Steam Runtime.
-
-### Updating "Steam Linux Runtime 1.0 (scout)" compatibility tool
-
-Due to a Steam limitation, after updating to version 0.20210630.32 or
-later, it is necessary to exit from Steam completely and re-launch Steam,
-so that the updated compatibility tool configuration will be loaded.
-Until Steam has been restarted, trying to launch a game with the
-"Steam Linux Runtime 1.0 (scout)" compatibility tool will show an error message
-asking for a Steam restart.
-
 Reporting other issues
 ----------------------
 
