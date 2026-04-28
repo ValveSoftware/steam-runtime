@@ -55,21 +55,6 @@ all subsequent game launches should work correctly.
 
 ([steam-for-linux#9835](https://github.com/ValveSoftware/steam-for-linux/issues/9835))
 
-Forcing use of Steam Linux Runtime 1.0 (scout) for games requiring SLR 3
-------------------------------------------------------------------------
-
-It is currently possible for users to configure games to be run
-under Steam Linux Runtime 1.0 (scout), even if the game requires
-Steam Linux Runtime 3.0 (sniper), which often will not work.
-This is a Steam client issue: it should not allow this configuration.
-
-Games affected by this include Dota 2, Endless Sky and Retroarch.
-
-Workaround: in the game's Properties, go to the Compatibility tab and
-ensure that "Force the use of a specific compatibility tool" is unchecked.
-
-([steam-for-linux#9844](https://github.com/ValveSoftware/steam-for-linux/issues/9844))
-
 Flatpak app limitations
 -----------------------
 
