@@ -31,7 +31,10 @@ used to run Proton 5.13 up to 7.0 and is also used internally
 by the "Steam Linux Runtime" tool.
 
 The "Steam Linux Runtime 3.0 (sniper)" tool (application ID 1628350) is
-used to run Proton 8.0 and some newer native Linux games.
+used to run Proton 8.0 up to 10.0 and some newer native Linux games.
+
+The "Steam Linux Runtime 4.0" tool (application ID 4183110) is
+used to run Proton 11 or newer and some newer native Linux games.
 
 Disabling Steam Play disables all Steam Linux Runtime tools
 -----------------------------------------------------------
