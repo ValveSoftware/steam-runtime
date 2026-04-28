@@ -68,25 +68,7 @@ the container runtimes, you will need:
 * An operating system where
     [unprivileged users can create user namespaces](https://github.com/flatpak/flatpak/wiki/User-namespace-requirements#unprivileged-bubblewrap)
     (non-setuid bubblewrap)
-
-    * Debian >= 11, but not Debian 10 or older
-    * RHEL/CentOS >= 8, but not RHEL/CentOS 7 or older
-    * Arch Linux with the default `linux` kernel,
-        but not `linux-hardened` and `bubblewrap-suid`
-    * Most other recent distributions, e.g. Ubuntu
-
 * Flatpak 1.12 or later
-
-    * Ubuntu 18.04 and 20.04 users can get this from
-        [the PPA](https://launchpad.net/~flatpak/+archive/ubuntu/stable/),
-        and it is included in Ubuntu 22.04 LTS
-    * Debian 11 users can get this from
-        [official backports](https://backports.debian.org/Instructions/),
-        and it is included in Debian 12
-
-As a workaround, users of older versions of Flatpak can try using
-[a community build of Proton](https://github.com/flathub/com.valvesoftware.Steam.CompatibilityTool.Proton)
-which uses the freedesktop.org runtime instead of Steam Runtime 2.
 
 ([#294](https://github.com/ValveSoftware/steam-runtime/issues/294),
 [Proton#4268](https://github.com/ValveSoftware/Proton/issues/4268),
