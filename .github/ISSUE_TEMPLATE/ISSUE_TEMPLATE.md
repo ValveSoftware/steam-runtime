@@ -14,6 +14,7 @@ about: Issues with the Steam runtime
 * What versions are listed in `steamapps/common/SteamLinuxRuntime/VERSIONS.txt`?
 * What versions are listed in `steamapps/common/SteamLinuxRuntime_soldier/VERSIONS.txt`?
 * What versions are listed in `steamapps/common/SteamLinuxRuntime_sniper/VERSIONS.txt`?
+* What versions are listed in `steamapps/common/SteamLinuxRuntime_4/VERSIONS.txt`?
 
 #### Please describe your issue in as much detail as possible:
 <!-- Describe what you _expected_ should happen and what _did_ happen. Please link any large code pastes as a [Github Gist](https://gist.github.com/) -->
