@@ -8,13 +8,19 @@ It consists of:
 * pressure-vessel, a container launching tool
 * a *runtime*, providing a set of libraries for games to use
 
-There are currently three runtimes available:
+There are currently four runtimes available:
+
+* [Steam Linux Runtime 4.0](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/steamrt4/README.md)
+    (steamrt4),
+    [app ID 4183110](https://steamdb.info/app/4183110/)
+    is used to run official releases of Proton 11 or newer.
+    We expect it to be used for newer native Linux games in future.
 
 * [Steam Linux Runtime 3.0 (sniper)](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/sniper/README.md),
     [app ID 1628350](https://steamdb.info/app/1628350/)
-    is used to run official releases of Proton 8.0 or newer,
-    and some native Linux games such as Dota 2, Endless Sky and Retroarch.
-    We expect it to be used for other newer native Linux games in future.
+    is used to run official releases of Proton 8.0 to 10.0,
+    and increasingly many native Linux games such as
+    Dota 2, Endless Sky and Retroarch.
 
 * [Steam Linux Runtime 2.0 (soldier)](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/soldier/README.md),
     [app ID 1391110](https://steamdb.info/app/1391110/)
@@ -79,9 +85,12 @@ log. The easiest way to get this is:
 
 * Find the Steam Library directory where the runtime is installed,
     typically `~/.local/share/Steam/steamapps/common/SteamLinuxRuntime_soldier`
-    for Steam Runtime 2 'soldier' or
+    for Steam Runtime 2 'soldier',
     `~/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper`
     for Steam Runtime 3 'sniper'
+    or
+    `~/.local/share/Steam/steamapps/common/SteamLinuxRuntime_4`
+    for Steam Runtime 4
 
 * Version numbers for some important runtime components are in `VERSIONS.txt`
 
@@ -134,7 +143,9 @@ select a different branch from your Steam Library, in the same way
 you would for a game: follow the same procedure as
 <https://support.steampowered.com/kb_article.php?ref=9847-WHXC-7326>,
 but instead of the properties of CS:GO, change the properties of the
-tool named *Steam Linux Runtime 3.0 (sniper)*,
+tool named
+*Steam Linux Runtime 4.0*,
+*Steam Linux Runtime 3.0 (sniper)*,
 *Steam Linux Runtime 2.0 (soldier)*
 or *Steam Linux Runtime 1.0 (scout)*.
 
@@ -163,6 +174,7 @@ If something works in one branch but fails in another branch, that's
 very useful information to include in issue reports. Please be as clear
 as you can about which version works and which version fails. You can
 check the current version by looking at
+`SteamLinuxRuntime_4/VERSIONS.txt`,
 `SteamLinuxRuntime_sniper/VERSIONS.txt`,
 `SteamLinuxRuntime_soldier/VERSIONS.txt` or
 `SteamLinuxRuntime/VERSIONS.txt`.
