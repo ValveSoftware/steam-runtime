@@ -36,24 +36,6 @@ used to run Proton 8.0 up to 10.0 and some newer native Linux games.
 The "Steam Linux Runtime 4.0" tool (application ID 4183110) is
 used to run Proton 11 or newer and some newer native Linux games.
 
-Disabling Steam Play disables all Steam Linux Runtime tools
------------------------------------------------------------
-
-In Steam's global settings, there is an option to turn off all Steam Play
-compatibility tools.
-As well as disabling Proton, this also disables Steam Linux Runtime 3.0
-(sniper), which will result in games that require this runtime being
-launched in a way that does not work.
-This is a Steam client issue: it should not allow launching the affected
-games in this configuration.
-
-Games affected by this include Dota 2, Endless Sky and Retroarch.
-
-Workaround: in Steam's global Settings window, go to the Compatibility tab
-and ensure that "Enable Steam Play for supported titles" is checked.
-
-([steam-for-linux#9852](https://github.com/ValveSoftware/steam-for-linux/issues/9852))
-
 Switching Steam Linux Runtime branch sometimes requires a Steam restart
 -----------------------------------------------------------------------
 
