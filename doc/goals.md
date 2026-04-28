@@ -108,11 +108,12 @@ released in 2019. It is used to run Proton 5.13 up to 7.0.
 
 Steam Runtime version 3, 'sniper', is based on Debian 11 'bullseye',
 released in 2021. It is otherwise similar to soldier.
-It is used to run Proton 8.0 or later, and some native Linux games
+It is used to run Proton 8.0 up to 10.0, and some native Linux games
 such as Dota 2, Endless Sky and Retroarch.
 
-Similarly, Steam Runtime version 4, 'medic', is likely to be based on
-Debian 12 'bookworm', which was released in 2023.
+Similarly, Steam Runtime version 4, 'steamrt4', is based on
+Debian 13 'trixie', which was released in 2025.
+It is used to run Proton 11 or later.
 
 #### New glibc
 
