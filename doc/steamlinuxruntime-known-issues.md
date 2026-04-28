@@ -25,17 +25,13 @@ The "Steam Linux Runtime 1.0 (scout)" compatibility tool
 (application ID 1070560)
 combines Steam Runtime 1 libraries with a Steam Runtime 2 container,
 and is used to run historical native Linux games.
-Before September 2023, this was (confusingly) labelled "Steam Linux Runtime".
-The old name might still appear in some contexts.
 
 The "Steam Linux Runtime 2.0 (soldier)" tool (application ID 1391110) is
 used to run Proton 5.13 up to 7.0 and is also used internally
 by the "Steam Linux Runtime" tool.
-Before September 2023, this was labelled "Steam Linux Runtime - soldier".
 
 The "Steam Linux Runtime 3.0 (sniper)" tool (application ID 1628350) is
 used to run Proton 8.0 and some newer native Linux games.
-Before September 2023, this was labelled "Steam Linux Runtime - sniper".
 
 Disabling Steam Play disables all Steam Linux Runtime tools
 -----------------------------------------------------------
