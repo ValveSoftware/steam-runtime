@@ -263,7 +263,7 @@ from <https://repo.steampowered.com/steamrt1/images/>.
 
 If you download a file named
 `com.valvesoftware.SteamRuntime.Sdk-amd64,i386-soldier-runtime.tar.gz`
-from <https://repo.steampowered.com/steamrt-images-soldier/snapshots/>,
+from <https://repo.steampowered.com/steamrt2/images/>,
 you can use it as a runtime. Create a new directory in
 `SteamLinuxRuntime_soldier`, for example `SteamLinuxRuntime_soldier/my_soldier_sdk_0.20200604.0`,
 and unpack the tarball into that directory so that you have files like
