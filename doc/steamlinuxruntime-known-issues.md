@@ -282,15 +282,6 @@ Workaround: Move it to your home directory, as above.
 
 ([#257](https://github.com/ValveSoftware/steam-runtime/issues/257))
 
-Non-Steam games
----------------
-
-Non-Steam games are not currently supported.
-
-Workaround: don't use Steam Linux Runtime for those games yet.
-
-([#228](https://github.com/ValveSoftware/steam-runtime/issues/228))
-
 Audio
 -----
 
