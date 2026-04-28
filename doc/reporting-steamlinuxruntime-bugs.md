@@ -241,22 +241,23 @@ game's setup commands have finished.
 ### Changing the runtime version
 
 If you download a file named
-`com.valvesoftware.SteamRuntime.Platform-amd64,i386-soldier-runtime.tar.gz`
-from <https://repo.steampowered.com/steamrt-images-soldier/snapshots/>,
+`SteamLinuxRuntime_4.tar.xz`
+from <https://repo.steampowered.com/steamrt4/images/>,
 you can use it as a runtime instead of the one provided by Steam.
-Create a new directory in `SteamLinuxRuntime_soldier`, for example
-`SteamLinuxRuntime_soldier/my_soldier_platform_0.20200604.0`,
-and unpack the tarball into that directory so that you have files like
-`SteamLinuxRuntime_soldier/my_soldier_platform_0.20200604.0/metadata` and
-`SteamLinuxRuntime_soldier/my_soldier_platform_0.20200604.0/files/bin/env`.
+Unpack it, rename the resulting directory to something like
+`SteamLinuxRuntime_4_test_3.0.20260415.224995`
+and move it into `steamapps/common` next to the production version of
+`SteamLinuxRuntime_4`.
 Then select it from the list of runtimes in [the test-UI](#test-ui).
 
-For the "Steam Linux Runtime 1.0 (scout)" environment, the closest equivalent
-is to download a file named `steam-runtime.tar.xz` from
-from <https://repo.steampowered.com/steamrt-images-scout/snapshots/>
-and unpack it into the `SteamLinuxRuntime` directory, so that you have
-files like `SteamLinuxRuntime/steam-runtime/version.txt`. This will be
-used in preference to the scout runtime that comes with Steam.
+A similar process can be used for
+`SteamLinuxRuntime_sniper.tar.xz`
+from <https://repo.steampowered.com/steamrt3/images/>,
+`SteamLinuxRuntime_soldier.tar.xz`
+from <https://repo.steampowered.com/steamrt2/images/>,
+or
+`SteamLinuxRuntime.tar.xz`
+from <https://repo.steampowered.com/steamrt1/images/>.
 
 ### SDK runtimes
 
