@@ -158,35 +158,14 @@ documentation instead.
 ### Using a debugger in the build environment
 
 To get the detached debug symbols that are required for `gdb` and
-similar tools, you can download the matching
-`com.valvesoftware.SteamRuntime.Sdk-amd64,i386-scout-debug.tar.gz`,
-unpack it (preserving directory structure), and use its `files/`
-directory as the schroot or container's `/usr/lib/debug`.
+similar tools,
+please see the
+[Steam Linux Runtime guide for game developers][],
+and more specifically the section about
+[getting debug symbols][].
 
-For example, with Docker, you might unpack the tarball in
-`/tmp/scout-dbgsym-0.20191024.0` and use something like:
-
-    sudo docker run \
-    --rm \
-    --init \
-    -v /home:/home \
-    -v /tmp/scout-dbgsym-0.20191024.0/files:/usr/lib/debug \
-    -e HOME=/home/user \
-    -u $(id -u):$(id -g) \
-    -h $(hostname) \
-    -v /tmp:/tmp \
-    -it \
-    steamrt_scout_amd64:latest \
-    /dev/init -sg -- /bin/bash
-
-or with schroot, you might create
-`/var/chroots/steamrt_scout_amd64/usr/lib/debug/` and move the contents
-of `files/` into it.
-
-Using detached debug symbols
-----------------------------
-
-Please see [doc/debug-symbols.md](doc/debug-symbols.md).
+[Steam Linux Runtime guide for game developers]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/slr-for-game-developers.md
+[getting debug symbols]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/slr-for-game-developers.md#getting-debug-symbols
 
 Steam Runtime apt repositories
 ------------------------------
