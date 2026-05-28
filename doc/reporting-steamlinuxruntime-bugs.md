@@ -259,42 +259,9 @@ or
 `SteamLinuxRuntime.tar.xz`
 from <https://repo.steampowered.com/steamrt1/images/>.
 
-### SDK runtimes
+### Additional debugging and development tools
 
-If you download a file named
-`com.valvesoftware.SteamRuntime.Sdk-amd64,i386-soldier-runtime.tar.gz`
-from <https://repo.steampowered.com/steamrt2/images/>,
-you can use it as a runtime. Create a new directory in
-`SteamLinuxRuntime_soldier`, for example `SteamLinuxRuntime_soldier/my_soldier_sdk_0.20200604.0`,
-and unpack the tarball into that directory so that you have files like
-`SteamLinuxRuntime_soldier/my_soldier_sdk_0.20200604.0/metadata` and
-`SteamLinuxRuntime_soldier/my_soldier_sdk_0.20200604.0/files/bin/env`.
-Then select it from the list of runtimes in [the test-UI](#test-ui).
+The [Steam Linux Runtime guide for game developers][] has more
+detailed information.
 
-The SDK has some basic debugging tools like `strace`, `gdb` and `busybox`,
-as well as development tools like C compilers.
-
-To get detached debugging symbols for `gdb` backtraces, download
-`com.valvesoftware.SteamRuntime.Sdk-amd64,i386-soldier-debug.tar.gz` from
-the same directory as the SDK runtime. Unpack it in a temporary location,
-and rename its `files` directory to be `.../files/lib/debug` inside the
-SDK runtime, so that you get a
-`SteamLinuxRuntime_soldier/my_soldier_sdk_0.20200604.0/files/lib/debug/.build-id`
-directory.
-
-If you have detached debug symbols in `/usr/lib/debug` on your host
-system, you can use those to analyze backtraces that involve libraries
-that came from the host system, such as glibc and Mesa graphics drivers.
-To do that, either merge your host system's `/usr/lib/debug` into the SDK's
-`files/lib/debug`, or run `gdb` like this:
-
-    gdb -iex \
-    'set debug-file-directory /usr/lib/debug:/run/host/usr/lib/debug' \
-    ...
-
-This will work best if the host system also uses
-build-ID-based detached debug symbols, like Debian and Fedora.
-
-Alternatively, use versions of glibc and Mesa on the host system that
-were built with `gcc -g` and not stripped, such as Debian packages
-built with `DEB_BUILD_OPTIONS=nostrip`.
+[Steam Linux Runtime guide for game developers]: https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/slr-for-game-developers.md
