@@ -98,7 +98,10 @@ log. The easiest way to get this is:
     a Steam app ID for the game.
 
 * For native Linux games that use scout, the version number in
-    `~/.steam/root/ubuntu12_32/steam-runtime/version.txt` is also important
+    `steamapps/common/SteamLinuxRuntime/VERSIONS.txt`,
+    `steamapps/common/LegacySteamRuntime/steam-runtime/version.txt` or
+    `~/.steam/root/ubuntu12_32/steam-runtime/version.txt`
+    can also be important
 
 For Proton games, you can combine `STEAM_LINUX_RUNTIME_LOG=1` with
 `PROTON_LOG=1` to capture a Proton log file too.
