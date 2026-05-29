@@ -13,27 +13,26 @@ There are currently four runtimes available:
 * [Steam Linux Runtime 4.0](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/steamrt4/README.md)
     (steamrt4),
     [app ID 4183110](https://steamdb.info/app/4183110/)
-    is used to run official releases of Proton 11 or newer.
-    We expect it to be used for newer native Linux games in future.
+    is used to run official releases of Proton 11 or newer,
+    and newer native Linux games such as Maelstrom.
 
 * [Steam Linux Runtime 3.0 (sniper)](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/sniper/README.md),
     [app ID 1628350](https://steamdb.info/app/1628350/)
     is used to run official releases of Proton 8.0 to 10.0,
-    and increasingly many native Linux games such as
-    Dota 2, Endless Sky and Retroarch.
+    and some native Linux games such as Dota 2, Endless Sky and Retroarch.
 
 * [Steam Linux Runtime 2.0 (soldier)](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/soldier/README.md),
     [app ID 1391110](https://steamdb.info/app/1391110/)
     is used to run official releases of Proton versions 5.13 to 7.0.
 
-    It is also used to run native Linux games that target
+    It is also used to run older native Linux games that target
     Steam Runtime 1 'scout', if the "Steam Linux Runtime 1.0 (scout)"
     compatibility tool (formerly "Steam Linux Runtime") is selected for them.
 
 * [Steam Linux Runtime 1.0 (scout)](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/scout/README.md),
     [app ID 1070560](https://steamdb.info/app/1070560/)
-    can be used on an opt-in basis to run native Linux games in a
-    container. It uses the same libraries as the traditional
+    is used to run older native Linux games.
+    It uses the same libraries as the legacy
     `LD_LIBRARY_PATH` runtime, but instead of using them as an overlay
     over the host machine, they are used as an overlay over a
     Steam Runtime 2 'soldier' container.
@@ -99,7 +98,10 @@ log. The easiest way to get this is:
     a Steam app ID for the game.
 
 * For native Linux games that use scout, the version number in
-    `~/.steam/root/ubuntu12_32/steam-runtime/version.txt` is also important
+    `steamapps/common/SteamLinuxRuntime/VERSIONS.txt`,
+    `steamapps/common/LegacySteamRuntime/steam-runtime/version.txt` or
+    `~/.steam/root/ubuntu12_32/steam-runtime/version.txt`
+    can also be important
 
 For Proton games, you can combine `STEAM_LINUX_RUNTIME_LOG=1` with
 `PROTON_LOG=1` to capture a Proton log file too.
