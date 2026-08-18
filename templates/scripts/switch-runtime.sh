@@ -37,7 +37,7 @@ log () {
 }
 
 undo_steamrt () {
-    # Undo the Steam Runtime environment, but only if it's already in use.
+    # Undo the LD_LIBRARY_PATH Steam Runtime environment, if in use
     case "${STEAM_RUNTIME-}" in
         (/*)
             ;;
