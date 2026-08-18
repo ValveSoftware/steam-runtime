@@ -56,7 +56,7 @@ undo_steamrt () {
             ;;
     esac
 
-    case "$STEAM_ZENITY" in
+    case "${STEAM_ZENITY-}" in
         ($STEAM_RUNTIME/*)
             unset STEAM_ZENITY
             ;;
