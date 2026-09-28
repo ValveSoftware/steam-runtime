@@ -181,7 +181,7 @@ Unfortunately, this is the newest series supporting
 such as the GeForce GTX 470 and GTX 590, so users of Fermi or older GPUs
 will be unable to use the container runtime.
 
-[fermi]: https://sources.debian.org/src/nvidia-graphics-drivers/470.129.06-6~deb11u1/debian/end-of-life-390.list/
+[fermi]: https://sources.debian.org/src/nvidia-graphics-drivers/latest/debian/end-of-life-390.list/
 
 If your GPU is supported by a later NVIDIA driver version, please upgrade
 to the newer driver.
@@ -190,7 +190,7 @@ For users of [GPUs based on the Kepler microarchitecture][kepler]
 recommended.
 For users of newer GPUs, either 470.x or a newer version is recommended.
 
-[kepler]: https://sources.debian.org/src/nvidia-graphics-drivers/470.129.06-6~deb11u1/debian/end-of-life-470.list/
+[kepler]: https://sources.debian.org/src/nvidia-graphics-drivers/latest/debian/end-of-life-470.list/
 [nvidia-archive]: https://www.nvidia.com/en-us/drivers/unix/
 
 ([#420](https://github.com/ValveSoftware/steam-runtime/issues/420))
